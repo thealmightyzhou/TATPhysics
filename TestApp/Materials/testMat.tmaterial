@@ -1,0 +1,4 @@
+vs:vShader.vs
+fs:fShader.fs
+light:light_auto
+camera:camera_auto

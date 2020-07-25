@@ -2,6 +2,7 @@
 #include <iostream>
 #include <thread>
 #include "../TATDynamics/TATDynamicWorld.h"
+#include "../TATCommon/TATSingleton.h"
 
 class TATRenderListener;
 class TATPhysicListener;
@@ -23,7 +24,7 @@ public:
 	thread m_Thread;
 };
 
-class TATPhysicThread :public TAThread
+class TATPhysicThread :public TAThread,public Singleton<TATPhysicThread>
 {
 public:
 	TATPhysicThread()
@@ -40,7 +41,7 @@ public:
 	std::vector<TATPhysicListener*> m_PhysicListeners;
 };
 
-class TATRenderThread :public TAThread
+class TATRenderThread :public TAThread,public Singleton<TATRenderThread>
 {
 public:
 	TATRenderThread()
@@ -50,7 +51,7 @@ public:
 
 	void RenderLoop();
 
-	void RenderOneFrame()
+	void RenderOneFrame(float dt)
 	{
 		//TODO
 

@@ -75,7 +75,7 @@ public:
 	}
 	~TATBvh()
 	{
-		for (int i = 0; i < m_BVTree.size; i++)
+		for (int i = 0; i < m_BVTree.size(); i++)
 		{
 			delete m_BVTree[i];
 		}

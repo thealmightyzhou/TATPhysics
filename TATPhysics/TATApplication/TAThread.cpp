@@ -18,20 +18,22 @@ void TATPhysicThread::RemoveListener(TATPhysicListener* listener)
 
 void TATPhysicThread::PhysicLoop()
 {
+	float dt = float(1) / 60;
 	while (true)
 	{
+
 		for (int i = 0; i < m_PhysicListeners.size(); ++i)
 		{
-			m_PhysicListeners[i]->SimulationStart();
+			m_PhysicListeners[i]->SimulationStart(dt);
 		}
 
-		//TATDynamicWorld::Instance->StepSimulation(1.0f/60.0f);
+		TATDynamicWorld::Instance()->StepSimulation(dt);
 
 		//TODO lock , fill the render buffer and mark as dirty
 
 		for (int i = 0; i < m_PhysicListeners.size(); ++i)
 		{
-			m_PhysicListeners[i]->SimulationEnd();
+			m_PhysicListeners[i]->SimulationEnd(dt);
 		}
 	}
 }
@@ -55,22 +57,23 @@ void TATRenderThread::RemoverListener(TATRenderListener* listener)
 
 void TATRenderThread::RenderLoop()
 {
+	float dt = float(1) / 60;
 	while (true)
 	{
 		if (m_RenderStateDirty)
 		{
 			for (int i = 0; i < m_RenderListeners.size(); ++i)
 			{
-				m_RenderListeners[i]->BeginRenderOneFrame();
+				m_RenderListeners[i]->BeginRenderOneFrame(dt);
 			}
 
-			RenderOneFrame();
+			RenderOneFrame(dt);
 
 			//swap buffer
 
 			for (int i = 0; i < m_RenderListeners.size(); ++i)
 			{
-				m_RenderListeners[i]->RenderOneFrameEnd();
+				m_RenderListeners[i]->RenderOneFrameEnd(dt);
 			}
 		}
 	}

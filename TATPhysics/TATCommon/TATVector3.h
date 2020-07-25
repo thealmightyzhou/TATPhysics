@@ -205,6 +205,7 @@ public:
 		TATVector3 res = TAT_MAXVECTOR3;
 		res.SetMin(v1);
 		res.SetMin(v2);
+		return res;
 	}
 
 	//return cross matrix

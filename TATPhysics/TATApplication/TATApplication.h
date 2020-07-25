@@ -4,7 +4,7 @@
 #include "../TATResources/TATResourceManager.h"
 #include "TAThread.h"
 
-class TATApplication
+class TATApplication:public Singleton<TATApplication>
 {
 public:
 	TATApplication(const TString& name) :m_AppName(name)

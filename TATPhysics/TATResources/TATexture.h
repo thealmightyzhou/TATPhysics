@@ -1,29 +1,33 @@
 #ifndef THEALMIGHTY_TEXTURE
 #define THEALMIGHTY_TEXTURE
 #include <iostream>
-
-#include "TATGLHeader.h"
+#include "TATResourcePrimitive.h"
+#include "../TATGLRender/TATGLHeader.h"
 
 using namespace std;
-class TATexture
+class TATexture:public TATResourcePrimitive
 {
 public:
-	TATexture()
+	TATexture():TATResourcePrimitive("texture_nameless" + GetObjectIndex())
 	{
 		m_Data = 0;
+	}
 
+	TATexture(const TString& name):TATResourcePrimitive("texture_" + name)
+	{
+		m_Data = 0;
 	}
 
 	~TATexture()
 	{
 		UnLoad();
-		glDeleteTextures(1, &m_GLId);
 	}
 
-	void Init(string filePath)
+	virtual void Load(const TString& name)
 	{
+		TString filePath = TATPaths::PathOfTexture(TATApplication::Instance()->GetAppName(), name);
 		stbi_set_flip_vertically_on_load(true);
-		Load(filePath);
+		InternalLoad(filePath);
 		glGenTextures(1, &m_GLId);
 	}
 
@@ -43,14 +47,20 @@ public:
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
 	}
-	void Load(string filePath)
-	{
-		m_Data = stbi_load(filePath.c_str(), &m_Width, &m_Height, &m_ChannelNum, 0);
-	}
+
 	void UnLoad()
 	{
 		stbi_image_free(m_Data);
+		m_Data = 0;
+		glDeleteTextures(1, &m_GLId);
 	}
+
+protected:
+	virtual void InternalLoad(const TString& filePath)
+	{
+		m_Data = stbi_load(filePath.m_Str.c_str(), &m_Width, &m_Height, &m_ChannelNum, 0);
+	}
+
 	int m_Width;
 	int m_Height;
 	int m_ChannelNum;

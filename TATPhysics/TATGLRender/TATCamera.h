@@ -4,8 +4,9 @@
 #include "TATGLHeader.h"
 #include "TATInputListener.h"
 #include <vector>
+#include "../TATBasis/TATObject.h"
 
-class TATCamera :public TATInputListener
+class TATCamera :public TATInputListener,public TATObject
 {
 public:
 	enum CameraMoveState
@@ -19,7 +20,7 @@ public:
 		MOVE_DOWN,
 	};
 
-	TATCamera()
+	TATCamera(const TString& name):TATObject("camera_" + name)
 	{
 		Initialize();
 		Update();
@@ -44,6 +45,7 @@ public:
 		m_Front = glm::vec3(0.0f, 0.0f, -1.0f);
 	}
 
+	//call in render loop
 	void Move(float deltaTime)
 	{
 		float velocity = m_MoveSpeed * deltaTime;

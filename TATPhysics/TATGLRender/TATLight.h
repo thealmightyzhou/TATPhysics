@@ -4,7 +4,8 @@
 #include "TATGLHeader.h"
 #include "../TATCommon/TATVector3.h"
 #include "../TATCommon/TATCore.h"
-
+#include "../TATBasis/TString.h"
+#include "../TATBasis/TATObject.h"
 #include <vector>
 
 enum LIGHTTYPE
@@ -14,10 +15,10 @@ enum LIGHTTYPE
 	SPOT_LIGHT,
 };
 
-class TATLight
+class TATLight:public TATObject
 {
 public:
-	TATLight()
+	TATLight(const TString& name):TATObject("light_" + name)
 	{
 		SetColor(TATVector3(1, 1, 1));
 	}
@@ -35,7 +36,7 @@ public:
 class TATDirectionLight :public TATLight
 {
 public:
-	TATDirectionLight()
+	TATDirectionLight(const TString& name):TATLight(name)
 	{
 		m_Type = DIRECTIONAL_LIGHT;
 	}
@@ -45,7 +46,7 @@ public:
 class TATSpotLight :public TATLight
 {
 public:
-	TATSpotLight()
+	TATSpotLight(const TString& name):TATLight(name)
 	{
 		m_Type = SPOT_LIGHT;
 	}
@@ -57,7 +58,7 @@ public:
 class TATPointLight :public TATLight
 {
 public:
-	TATPointLight()
+	TATPointLight(const TString& name):TATLight(name)
 	{
 		m_Type = POINT_LIGHT;
 	}

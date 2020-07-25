@@ -19,13 +19,11 @@ public:
 	TATVector3 m_Position;
 	TATVector3 m_Normal;
 	TATVector3 m_Tangent;
-	TATVector3* m_TexCoordinates;
-	TATransform m_Transform;
+	float** m_TexCoordinates;
 	int m_TexCoordinateCount;
-	bool m_UseTransform;
 };
 
-struct TATRenderUnit
+class TATRenderUnit
 {
 public:
 	TATRenderUnit()
@@ -37,10 +35,19 @@ public:
 	int m_NormalCount;
 	int m_TexCoordinateCount;
 	int m_TangentCount;
+	int m_RenderVertexCount;
 
-	float* m_RenderBuffer; //include vertex,normal,uv,tangent which transport to glbuffer
+	float* m_RenderBuffer; //a basic unit to render include vertex,normal,uv,tangent which transport to glbuffer
+
+	TATRenderVertex* m_RenderVertices; //already sort by face's vertex indices
 
 	UINT m_RenderUintMask;
+	UINT* m_TextureIds;
+	UINT m_ShaderId;
+
+	TATransform m_Transform;
+
+	bool m_UseTransform; //transform to wcs or already in wcs
 
 	inline void UseNormal()
 	{

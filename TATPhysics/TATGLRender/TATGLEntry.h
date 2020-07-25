@@ -38,10 +38,10 @@ public:
 			return NULL;
 		}
 		glfwMakeContextCurrent(window);
-		glfwSetFramebufferSizeCallback(window, this->OnFrameBufferResizeCallback);
-		glfwSetCursorPosCallback(window, this->OnCursorMoveCallback);
-		glfwSetScrollCallback(window, this->OnMouseScrollCallback);
-		glfwSetMouseButtonCallback(window, this->OnMousePressedCallback);
+		glfwSetFramebufferSizeCallback(window, &this->OnFrameBufferResizeCallback);
+		glfwSetCursorPosCallback(window, &this->OnCursorMoveCallback);
+		glfwSetScrollCallback(window, &this->OnMouseScrollCallback);
+		glfwSetMouseButtonCallback(window, &this->OnMousePressedCallback);
 
 		// tell GLFW to capture our mouse
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

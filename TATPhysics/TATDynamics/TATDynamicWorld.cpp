@@ -18,6 +18,12 @@ public:
 	std::vector<TATBVCollisonPair>& m_Collides;
 };
 
+TATDynamicWorld::TATDynamicWorld()
+{
+	m_RigidBodyBVTree.SetCollideSelf(true);
+	m_ConstraintSolver = new TATPgsJacobiSolver;
+}
+
 void TATDynamicWorld::StepSimulation(float dt)
 {
 	m_RigidBodyBVTree.Clear();

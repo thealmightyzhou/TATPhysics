@@ -6,9 +6,9 @@ public:
 	TATRenderListener();
 	virtual ~TATRenderListener() {}
 
-	virtual void BeginRenderOneFrame() {}
+	virtual void BeginRenderOneFrame(float dt) {}
 
-	virtual void RenderOneFrameEnd() {}
+	virtual void RenderOneFrameEnd(float dt) {}
 };
 
 class TATPhysicListener
@@ -18,7 +18,7 @@ public:
 
 	virtual ~TATPhysicListener() {}
 
-	virtual void SimulationStart() {}
+	virtual void SimulationStart(float dt) {}
 
-	virtual void SimulationEnd() {}
+	virtual void SimulationEnd(float dt) {}
 };

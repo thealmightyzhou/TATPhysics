@@ -16,7 +16,7 @@ public:
 	virtual void OnCursorScroll(float offset) {}
 
 	int m_TaskIndex; //
-	bool m_CoverAfter; //cover all which taskindex bigger than this
+	bool m_CoverAfter; //TODO cover all which taskindex bigger than this
 
 	static std::map<int, bool> m_KeyState;
 };

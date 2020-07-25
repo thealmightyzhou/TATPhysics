@@ -3,10 +3,10 @@
 
 TATRenderListener::TATRenderListener()
 {
-	//TATRenderThread::Instance()->AddListener(this);
+	TATRenderThread::Instance()->AddListener(this);
 }
 
 TATPhysicListener::TATPhysicListener()
 {
-	//TATPhysicThread::Instance()->AddListener(this);
+	TATPhysicThread::Instance()->AddListener(this);
 }

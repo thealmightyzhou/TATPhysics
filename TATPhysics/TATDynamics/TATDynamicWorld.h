@@ -2,17 +2,14 @@
 #include <map>
 #include "TATRigidBody.h"
 #include "../TATBroadPhase/TATBvh.h"
+#include "../TATCommon/TATSingleton.h"
 
 class TATPgsJacobiSolver;
 
-class TATDynamicWorld
+class TATDynamicWorld:public Singleton<TATDynamicWorld>
 {
 public:
-	TATDynamicWorld()
-	{
-		m_RigidBodyBVTree.SetCollideSelf(true);
-		m_ConstraintSolver = new TATPgsJacobiSolver;
-	}
+	TATDynamicWorld();
 
 	std::vector<TATRigidBody*> m_RigidBodys;
 

@@ -1,18 +1,15 @@
 #pragma once
 #include <iostream>
 #include "../TATBasis/TString.h"
+#include "../TATBasis/TATObject.h"
 
 using namespace std;
 
-class TATResourcePrimitive
+class TATResourcePrimitive:public TATObject
 {
 public:
-	TATResourcePrimitive() {}
-
-	TATResourcePrimitive(const TString& path) :m_Path(path)
-	{
-		Load(path);
-	}
+	TATResourcePrimitive(const TString& name):TATObject(name)
+	{}
 
 	virtual ~TATResourcePrimitive()
 	{
@@ -25,11 +22,4 @@ public:
 	}
 
 	TString m_Path;
-};
-
-class TATMesh:public TATResourcePrimitive
-{
-public:
-	TATMesh(const TString& path) :TATResourcePrimitive(path)
-	{}
 };
