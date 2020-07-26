@@ -38,6 +38,11 @@ public:
 		return PathOfResourceRoot(appName).Visit("Models");
 	}
 
+	static TString PathOfMaterialRoot(const TString& appName)
+	{
+		return PathOfResourceRoot(appName).Visit("Materials");
+	}
+
 	static TString PathOfShader(const TString& appName, const TString& name)
 	{
 		return PathOfShaderRoot(appName).Visit(name);
@@ -51,5 +56,10 @@ public:
 	static TString PathOfTexture(const TString& appName, const TString& name)
 	{
 		return PathOfTextureRoot(appName).Visit(name);
+	}
+
+	static TString PathOfMaterial(const TString& appName, const TString& name)
+	{
+		return PathOfMaterialRoot(appName).Visit(name);
 	}
 };

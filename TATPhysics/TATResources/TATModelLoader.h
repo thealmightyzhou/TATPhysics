@@ -9,6 +9,120 @@
 
 using namespace std;
 
+#define MAX_TEXCOORDINATE_COUNT 5
+
+enum TATRenderPrimitiveMask
+{
+	TATModelVertexMask,
+	TATModelFaceMask,
+	TATModelNormalMask,
+	TATModelTexCoordinateMask,
+	TATModelTangentMask
+};
+
+class TATModelElementMask
+{
+public:
+	struct BufferOffset
+	{
+	public:
+		BufferOffset(int index, int size, int beforeSize) :m_Index(index), m_Size(size), m_BeforeSize(beforeSize)
+		{}
+		int m_Index;
+		int m_Size;
+		int m_BeforeSize;
+	};
+
+	TATModelElementMask()
+	{
+		m_Mask = 0;
+		m_TexCount = 0;
+		m_TotalSize = 0;
+	}
+
+	inline void UseNormal()
+	{
+		m_Mask |= TATModelNormalMask;
+	}
+
+	inline void UseTexCoordinate()
+	{
+		m_Mask |= TATModelTexCoordinateMask;
+	}
+
+	inline void UseTangent()
+	{
+		m_Mask |= TATModelTangentMask;
+	}
+
+	inline void UseFace()
+	{
+		m_Mask |= TATModelFaceMask;
+	}
+
+	inline bool IsUseNormal()
+	{
+		return (m_Mask & TATModelNormalMask);
+	}
+
+	inline bool IsUseTexCoordinate()
+	{
+		return (m_Mask & TATModelTexCoordinateMask);
+	}
+
+	inline bool IsUseTangent()
+	{
+		return (m_Mask & TATModelTangentMask);
+	}
+
+	inline bool IsUseFace()
+	{
+		return (m_Mask & TATModelFaceMask);
+	}
+
+	void SetTexNum(int n)
+	{
+		m_TexCount = n;
+	}
+
+	int GetElementMask()
+	{
+		return m_Mask;
+	}
+
+	//call once is enough
+	int ComputeSize()
+	{
+		m_BufferOffsets.clear();
+
+		m_TotalSize = 3 + 3 * IsUseNormal() + 3 * IsUseTangent() + 2 * IsUseTexCoordinate() * m_TexCount;
+
+		int index = 0;
+		int totalSize = 0;
+		m_BufferOffsets.push_back(BufferSize(index++, 3, totalSize+=3));
+		if (IsUseNormal())
+			m_BufferOffsets.push_back(BufferSize(index++, 3, totalSize += 3));
+		if (IsUseTangent())
+			m_BufferOffsets.push_back(BufferOffset(index++, 3, totalSize += 3));
+		if (IsUseTexCoordinate())
+		{
+			for (int i = 0; i < m_TexCount; i++)
+			{
+				m_BufferOffsets.push_back(BufferOffset(index++, 2, totalSize += 2));
+			}
+		}
+		assert(totalSize == m_TotalSize);
+		return m_TotalSize;
+	}
+
+public:
+	int m_TexCount;
+	std::vector<BufferOffset> m_BufferOffsets;
+	int m_TotalSize;
+protected:
+	int m_Mask;
+};
+
 struct TATFaceBuffer
 {
 public:
@@ -26,27 +140,45 @@ public:
 struct TATVertexBuffer
 {
 public:
-	TATVertexBuffer(float xx, float yy, float zz) :x(xx), y(yy), z(zz)
-	{}
-	TATVertexBuffer(float xx, float yy, float zz, float nxx, float nyy, float nzz) :x(xx), y(yy), z(zz), nx(nxx),ny(nyy), nz(nzz)
-	{}
-	TATVertexBuffer(float xx, float yy, float zz, float ux, float vx) :x(xx), y(yy), z(zz), u(ux), v(vx)
-	{}
-	TATVertexBuffer(float xx, float yy, float zz, float ux, float vx, float nxx, float nyy, float nzz) :x(xx), y(yy), z(zz), u(ux), v(vx), nx(nxx), ny(nyy), nz(nzz)
-	{}
-	float x,y,z;
-	float u,v;
-	float nx,ny,nz;
+	TATVertexBuffer(float x, float y, float z)
+	{
+		m_Position[0] = x;
+		m_Position[1] = y;
+		m_Position[2] = z;
+		m_CurrentTex = 0;
+		m_TexCount = 0;
+	}
+	TATVertexBuffer(float x, float y, float z, float nx, float ny, float nz)
+	{
+		m_Position[0] = x;
+		m_Position[1] = y;
+		m_Position[2] = z;
+		m_Normal[0] = nx;
+		m_Normal[1] = ny;
+		m_Normal[2] = nz;
+		m_CurrentTex = 0;
+		m_TexCount = 0;
+	}
+
+	float m_Position[3];
+	float m_TexCoordinates[MAX_TEXCOORDINATE_COUNT][2];
+	float m_Normal[3];
+	int m_TexCount;
+	int m_CurrentTex;
 	bool isRendVert;
 };
 
 struct TATNormalBuffer 
 {
 public:
-	TATNormalBuffer(float nxx, float nyy, float nzz) :nx(nxx), ny(nyy), nz(nzz)
-	{}
-	float nx, ny, nz;
+	TATNormalBuffer(float nx, float ny, float nz)
+	{
+		m_Normal[0] = nx;
+		m_Normal[1] = ny;
+		m_Normal[2] = nz;
+	}
 
+	float m_Normal[3];
 };
 
 struct TATetraBuffer
@@ -71,17 +203,16 @@ class TATModelLoader
 public:
 	TATModelLoader(const TString& filePath)
 	{
-
 	}
 
-	virtual void Load(const TString&, TATModelBuffer& buffer)
-	{
-		
-	}
+	virtual void Load(const TString&, TATModelBuffer& buffer) {}
 
-	virtual ~TATModelLoader(){}
+	virtual ~TATModelLoader() {}
 
 	TATModelBuffer m_Buffer;
+
+	TATModelElementMask m_ModelElementMask;
+
 };
 
 #endif // !THEALMIGHTY_MODELLODER

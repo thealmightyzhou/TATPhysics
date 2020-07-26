@@ -1,20 +1,19 @@
 #pragma once
 #include "../TATCommon/TATVector3.h"
 #include "TATResourcePrimitive.h"
-#include "TATModelLoader.h"
 #include "TATObjLoader.h"
 #include "../TATBasis/TString.h"
 
-struct TATRendVertex
+struct TATMeshVertex
 {
 public:
 	float m_Position[3];
 	float m_Normal[3];
-	float m_TexCoordinate[2];
+	float m_TexCoordinate[MAX_TEXCOORDINATE_COUNT][2];
 	float m_Tangent[3];
 };
 
-struct TATRendFace
+struct TATMeshFace
 {
 public:
 	int m_Vertices[3];
@@ -26,14 +25,18 @@ public:
 
 	TATMesh():TATResourcePrimitive("mesh_nameless" + GetObjectIndex())
 	{
-		m_RendVertices = 0;
-		m_RendFaces = 0;
+		m_MeshVertices = 0;
+		m_MeshFaces = 0;
+		m_VertexCount = 0;
+		m_FaceCount = 0;
 	}
 
 	TATMesh(const TString& name):TATResourcePrimitive("mesh_" + name)
 	{
-		m_RendVertices = 0;
-		m_RendFaces = 0;
+		m_MeshVertices = 0;
+		m_MeshFaces = 0;
+		m_VertexCount = 0;
+		m_FaceCount = 0;
 	}
 
 	~TATMesh()
@@ -65,43 +68,47 @@ public:
 		const TATModelBuffer& buffer = m_Loader->m_Buffer;
 		
 		m_VertexCount = buffer.vertexBuffer.size();
-		m_RendVertices = new TATRendVertex[m_VertexCount];
+		m_MeshVertices = new TATMeshVertex[m_VertexCount];
 		for (int i = 0; i < m_VertexCount; ++i)
 		{
-			m_RendVertices[i].m_Position[0] = buffer.vertexBuffer[i].x;
-			m_RendVertices[i].m_Position[1] = buffer.vertexBuffer[i].y;
-			m_RendVertices[i].m_Position[2] = buffer.vertexBuffer[i].z;
+			for (int c = 0; c < 3; c++)
+			{
+				m_MeshVertices[i].m_Position[c] = buffer.vertexBuffer[i].m_Position[c];
+				m_MeshVertices[i].m_Normal[c] = buffer.vertexBuffer[i].m_Normal[c];
+			}
 
-			m_RendVertices[i].m_Normal[0] = buffer.vertexBuffer[i].nx;
-			m_RendVertices[i].m_Normal[1] = buffer.vertexBuffer[i].ny;
-			m_RendVertices[i].m_Normal[2] = buffer.vertexBuffer[i].nz;
-
-			m_RendVertices[i].m_TexCoordinate[0] = buffer.vertexBuffer[i].u;
-			m_RendVertices[i].m_TexCoordinate[1] = buffer.vertexBuffer[i].v;
+			m_MeshVertices[i].m_TexCoordinate[0][0] = buffer.vertexBuffer[i].m_TexCoordinates[0][0];
+			m_MeshVertices[i].m_TexCoordinate[0][1] = buffer.vertexBuffer[i].m_TexCoordinates[0][1];
 		}
 
 		m_FaceCount = buffer.faceBuffer.size();
-		m_RendFaces = new TATRendFace[m_FaceCount];
-		for (int i = 0; i < m_FaceCount; ++i)
+		if (m_FaceCount > 0)
 		{
-			m_RendFaces[i].m_Vertices[0] = buffer.faceBuffer[i].v1;
-			m_RendFaces[i].m_Vertices[1] = buffer.faceBuffer[i].v2;
-			m_RendFaces[i].m_Vertices[2] = buffer.faceBuffer[i].v3;
+			m_MeshFaces = new TATMeshFace[m_FaceCount];
+			for (int i = 0; i < m_FaceCount; ++i)
+			{
+				m_MeshFaces[i].m_Vertices[0] = buffer.faceBuffer[i].v1;
+				m_MeshFaces[i].m_Vertices[1] = buffer.faceBuffer[i].v2;
+				m_MeshFaces[i].m_Vertices[2] = buffer.faceBuffer[i].v3;
+			}
 		}
+
 	}
 
 	void Clear()
 	{
-		if (m_RendVertices)
+		if (m_MeshVertices)
 		{
-			delete m_RendVertices;
-			m_RendVertices = 0;
+			delete m_MeshVertices;
+			m_MeshVertices = 0;
+			m_VertexCount = 0;
 		}
 
-		if (m_RendFaces)
+		if (m_MeshFaces)
 		{
-			delete m_RendFaces;
-			m_RendFaces = 0;
+			delete m_MeshFaces;
+			m_MeshFaces = 0;
+			m_FaceCount = 0;
 		}
 
 	}
@@ -109,8 +116,8 @@ public:
 	int m_VertexCount;
 	int m_FaceCount;
 
-	TATRendVertex* m_RendVertices;
-	TATRendFace* m_RendFaces;
+	TATMeshVertex* m_MeshVertices;
+	TATMeshFace* m_MeshFaces;
 
 	TATModelLoader* m_Loader;
 

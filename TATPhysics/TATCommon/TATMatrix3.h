@@ -245,6 +245,22 @@ public:
 			Ele[0].Z * m[0].Y + Ele[1].Z * m[1].Y + Ele[2].Z * m[2].Y,
 			Ele[0].Z * m[0].Z + Ele[1].Z * m[1].Z + Ele[2].Z * m[2].Z);
 	}
+
+	void GetOpenGLSubMatrix(float* m) const
+	{
+		m[0] = float(Ele[0].X);
+		m[1] = float(Ele[1].X);
+		m[2] = float(Ele[2].X);
+		m[3] = float(0.0);
+		m[4] = float(Ele[0].Y);
+		m[5] = float(Ele[1].Y);
+		m[6] = float(Ele[2].Y);
+		m[7] = float(0.0);
+		m[8] = float(Ele[0].Z);
+		m[9] = float(Ele[1].Z);
+		m[10] = float(Ele[2].Z);
+		m[11] = float(0.0);
+	}
 };
 
 inline TATVector3 operator*(const TATVector3& v, const TATMatrix3& m)

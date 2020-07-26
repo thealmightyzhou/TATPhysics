@@ -98,4 +98,13 @@ public:
 		TATVector3 v = t.GetOrigin() - m_Origin;
 		return TATransform(m_Basis.TransposeTimes(t.m_Basis), v * m_Basis);
 	}
+
+	void GetOpenGLMatrix(float* m) const
+	{
+		m_Basis.GetOpenGLSubMatrix(m);
+		m[12] = m_Origin.X;
+		m[13] = m_Origin.Y;
+		m[14] = m_Origin.Z;
+		m[15] = float(1.0);
+	}
 };

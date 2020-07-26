@@ -114,6 +114,20 @@ public:
 		m_Str = std::to_string(i);
 	}
 
+	static TString Make(int i)
+	{
+		TString str;
+		str.FromInt(i);
+		return str;
+	}
+
+	static TString Make(float i)
+	{
+		TString str;
+		str.FromFloat(i);
+		return str;
+	}
+
 	void ToVector3(TATVector3& v)
 	{
 		std::vector<TString> arr = Split(TString(","));
@@ -133,6 +147,16 @@ public:
 	bool operator==(const char* str) const
 	{
 		return m_Str == str;
+	}
+
+	bool operator==(const TString& str) const
+	{
+		return m_Str == str.m_Str;
+	}
+
+	bool operator!=(const TString& str) const
+	{
+		return !(*this == str);
 	}
 
 	std::string m_Str;

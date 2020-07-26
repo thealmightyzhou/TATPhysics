@@ -20,6 +20,13 @@ public:
 	TATVector3(const float& x, const float& y, const float& z) :X(x), Y(y), Z(z)
 	{}
 
+	TATVector3(float* bf)
+	{
+		m_Datas[0] = bf[0];
+		m_Datas[1] = bf[1];
+		m_Datas[2] = bf[2];
+	}
+
 	TATVector3()
 	{
 		SetZero();

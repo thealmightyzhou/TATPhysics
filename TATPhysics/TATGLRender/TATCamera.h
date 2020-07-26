@@ -142,14 +142,40 @@ public:
 		m_Freeze = f;
 		Update();
 	}
-	glm::mat4 GetViewMatrix()
+
+	void GetViewMatrix(glm::mat4& mat)
 	{
-		return glm::lookAt(m_Position, m_Position + m_Front, m_Up);
+		mat = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
 	}
-	glm::mat4 GetProjectionMatrix()
+
+	void GetViewMatrix(float* mat)
 	{
-		return m_ProjectionMat;
+		glm::mat4 view;
+		GetViewMatrix(view);
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				mat[i * 4 + j] = view[i][j];
+			}
+		}
 	}
+	void GetProjectionMatrix(glm::mat4& proj)
+	{
+		proj = m_ProjectionMat;
+	}
+
+	void GetProjectionMatrix(float* mat)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				mat[i * 4 + j] = m_ProjectionMat[i][j];
+			}
+		}
+	}
+
 	glm::vec3 GetForward()
 	{
 		return m_Front;

@@ -1,4 +1,6 @@
-vs:vShader.vs
-fs:fShader.fs
-light:light_auto
-camera:camera_auto
+VertexShader:vShader.vs
+FragmentShader:fShader.fs
+LightName:main
+CameraName:main
+TextureUnit0:Test0.jpg
+TextureUnit1:Test1.bmp

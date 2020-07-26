@@ -49,7 +49,6 @@ public:
 				float y = splitResult[2].ToFloat();
 				float z = splitResult[3].ToFloat();
 				buffer.normalBuffer.push_back(TATNormalBuffer(x, y, z));
-
 			}
 			else if (splitResult[0] == "f")
 			{
@@ -124,17 +123,23 @@ public:
 		{
 			for (int i = 0; i < buffer.faceBuffer.size(); i++)
 			{
-				buffer.vertexBuffer[buffer.faceBuffer[i].v1].nx = buffer.normalBuffer[buffer.faceBuffer[i].n1].nx;
-				buffer.vertexBuffer[buffer.faceBuffer[i].v2].nx = buffer.normalBuffer[buffer.faceBuffer[i].n2].nx;
-				buffer.vertexBuffer[buffer.faceBuffer[i].v3].nx = buffer.normalBuffer[buffer.faceBuffer[i].n3].nx;
-				buffer.vertexBuffer[buffer.faceBuffer[i].v1].ny = buffer.normalBuffer[buffer.faceBuffer[i].n1].ny;
-				buffer.vertexBuffer[buffer.faceBuffer[i].v2].ny = buffer.normalBuffer[buffer.faceBuffer[i].n2].ny;
-				buffer.vertexBuffer[buffer.faceBuffer[i].v3].ny = buffer.normalBuffer[buffer.faceBuffer[i].n3].ny;
-				buffer.vertexBuffer[buffer.faceBuffer[i].v1].nz = buffer.normalBuffer[buffer.faceBuffer[i].n1].nz;
-				buffer.vertexBuffer[buffer.faceBuffer[i].v2].nz = buffer.normalBuffer[buffer.faceBuffer[i].n2].nz;
-				buffer.vertexBuffer[buffer.faceBuffer[i].v3].nz = buffer.normalBuffer[buffer.faceBuffer[i].n3].nz;
+				for (int c = 0; c < 3; c++)
+				{
+					buffer.vertexBuffer[buffer.faceBuffer[i].v1].m_Normal[i] = buffer.normalBuffer[buffer.faceBuffer[i].n1].m_Normal[i];
+					buffer.vertexBuffer[buffer.faceBuffer[i].v2].m_Normal[i] = buffer.normalBuffer[buffer.faceBuffer[i].n2].m_Normal[i];
+					buffer.vertexBuffer[buffer.faceBuffer[i].v3].m_Normal[i] = buffer.normalBuffer[buffer.faceBuffer[i].n3].m_Normal[i];
+				}
+
 			}
 		}
+
+		if (buffer.faceBuffer.size() > 0)
+			m_ModelElementMask.UseFace();
+		if (buffer.normalBuffer.size() > 0)
+			m_ModelElementMask.UseNormal();
+
+		m_ModelElementMask.SetTexNum(1);
+		//temply no texcoordinate and tangent
 	}
 
 

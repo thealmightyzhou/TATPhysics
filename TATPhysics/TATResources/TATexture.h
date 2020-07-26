@@ -31,7 +31,7 @@ public:
 		glGenTextures(1, &m_GLId);
 	}
 
-	void Use()
+	void Generate()
 	{
 		glBindTexture(GL_TEXTURE_2D, m_GLId);
 		// set the texture wrapping parameters
@@ -46,6 +46,11 @@ public:
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_Width, m_Height, 0, GL_RGB, GL_UNSIGNED_BYTE, m_Data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
+	}
+
+	void Use()
+	{
+		glBindTexture(GL_TEXTURE_2D, m_GLId);
 	}
 
 	void UnLoad()

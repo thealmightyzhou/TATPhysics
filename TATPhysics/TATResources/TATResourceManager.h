@@ -6,15 +6,23 @@
 #include "TATMesh.h"
 #include "TATexture.h"
 #include "TATShader.h"
+#include "TATMaterial.h"
 
 using namespace std;
 
 class TATResourceManager:public Singleton<TATResourceManager>
 {
 public:
+	shared_ptr<TATMaterial> LoadMaterial(const TString& name)
+	{
+		TATMaterial* material = new TATMaterial(name);
+		material->Load(name);
+		return shared_ptr<TATMaterial>(material);
+	}
+
 	shared_ptr<TATMesh> LoadMesh(const TString& name)
 	{
-		TATMesh* mesh = new TATMesh;
+		TATMesh* mesh = new TATMesh(name);
 		mesh->Load(name);
 		return shared_ptr<TATMesh>(mesh);
 	}
@@ -24,15 +32,5 @@ public:
 		TATexture* tex = new TATexture;
 		tex->Load(name);
 		return shared_ptr<TATexture>(tex);
-	}
-
-	shared_ptr<TATShader> LoadShader(const TString& vsName, const TString& fsName)
-	{
-		TString vsPath = TATPaths::PathOfShader(TATApplication::Instance()->GetAppName(), vsName);
-		TString fsPath = TATPaths::PathOfShader(TATApplication::Instance()->GetAppName(), fsName);
-
-		TATShader* shader = new TATShader(vsPath.ToChar(), fsPath.ToChar());
-
-		return shared_ptr<TATShader>(shader);
 	}
 };

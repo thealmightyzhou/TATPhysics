@@ -68,7 +68,7 @@ typedef unsigned int UINT;
 	}												\
 }											
 
-typedef unsigned int UINT;
+#define TATResourcePtr std::shared_ptr 
 
 inline void _SetMax(float& x, const float& y)
 {
