@@ -65,6 +65,17 @@ public:
 		obj = 0;
 	}
 
+	void FetchAllUsed(std::vector<T*>& obj)
+	{
+		for (int i = 0; i < m_MaxSize; ++i)
+		{
+			if (m_UsedMap[i])
+			{
+				obj.push_back(&m_Objects[i]);
+			}
+		}
+	}
+
 protected:
 	T* m_Objects;
 	int m_NextUnused;

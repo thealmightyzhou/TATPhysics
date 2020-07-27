@@ -11,7 +11,7 @@
 
 using namespace std;
 
-class TATGLRenderer
+class TATGLRenderer//:public TATRenderer
 {
 public:
 	TATGLRenderer()
@@ -36,7 +36,7 @@ public:
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(unit.m_RenderBuffer), unit.m_RenderBuffer, GL_STATIC_DRAW);
 
-		for (int i = 0; i < unit.m_RenderEleMask.m_BufferOffsets.size(); i++)
+		for (int i = 0; i < (int)unit.m_RenderEleMask.m_BufferOffsets.size(); i++)
 		{
 			const TATModelElementMask::BufferOffset& offset = unit.m_RenderEleMask.m_BufferOffsets[i];
 			glVertexAttribPointer(
@@ -54,11 +54,11 @@ public:
 
 		if (unit.m_RenderEleMask.IsUseTexCoordinate())
 		{
-			unit.m_Shader->Use();
+			unit.m_Material->m_Shader->Use();
 			for (int i = 0; i < unit.m_TexCount; i++)
 			{
 				unit.m_Textures[i]->Generate();
-				unit.m_Shader->SetInt("texture" + i, i);
+				unit.m_Material->m_Shader->SetInt("texture" + i, i);
 				glActiveTexture(GLTextureSeman[i]);
 				unit.m_Textures[i]->Use();
 			}
@@ -73,9 +73,9 @@ public:
 	//this will be called every frame marked dirty
 	virtual void UploadDynamicData(TATRenderUnit& unit)
 	{
-		TATShader* shader = unit.m_Shader;
+		TATShader* shader = unit.m_Material->m_Shader;
 		TATMaterial* material = unit.m_Material;
-		float* mat;
+		float mat[16];
 		//material data
 
 		shader->Use();

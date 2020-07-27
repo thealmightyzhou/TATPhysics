@@ -1,7 +1,7 @@
 #pragma once
 #include "TATransform.h"
 
-class TATRigidBodyData;
+struct TATRigidBodyData;
 
 #define TAT_ANGULAR_MOTION_THRESHOLD float(0.5) * TAT_HALF_PI
 

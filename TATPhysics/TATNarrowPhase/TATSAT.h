@@ -87,7 +87,7 @@ public:
 		int res;
 
 		cd.m_StateFlag = 0;
-		for (int i = 0; i < faces1.size(); i++)
+		for (int i = 0; i < (int)faces1.size(); i++)
 		{
 			testDir = tr1.GetRotation() * faces1[i].GetNormal();
 
@@ -109,7 +109,7 @@ public:
 		}
 
 		cd.m_StateFlag = 1;
-		for (int i = 0; i < faces0.size(); i++)
+		for (int i = 0; i < (int)faces0.size(); i++)
 		{
 			testDir = tr0.GetRotation() * faces0[i].GetNormal();
 
@@ -132,10 +132,10 @@ public:
 		}
 
 		cd.m_StateFlag = 2;
-		for (int i = 0; i < edges0.size(); i++)
+		for (int i = 0; i < (int)edges0.size(); i++)
 		{
 			const TATPhyEdge& e0 = edges0[i];
-			for (int j = 0; j < edges1.size(); j++)
+			for (int j = 0; j < (int)edges1.size(); j++)
 			{
 				const TATPhyEdge& e1 = edges1[j];
 				if (CanBuildMinkowskiFace(e0, e1, tr0, tr1))
@@ -175,9 +175,9 @@ public:
 		indices[1] = indices[3] = -1;
 		projects[1] = projects[2] =  TAT_MAX;
 		projects[1] = projects[3] = -TAT_MAX;
-		while (i < vertices0.size() || j < vertices1.size())
+		while (i < (int)vertices0.size() || j < (int)vertices1.size())
 		{
-			if (i < vertices0.size())
+			if (i < (int)vertices0.size())
 			{
 				proj = (tr0 * vertices0[i].m_Position).Dot(dir);
 				if (proj < projects[0])
@@ -192,7 +192,7 @@ public:
 				}
 			}
 			i++;
-			if (j < vertices1.size())
+			if (j < (int)vertices1.size())
 			{
 				proj = (tr1 * vertices1[i].m_Position).Dot(dir);
 				if (proj < projects[2])
@@ -335,7 +335,7 @@ public:
 		int res;
 
 		cd.m_StateFlag = 0;
-		for (int i = 0; i < faces1.size(); i++)
+		for (int i = 0; i < (int)faces1.size(); i++)
 		{
 			testDir = tr1.GetRotation() * faces1[i].GetNormal();
 
@@ -354,7 +354,7 @@ public:
 		}
 
 		cd.m_StateFlag = 1;
-		for (int i = 0; i < faces0.size(); i++)
+		for (int i = 0; i < (int)faces0.size(); i++)
 		{
 			testDir = tr0.GetRotation() * faces0[i].GetNormal();
 
@@ -374,10 +374,10 @@ public:
 		}
 
 		cd.m_StateFlag = 2;
-		for (int i = 0; i < edges0.size(); i++)
+		for (int i = 0; i < (int)edges0.size(); i++)
 		{
 			const TATPhyEdge& e0 = edges0[i];
-			for (int j = 0; j < edges1.size(); j++)
+			for (int j = 0; j < (int)edges1.size(); j++)
 			{
 				const TATPhyEdge& e1 = edges1[j];
 				if (TATSAT::CanBuildMinkowskiFace(e0, e1, tr0, tr1))

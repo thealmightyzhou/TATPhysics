@@ -1,6 +1,5 @@
 #pragma once
 #include <iostream>
-#include "../TATBasis/TString.h"
 #include "TATPaths.h"
 #include "../TATCommon/TATSingleton.h"
 #include "TATMesh.h"

@@ -66,8 +66,8 @@ public:
 
 	inline TATVector3 operator/(const float& f) const
 	{
-		assert(f != 0.0);
-		return *this * (1.0f) / f;
+		assert(f != 0);
+		return (*this) * (1.0f) / f;
 	}
 
 	inline TATVector3& operator=(const TATVector3& other)

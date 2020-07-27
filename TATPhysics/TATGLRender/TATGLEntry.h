@@ -2,72 +2,38 @@
 #define THEALMIGHTY_GLUTILITY
 
 #include "TATGLHeader.h"
-#include "../TATCommon/TATSingleton.h"
-
+#include <iostream>
 #include <map>
 
 using namespace std;
 
 class TATInputListener;
 
-class TATGLEntry:public Singleton<TATGLEntry>
+class TATGLEntry
 {
 public:
+	//use Instance() instead!
 	TATGLEntry()
 	{
-		
+		m_GLWindow = 0;
 	}
 
-	GLFWwindow* Initialize(int width,int height)
-	{
-		m_WindowWidth = width;
-		m_WindowHeight = height;
-
-		glfwInit();
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-		// glfw window creation
-		// --------------------
-		GLFWwindow* window = glfwCreateWindow(width, height, "", NULL, NULL);
-		if (window == NULL)
-		{
-			std::cout << "Failed to create GLFW window" << std::endl;
-			glfwTerminate();
-			return NULL;
-		}
-		glfwMakeContextCurrent(window);
-		glfwSetFramebufferSizeCallback(window, &this->OnFrameBufferResizeCallback);
-		glfwSetCursorPosCallback(window, &this->OnCursorMoveCallback);
-		glfwSetScrollCallback(window, &this->OnMouseScrollCallback);
-		glfwSetMouseButtonCallback(window, &this->OnMousePressedCallback);
-
-		// tell GLFW to capture our mouse
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		// glad: load all OpenGL function pointers
-		// ---------------------------------------
-		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-		{
-			std::cout << "Failed to initialize GLAD" << std::endl;
-			return NULL;
-		}
-
-		// configure global opengl state
-		// -----------------------------
-		glEnable(GL_DEPTH_TEST);
-
-		// build and compile our shader zprogram
-		// ------------------------------------
-
-		return window;
-	}
+	GLFWwindow* Initialize(int width, int height);
 
 	void OnAppExit()
 	{
 		glfwTerminate();
 	}
 
+	GLFWwindow* GetWindow()
+	{
+		return m_GLWindow;
+	}
+
+	static TATGLEntry* Instance()
+	{
+		return m_Instance;
+	}
 	// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 	// ---------------------------------------------------------------------------------------------------------
 	virtual void processInput(GLFWwindow* window);
@@ -82,15 +48,15 @@ public:
 	{
 		if (m_FirstCursor)
 		{
-			m_CursorLastX = xpos;
-			m_CursorLastY = ypos;
+			m_CursorLastX = (float)xpos;
+			m_CursorLastY = (float)ypos;
 			m_FirstCursor = false;
 		}
 
-		OnCursorMove(xpos - m_CursorLastX, m_CursorLastY - ypos);
+		OnCursorMove((float)xpos - m_CursorLastX, m_CursorLastY - (float)ypos);
 
-		m_CursorLastX = xpos;
-		m_CursorLastY = ypos;
+		m_CursorLastX = (float)xpos;
+		m_CursorLastY = (float)ypos;
 	}
 
 	void OnMousePressedCallback(GLFWwindow* window, int button, int action, int mods)
@@ -137,14 +103,18 @@ public:
 	// ----------------------------------------------------------------------
 	void OnMouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 	{
-		OnCursorScroll(yoffset);
+		OnCursorScroll((float)yoffset);
 	}
 
 	void AddInputListener(TATInputListener* listener);
 
 	void RemoveInputListener(TATInputListener* listener);
 
+	static TATGLEntry* m_Instance;
+
 private:
+
+
 	void OnKeyPressed(int key);
 
 	void OnKeyReleased(int key);
@@ -170,6 +140,8 @@ private:
 
 	int m_WindowWidth;
 	int m_WindowHeight;
+
+	GLFWwindow* m_GLWindow;
 };
 
 #endif // !THEALMIGHTY_GLUTILITY

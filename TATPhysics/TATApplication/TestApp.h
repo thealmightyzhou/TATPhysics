@@ -1,41 +1,22 @@
 #pragma once
 #include "TATApplication.h"
 #include "TATWorldListener.h"
-#include "../TATGLRender/TATCamera.h"
-#include "../TATResources/TATPaths.h"
+
+class TATCamera;
 
 class TestApp :public TATApplication,TATRenderListener,TATPhysicListener
 {
 public:
-	TestApp(const TString& name) :TATApplication(name)
+	TestApp(const TString& name) :TATApplication()
 	{
-
+		m_AppName = name;
 	}
 
-	virtual void Initialize()
-	{
-		__super::Initialize();
+	virtual void Initialize();
 
-		TATGLEntry::Instance()->Initialize(1080, 720);
+	virtual void CreateScene();
 
-		TATResourceManager::Instance()->LoadMesh("test.obj");
-
-		//TODO Load resources;
-
-		m_MainCamera = new TATCamera();
-	}
-
-	virtual void CreateScene()
-	{
-		__super::CreateScene();
-
-		//TODO put resources to world and set physic behavior coefficient
-	}
-
-	virtual void BeginRenderOneFrame(float dt) override
-	{
-		m_MainCamera->Move(dt);
-	}
+	virtual void BeginRenderOneFrame(float dt) override;
 
 	virtual void RenderOneFrameEnd(float dt) override
 	{}

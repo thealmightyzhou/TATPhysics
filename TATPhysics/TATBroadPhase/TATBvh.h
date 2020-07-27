@@ -75,7 +75,7 @@ public:
 	}
 	~TATBvh()
 	{
-		for (int i = 0; i < m_BVTree.size(); i++)
+		for (int i = 0; i < (int)m_BVTree.size(); i++)
 		{
 			delete m_BVTree[i];
 		}
@@ -88,6 +88,11 @@ public:
 
 	void Clear()
 	{
+		for (int i = 0; i < (int)m_BVTree.size(); ++i)
+		{
+			delete m_BVTree[i];
+			m_BVTree[i] = 0;
+		}
 		m_BVTree.clear();
 		TATBVNode* head = new TATBVNode(TAT_MAXVECTOR3, -TAT_MAXVECTOR3);
 		head->SetIsLeaf(false);
@@ -99,7 +104,7 @@ public:
 
 	void PrintTree()
 	{
-		for (int i = 0; i < m_BVTree.size(); i++)
+		for (int i = 0; i < (int)m_BVTree.size(); i++)
 		{
 			std::cout << m_BVTree[i]->m_Data << " " << m_BVTree[i]->GetIsLeaf() << std::endl;
 		}

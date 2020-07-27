@@ -31,7 +31,7 @@ void TATDynamicWorld::StepSimulation(float dt)
 
 	std::vector<TATBVCollisonPair> bpCollides;
 	TATRigidBodyOverlapCallBack cb(bpCollides);
-	for (int i = 0; i < m_RigidBodys.size(); i++)
+	for (int i = 0; i < (int)m_RigidBodys.size(); i++)
 	{
 		TATRigidBody* rb = m_RigidBodys[i];
 		rb->UpdateWorldAabb();
@@ -46,7 +46,7 @@ void TATDynamicWorld::StepSimulation(float dt)
 	TATRigidBody* rbA = 0;
 	TATRigidBody* rbB = 0;
 	std::vector<TATSATCollideData> satCollideDatas;
-	for (int i = 0; i < bpCollides.size(); i++)
+	for (int i = 0; i < (int)bpCollides.size(); i++)
 	{
 		rbA = (TATRigidBody*)bpCollides[i].m_node1;
 		rbB = (TATRigidBody*)bpCollides[i].m_node2;
@@ -58,14 +58,14 @@ void TATDynamicWorld::StepSimulation(float dt)
 
 	TATContactSolverInfo info;
 
-	for (int i = 0; i < satCollideDatas.size(); i++)
+	for (int i = 0; i < (int)satCollideDatas.size(); i++)
 	{
 		m_ConstraintSolver->SolveContact(satCollideDatas[i], &m_RigidBodyDatas[0], &m_InertiaDatas[0], info);
 	}
 
 	m_ConstraintSolver->SolveFinish(&m_RigidBodyDatas[0], &m_InertiaDatas[0], info);
 
-	for (int i = 0; i < m_RigidBodyDatas.size(); i++)
+	for (int i = 0; i < (int)m_RigidBodyDatas.size(); i++)
 	{
 		TATransformUtil::IntegrateTransform(&m_RigidBodyDatas[i], info.m_TimeStep, info.m_Damping, TATVector3(0, -9, 0));
 	}

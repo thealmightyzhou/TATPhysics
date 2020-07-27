@@ -1,17 +1,15 @@
 #pragma once
+#include "../TATCommon/TATSingleton.h"
+#include "../TATResources/TATPaths.h"
 
-#include "../TATDynamics/TATDynamicWorld.h"
-#include "../TATResources/TATResourceManager.h"
-#include "TAThread.h"
+class TString;
+
+class TAThread;
 
 class TATApplication:public Singleton<TATApplication>
 {
 public:
-	TATApplication(const TString& name) :m_AppName(name)
-	{
-		m_PhysicThread = new TATPhysicThread;
-		m_RenderThread = new TATRenderThread;
-	}
+	TATApplication();
 
 	virtual ~TATApplication() {}
 
@@ -20,20 +18,9 @@ public:
 	virtual void CreateScene() {}
 
 	//global entry
-	virtual void Run()
-	{
-		Initialize();
+	virtual void Run();
 
-		CreateScene();
-
-		m_PhysicThread->Run();
-		m_RenderThread->Run();
-	}
-
-	const TString& GetAppName()
-	{
-		return m_AppName;
-	}
+	const TString& GetAppName();
 
 	TString m_AppName;
 

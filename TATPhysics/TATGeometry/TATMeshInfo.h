@@ -1,7 +1,8 @@
 #pragma once
 #include "TATPhyPrimitive.h"
 #include "../TATCommon/TATMatrix3.h"
-#include <hash_set>
+#include <unordered_set>
+#include "../TATCommon/TATAabb.h"
 
 struct TATPhyMeshData
 {
@@ -9,6 +10,7 @@ struct TATPhyMeshData
 	std::vector<TATPhyFace>		m_Faces;
 	std::vector<TATPhyEdge>		m_Edges;
 	TATVector3					m_MassCentre;
+	TATAabb						m_LocalAabb;
 };
 
 class TATPhyMeshDataComputer
@@ -18,7 +20,7 @@ public:
 	{
 		TATVector3 min = TAT_MAXVECTOR3;
 		TATVector3 max = -TAT_MAXVECTOR3;
-		for (int i = 0; i < vertices.size(); i++)
+		for (int i = 0; i < (int)vertices.size(); i++)
 		{
 			min.SetMin(vertices[i].GetPosition());
 			max.SetMax(vertices[i].GetPosition());
@@ -33,7 +35,7 @@ public:
 	{
 		float perMass = mass / vertices.size();
 		TATMatrix3 inertia;
-		for (int i = 0; i < vertices.size(); i++)
+		for (int i = 0; i < (int)vertices.size(); i++)
 		{
 			TATVector3 r = vertices[i].GetPosition() - centre;
 
@@ -80,7 +82,7 @@ public:
 		if (faces.size() == 0)
 			return;
 		bool res;
-		for (int f = 0; f < faces.size(); f++)
+		for (int f = 0; f < (int)faces.size(); f++)
 		{
 			TATPhyFace& face = faces[f];
 			TAT_MEMEMPTY(face.m_Vertices, 0, res); //default fill the indices
@@ -104,10 +106,12 @@ public:
 		}
 	}
 
+	typedef std::unordered_set<TATPhyEdge, TATPhyEdgeHasher, TATPhyEdgeComparer> TEdgeSet;
+
 	void static CreateEdges(std::vector<TATPhyVertex>& vertices, std::vector<TATPhyFace>& faces, std::vector<TATPhyEdge>& edges)
 	{
-		std::hash_set<TATPhyEdge, TATPhyEdgeComparer> edgeSet;
-		for (int f = 0; f < faces.size(); f++)
+		TEdgeSet edgeSet;
+		for (int f = 0; f < (int)faces.size(); f++)
 		{
 			TATPhyFace& face = faces[f];
 			TATPhyEdge tmpEdges[3]{
@@ -119,10 +123,10 @@ public:
 			tmpEdges[1].m_HashMask = tmpEdges[1].m_VertexIndices[0] + tmpEdges[1].m_VertexIndices[1] << 16;
 			tmpEdges[2].m_HashMask = tmpEdges[2].m_VertexIndices[0] + tmpEdges[2].m_VertexIndices[1] << 16;
 
-			std::hash_set<TATPhyEdge, TATPhyEdgeComparer>::iterator it;
+			TEdgeSet::iterator it;
 			for (int i = 0; i < 3; i++)
 			{
-				std::hash_set<TATPhyEdge, TATPhyEdgeComparer>::iterator it = edgeSet.find(tmpEdges[i]);
+				TEdgeSet::iterator it = edgeSet.find(tmpEdges[i]);
 				if (it == edgeSet.end())
 				{
 					tmpEdges[i].m_FaceIndices[0] = f;
@@ -138,7 +142,7 @@ public:
 			}
 		}
 
-		std::hash_set<TATPhyEdge, TATPhyEdgeComparer>::iterator it = edgeSet.begin();
+		TEdgeSet::iterator it = edgeSet.begin();
 		int index = 0;
 		edges.resize(edgeSet.size());
 		while (it!= edgeSet.end())

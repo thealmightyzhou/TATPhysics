@@ -244,7 +244,7 @@ void TATPgsJacobiSolver::SolveContact(const TATSATCollideData& contact, TATRigid
 
 void TATPgsJacobiSolver::SolveFinish(TATRigidBodyData* bodies, TATInertiaData* inertias, const TATContactSolverInfo& info)
 {
-	for (int i = 0; i < m_SolverBodyPool.size(); i++)
+	for (int i = 0; i < (int)m_SolverBodyPool.size(); i++)
 	{
 		TATRigidBodyData& data = bodies[i];
 		TATSolverBody& body = m_SolverBodyPool[i];

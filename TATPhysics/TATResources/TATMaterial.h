@@ -4,10 +4,13 @@
 #include "TATFileStream.h"
 #include <iostream>
 #include "../TATBasis/TATObject.h"
+#include "../TATBasis/TATWorld.h"
 #include "TATShader.h"
 #include "TATPaths.h"
 #include "TATFileStream.h"
 #include "../TATGLRender/TATCamera.h"
+#include "../TATGLRender/TATLight.h"
+
 
 using namespace std;
 
@@ -52,7 +55,7 @@ public:
 		std::vector<TString> strs;
 		TATFileStream::ReadFile(path, strs);
 
-		for (int i = 0; i < strs.size(); i++)
+		for (int i = 0; i < (int)strs.size(); i++)
 		{
 			std::vector<TString> pair = strs[i].Split(":");
 
@@ -73,13 +76,13 @@ public:
 			m_LightSpecular = m_Light->GetSpecular();
 		}
 		if (m_MaterialSetting["LightColor"] != "")
-			m_LightColor = m_MaterialSetting["@LightColor"].ToVector3();
+			m_LightColor = m_MaterialSetting["LightColor"].ToVector3();
 		if (m_MaterialSetting["LightAmbient"] != "")
-			m_LightAmbient = m_MaterialSetting["@LightAmbient"].ToVector3();
+			m_LightAmbient = m_MaterialSetting["LightAmbient"].ToVector3();
 		if (m_MaterialSetting["LightDiffuse"] != "")
-			m_LightDiffuse = m_MaterialSetting["@LightDiffuse"].ToVector3();
+			m_LightDiffuse = m_MaterialSetting["LightDiffuse"].ToVector3();
 		if (m_MaterialSetting["LightSpecular"] != "")
-			m_LightSpecular = m_MaterialSetting["@LightSpecular"].ToVector3();
+			m_LightSpecular = m_MaterialSetting["LightSpecular"].ToVector3();
 
 		if (m_MaterialSetting["CameraName"] != "")
 		{
@@ -102,7 +105,7 @@ public:
 
 	//=======================
 
-	std::vector<TATRenderUnit*> m_RenderUnits;
+	std::vector<TATRenderUnit*> m_RenderUnits; //TODO batch
 
 	std::map<TString, TString> m_MaterialSetting;
 

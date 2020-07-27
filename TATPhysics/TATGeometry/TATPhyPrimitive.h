@@ -122,6 +122,11 @@ public:
 		return false;
 	}
 
+	bool operator<(const TATPhyEdge& e) const
+	{
+		return !(*this == e);
+	}
+
 	TATVector3 GetHeadPosition()
 	{
 		return m_Vertices[0]->GetPosition();
@@ -146,5 +151,20 @@ struct TATPhyEdgeComparer
 	bool operator()(const TATPhyEdge& e1, const TATPhyEdge& e2) const
 	{
 		return !(e1 == e2);
+	}
+};
+
+struct TATPhyEdgeHasher
+{
+	size_t operator()(const TATPhyEdge& e) const
+	{
+		std::hash<int> hasher;
+		size_t seed = 0;
+
+		for (int i = 0; i < 2; i++)
+		{
+			seed ^= hasher(e.m_VertexIndices[i]) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		}
+		return seed;
 	}
 };

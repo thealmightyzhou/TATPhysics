@@ -4,7 +4,6 @@
 #include <vector>
 #include <fstream>
 #include <string>
-#include "TATPaths.h"
 #include "../TATApplication/TATApplication.h"
 
 using namespace std;
@@ -99,9 +98,9 @@ public:
 
 		int index = 0;
 		int totalSize = 0;
-		m_BufferOffsets.push_back(BufferSize(index++, 3, totalSize+=3));
+		m_BufferOffsets.push_back(BufferOffset(index++, 3, totalSize+=3));
 		if (IsUseNormal())
-			m_BufferOffsets.push_back(BufferSize(index++, 3, totalSize += 3));
+			m_BufferOffsets.push_back(BufferOffset(index++, 3, totalSize += 3));
 		if (IsUseTangent())
 			m_BufferOffsets.push_back(BufferOffset(index++, 3, totalSize += 3));
 		if (IsUseTexCoordinate())

@@ -1,5 +1,7 @@
 #include "TAThread.h"
 #include "TATWorldListener.h"
+#include "../TATGLRender/TATRenderUnit.h"
+#include "../TATGLRender/TATGLRenderer.h"
 
 void TATPhysicThread::AddListener(TATPhysicListener* listener)
 {
@@ -9,7 +11,7 @@ void TATPhysicThread::AddListener(TATPhysicListener* listener)
 void TATPhysicThread::RemoveListener(TATPhysicListener* listener)
 {
 	std::vector<TATPhysicListener*>::iterator it = m_PhysicListeners.begin();
-	for (; it != m_PhysicListeners.end; it++)
+	for (; it != m_PhysicListeners.end(); it++)
 	{
 		if (*it == listener)
 			m_PhysicListeners.erase(it);
@@ -22,7 +24,7 @@ void TATPhysicThread::PhysicLoop()
 	while (true)
 	{
 
-		for (int i = 0; i < m_PhysicListeners.size(); ++i)
+		for (int i = 0; i < (int)m_PhysicListeners.size(); ++i)
 		{
 			m_PhysicListeners[i]->SimulationStart(dt);
 		}
@@ -31,7 +33,7 @@ void TATPhysicThread::PhysicLoop()
 
 		//TODO lock , fill the render buffer and mark as dirty
 
-		for (int i = 0; i < m_PhysicListeners.size(); ++i)
+		for (int i = 0; i < (int)m_PhysicListeners.size(); ++i)
 		{
 			m_PhysicListeners[i]->SimulationEnd(dt);
 		}
@@ -48,7 +50,7 @@ void TATRenderThread::AddListener(TATRenderListener* listener)
 void TATRenderThread::RemoverListener(TATRenderListener* listener)
 {
 	std::vector<TATRenderListener*>::iterator it = m_RenderListeners.begin();
-	for (; it != m_RenderListeners.end; it++)
+	for (; it != m_RenderListeners.end(); it++)
 	{
 		if (*it == listener)
 			m_RenderListeners.erase(it);
@@ -62,7 +64,7 @@ void TATRenderThread::RenderLoop()
 	{
 		if (m_RenderStateDirty)
 		{
-			for (int i = 0; i < m_RenderListeners.size(); ++i)
+			for (int i = 0; i < (int)m_RenderListeners.size(); ++i)
 			{
 				m_RenderListeners[i]->BeginRenderOneFrame(dt);
 			}
@@ -71,10 +73,27 @@ void TATRenderThread::RenderLoop()
 
 			//swap buffer
 
-			for (int i = 0; i < m_RenderListeners.size(); ++i)
+			for (int i = 0; i < (int)m_RenderListeners.size(); ++i)
 			{
 				m_RenderListeners[i]->RenderOneFrameEnd(dt);
 			}
 		}
 	}
+}
+
+void TATRenderThread::RenderOneFrame(float dt)
+{
+	//TODO
+	std::vector<TATRenderUnit*> units;
+	m_RenderUnitPool.FetchAllUsed(units);
+
+	for (int i = 0; i < (int)units.size(); ++i)
+	{
+		if (units[i]->m_ReadyToRender)
+		{
+			m_Renderer->Render(*units[i]);
+		}
+	}
+
+	m_RenderStateDirty = false;
 }

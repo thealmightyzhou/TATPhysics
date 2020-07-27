@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-class TATBVNode;
+struct TATBVNode;
 
 class TATBvhCollideCallBack
 {

@@ -1,6 +1,6 @@
 #pragma once
 #include "TATVector3.h"
-#include "TATTransform.h"
+#include "TATransform.h"
 
 struct TATAabb
 {
@@ -70,7 +70,7 @@ public:
 		extend = (m_OriginMax - m_OriginMin) / 2;
 	}
 
-	void Update(const TATTransform& tr)
+	void Update(const TATransform& tr)
 	{
 		float x0 = m_OriginMin.X;
 		float y0 = m_OriginMin.Y;

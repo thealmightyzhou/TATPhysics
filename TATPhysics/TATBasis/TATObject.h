@@ -1,5 +1,6 @@
 #pragma once
 #include "TString.h"
+#include "../TATResources/TATPaths.h"
 #include "../TATCommon/TATCore.h"
 
 //this class will automatically add to TATWorld's object list

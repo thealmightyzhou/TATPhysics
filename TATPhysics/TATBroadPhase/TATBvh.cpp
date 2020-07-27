@@ -32,14 +32,14 @@ void TATBvh::FinishBuild()
 		int lsonId = 2 * i;
 		int rsonId = 2 * i + 1;
 
-		if (lsonId < m_BVTree.size() && rsonId < m_BVTree.size())
+		if (lsonId < (int)m_BVTree.size() && rsonId < (int)m_BVTree.size())
 		{
 			m_BVTree[i]->SetAabb(TATVector3::MakeMin(m_BVTree[lsonId]->m_AabbMin, m_BVTree[rsonId]->m_AabbMin),
 				TATVector3::MakeMax(m_BVTree[lsonId]->m_AabbMax, m_BVTree[rsonId]->m_AabbMax));
 		}
 		else
 		{
-			if (lsonId < m_BVTree.size())
+			if (lsonId < (int)m_BVTree.size())
 				m_BVTree[i]->SetAabb(m_BVTree[lsonId]->m_AabbMin, m_BVTree[lsonId]->m_AabbMax);
 		}
 	}
@@ -70,7 +70,7 @@ bool TATBvh::CollideWithBVTree(TATBvh* other, TATBvhCollideCallBack* cb)
 
 bool TATBvh::ProcessTraverse(int id, TATBVNode* node, TATBvhCollideCallBack* cb)
 {
-	if (id >= m_BVTree.size())
+	if (id >= (int)m_BVTree.size())
 		return false;
 
 	if (m_BVTree[id]->IsOverlapped(node))
@@ -99,11 +99,13 @@ bool TATBvh::ProcessTraverse(int id, TATBVNode* node, TATBvhCollideCallBack* cb)
 			return success;
 		}
 	}
+
+	return false;
 }
 
 bool TATBvh::ProcessTraverseTree(int id, TATBvh* tree, TATBvhCollideCallBack* cb)
 {
-	if (id >= m_BVTree.size())
+	if (id >= (int)m_BVTree.size())
 		return false;
 
 	bool success = false;

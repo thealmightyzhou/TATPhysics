@@ -13,7 +13,7 @@ class TATMesh;
 class TATWorld:public Singleton<TATWorld>
 {
 public:
-	TATWorld();
+	TATWorld() {}
 
 	std::map<TString, TATObject*> m_GlobalObjects;
 

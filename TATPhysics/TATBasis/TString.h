@@ -1,7 +1,11 @@
-#pragma once
+#ifndef THEALMIGHTY_TSTRING
+#define THEALMIGHTY_TSTRING
+
 #include <string>
 #include <vector>
-#include "../TATCommon/TATVector3.h"
+
+class TATVector3;
+
 using namespace std;
 class TString
 {
@@ -44,7 +48,7 @@ public:
 	{
 		std::vector<TString> strs = Split("/");
 		
-		for (int i = 1; i < strs.size() - 1; i++)
+		for (int i = 1; i < (int)strs.size() - 1; i++)
 		{
 			strs[0] = strs[0].Visit(strs[i]);
 		}
@@ -52,19 +56,15 @@ public:
 		return strs[0];
 	}
 
-	inline TString operator+(const TString& str) const
-	{
-		return TString(m_Str + str.m_Str);
-	}
+	TString operator+(const TString& str) const;
 
-	inline TString operator+(const std::string& str) const
-	{
-		return TString(m_Str + str);
-	}
+	TString operator+(const std::string& str) const;
 
-	inline TString operator+(const char* str) const
+	TString operator+(const char* str) const;
+
+	inline bool operator<(const TString& str) const
 	{
-		return TString(m_Str + str);
+		return m_Str < str.m_Str;
 	}
 
 	std::vector<TString> Split(const TString& delim) const
@@ -96,7 +96,7 @@ public:
 
 	float ToFloat()
 	{
-		return atof(ToChar());
+		return (float)atof(ToChar());
 	}
 
 	int ToInt()
@@ -128,21 +128,9 @@ public:
 		return str;
 	}
 
-	void ToVector3(TATVector3& v)
-	{
-		std::vector<TString> arr = Split(TString(","));
-		assert(arr.size() >= 3);
-		v.X = arr[0].ToFloat();
-		v.Y = arr[1].ToFloat();
-		v.Z = arr[2].ToFloat();
-	}
+	void ToVector3(TATVector3& v);
 
-	TATVector3 ToVector3()
-	{
-		TATVector3 res;
-		ToVector3(res);
-		return res;
-	}
+	TATVector3 ToVector3();
 
 	bool operator==(const char* str) const
 	{
@@ -162,12 +150,8 @@ public:
 	std::string m_Str;
 };
 
-TString operator+(const char* str0, const TString& str1)
-{
-	return TString(str0 + str1.m_Str);
-}
+TString operator+(const char* str0, const TString& str1);
 
-TString operator+(const std::string& str0, const TString& str1)
-{
-	return TString(str0 + str1.m_Str);
-}
+TString operator+(const std::string& str0, const TString& str1);
+
+#endif // !THEALMIGHTY_TSTRING

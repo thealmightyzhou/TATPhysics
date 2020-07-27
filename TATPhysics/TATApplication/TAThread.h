@@ -3,11 +3,16 @@
 #include <thread>
 #include "../TATDynamics/TATDynamicWorld.h"
 #include "../TATCommon/TATSingleton.h"
+#include "../TATCommon/TATObjectPool.h"
+#include "../TATGLRender/TATGLRenderer.h"
 
 class TATRenderListener;
 class TATPhysicListener;
+class TATRenderUnit;
 
 using namespace std;
+
+#define TAT_MAX_RENDERUNIT_COUNT 100
 
 class TAThread
 {
@@ -29,7 +34,7 @@ class TATPhysicThread :public TAThread,public Singleton<TATPhysicThread>
 public:
 	TATPhysicThread()
 	{
-		m_Thread = thread(this->PhysicLoop);
+		m_Thread = thread(&TATPhysicThread::PhysicLoop, this);
 	}
 
 	void PhysicLoop();
@@ -44,19 +49,16 @@ public:
 class TATRenderThread :public TAThread,public Singleton<TATRenderThread>
 {
 public:
-	TATRenderThread()
+	TATRenderThread(): m_RenderUnitPool(TAT_MAX_RENDERUNIT_COUNT)
 	{
-		m_Thread = thread(this->RenderLoop);
+		m_Thread = thread(&TATRenderThread::RenderLoop, this);
+
+		m_Renderer = new TATGLRenderer();
 	}
 
 	void RenderLoop();
 
-	void RenderOneFrame(float dt)
-	{
-		//TODO
-
-		m_RenderStateDirty = false;
-	}
+	void RenderOneFrame(float dt);
 
 	//TODO fetch data from physics thread
 
@@ -72,4 +74,8 @@ public:
 	bool m_RenderStateDirty;
 
 	std::vector<TATRenderListener*> m_RenderListeners;
+
+	TATObjectPool<TATRenderUnit> m_RenderUnitPool;
+
+	TATGLRenderer* m_Renderer;
 };

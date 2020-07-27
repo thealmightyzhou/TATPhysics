@@ -3,6 +3,7 @@
 #include <iostream>
 #include "TATResourcePrimitive.h"
 #include "../TATGLRender/TATGLHeader.h"
+#include "../TATApplication/TATApplication.h"
 
 using namespace std;
 class TATexture:public TATResourcePrimitive

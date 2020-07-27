@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include "TATRigidBody.h"
+#include "TATRigidBodyData.h"
 #include "../TATBroadPhase/TATBvh.h"
 #include "../TATCommon/TATSingleton.h"
 

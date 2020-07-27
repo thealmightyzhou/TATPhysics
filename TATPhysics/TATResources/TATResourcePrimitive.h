@@ -1,6 +1,5 @@
 #pragma once
 #include <iostream>
-#include "../TATBasis/TString.h"
 #include "../TATBasis/TATObject.h"
 
 using namespace std;
