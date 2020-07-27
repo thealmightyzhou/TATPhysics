@@ -12,9 +12,11 @@ public:
 		m_AppName = name;
 	}
 
-	virtual void Initialize();
+	virtual void Initialize() override;
 
-	virtual void CreateScene();
+	virtual void CreateScene() override;
+
+	virtual void Run() override;
 
 	virtual void BeginRenderOneFrame(float dt) override;
 

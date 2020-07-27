@@ -20,7 +20,7 @@ public:
 	virtual ~TAThread()
 	{}
 
-	void Run()
+	virtual void Run()
 	{
 		if(m_Thread.joinable())
 			m_Thread.join();
@@ -34,7 +34,14 @@ class TATPhysicThread :public TAThread,public Singleton<TATPhysicThread>
 public:
 	TATPhysicThread()
 	{
+		
+	}
+
+	virtual void Run() override
+	{
 		m_Thread = thread(&TATPhysicThread::PhysicLoop, this);
+		if (m_Thread.joinable())
+			m_Thread.join();
 	}
 
 	void PhysicLoop();
@@ -51,9 +58,16 @@ class TATRenderThread :public TAThread,public Singleton<TATRenderThread>
 public:
 	TATRenderThread(): m_RenderUnitPool(TAT_MAX_RENDERUNIT_COUNT)
 	{
-		m_Thread = thread(&TATRenderThread::RenderLoop, this);
+		
 
 		m_Renderer = new TATGLRenderer();
+	}
+
+	virtual void Run() override
+	{
+		m_Thread = thread(&TATRenderThread::RenderLoop, this);
+		if (m_Thread.joinable())
+			m_Thread.join();
 	}
 
 	void RenderLoop();

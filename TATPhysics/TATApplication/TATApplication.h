@@ -18,7 +18,7 @@ public:
 	virtual void CreateScene() {}
 
 	//global entry
-	virtual void Run();
+	virtual void Run() {}
 
 	const TString& GetAppName();
 

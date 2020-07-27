@@ -2,6 +2,7 @@
 #include "../TATGLRender/TATCamera.h"
 #include "../TATGLRender/TATGLEntry.h"
 #include "../TATResources/TATResourceManager.h"
+#include "TAThread.h"
 
 void TestApp::Initialize()
 {
@@ -26,4 +27,16 @@ void TestApp::CreateScene()
 void TestApp::BeginRenderOneFrame(float dt)
 {
 	m_MainCamera->Move(dt);
+}
+
+void TestApp::Run()
+{
+	Initialize();
+
+	CreateScene();
+
+	m_PhysicThread = new TATPhysicThread;
+	m_RenderThread = new TATRenderThread;
+	m_PhysicThread->Run();
+	m_RenderThread->Run();
 }
