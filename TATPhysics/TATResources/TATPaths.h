@@ -14,7 +14,7 @@ public:
 	static TString PathOfExe()
 	{
 		char chpath[MAX_PATH];
-		GetModuleFileName(NULL, (LPWSTR)chpath, sizeof(chpath));
+		GetModuleFileName(NULL, (LPSTR)chpath, sizeof(chpath));
 		return TString(chpath);
 	}
 

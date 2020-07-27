@@ -1,5 +1,4 @@
 #pragma once
-#include "TString.h"
 #include "../TATResources/TATPaths.h"
 #include "../TATCommon/TATCore.h"
 

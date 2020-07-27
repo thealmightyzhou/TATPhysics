@@ -58,8 +58,6 @@ class TATRenderThread :public TAThread,public Singleton<TATRenderThread>
 public:
 	TATRenderThread(): m_RenderUnitPool(TAT_MAX_RENDERUNIT_COUNT)
 	{
-		
-
 		m_Renderer = new TATGLRenderer();
 	}
 

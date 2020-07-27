@@ -4,6 +4,7 @@
 #include <assert.h>
 
 template<class T>
+//object in pool mush have a Clear() function
 class TATObjectPool
 {
 public:
@@ -24,15 +25,13 @@ public:
 
 	T* FetchUnused()
 	{
+		int index = -1;
 		if (m_UsedCount >= m_MaxSize)
 			return 0;
 
-		m_UsedCount++;
-
 		if (!m_UsedMap[m_NextUnused])
 		{
-			m_UsedMap[m_NextUnused] = true;
-			return &m_Objects[m_NextUnused];
+			index = m_NextUnused;
 		}
 		else
 		{
@@ -40,11 +39,23 @@ public:
 			{
 				if (!m_UsedMap[i])
 				{
-					m_UsedMap[i] = true;
-					return &m_Objects[i];
+					index = i;
 				}
 			}
 		}
+
+		if (index < m_MaxSize && 0 <= index)
+		{
+			m_UsedMap[index] = true;
+			m_NextUnused++;
+			_Clamp(m_NextUnused, 0, m_MaxSize - 1);
+			m_Objects[index].Clear();
+
+			m_UsedCount++;
+			return &m_Objects[index];
+		}
+
+		return 0;
 	}
 
 	void ReturnUsed(T*& obj)

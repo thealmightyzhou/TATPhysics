@@ -44,6 +44,13 @@ public:
 		return strs[strs.size() - 1];
 	}
 
+	inline TString FetchInnerName() const
+	{
+		TString wholeName = FetchFileName();
+		std::vector<TString> strs = Split(".");
+		return strs[strs.size() - 1];
+	}
+
 	inline TString UpperDirect()
 	{
 		std::vector<TString> strs = Split("/");

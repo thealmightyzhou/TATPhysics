@@ -70,6 +70,11 @@ typedef unsigned int UINT;
 
 #define TATResourcePtr std::shared_ptr 
 
+#define TAT_POOL_OBJECT(classname)	\
+		classname();				\
+		void Clear();				\
+
+
 inline void _SetMax(float& x, const float& y)
 {
 	x = x > y ? x : y;
@@ -86,9 +91,9 @@ inline float _RandRange(float min, float max)
 }
 
 template<class T>
-inline void _Clamp(T& val, const T& min, const T& max)
+inline void _Clamp(T& val, T min, T max)
 {
-	if (min > max)
+	if (max < min)
 		std::swap(min, max);
 
 	if (val < min)

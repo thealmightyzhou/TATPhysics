@@ -9,27 +9,28 @@
 
 using namespace std;
 
+//TODO Use shared_ptr
 class TATResourceManager:public Singleton<TATResourceManager>
 {
 public:
-	shared_ptr<TATMaterial> LoadMaterial(const TString& name)
+	TATMaterial* LoadMaterial(const TString& name)
 	{
-		TATMaterial* material = new TATMaterial(name);
+		TATMaterial* material = new TATMaterial(name.FetchInnerName());
 		material->Load(name);
-		return shared_ptr<TATMaterial>(material);
+		return material;
 	}
 
-	shared_ptr<TATMesh> LoadMesh(const TString& name)
+	TATMesh* LoadMesh(const TString& name)
 	{
-		TATMesh* mesh = new TATMesh(name);
+		TATMesh* mesh = new TATMesh(name.FetchInnerName());
 		mesh->Load(name);
-		return shared_ptr<TATMesh>(mesh);
+		return mesh;
 	}
 
-	shared_ptr<TATexture> LoadTexture(const TString& name)
+	TATexture* LoadTexture(const TString& name)
 	{
-		TATexture* tex = new TATexture;
+		TATexture* tex = new TATexture(name.FetchInnerName());
 		tex->Load(name);
-		return shared_ptr<TATexture>(tex);
+		return tex;
 	}
 };

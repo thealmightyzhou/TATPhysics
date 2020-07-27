@@ -2,6 +2,9 @@
 #include "TATWorldListener.h"
 #include "../TATGLRender/TATRenderUnit.h"
 #include "../TATGLRender/TATGLRenderer.h"
+#include "../TATBasis/TATWorld.h"
+#include "../TATStage/TATStageNode.h"
+#include "../TATStage/TATActor.h"
 
 void TATPhysicThread::AddListener(TATPhysicListener* listener)
 {
@@ -83,16 +86,29 @@ void TATRenderThread::RenderLoop()
 
 void TATRenderThread::RenderOneFrame(float dt)
 {
-	//TODO
-	std::vector<TATRenderUnit*> units;
-	m_RenderUnitPool.FetchAllUsed(units);
-
-	for (int i = 0; i < (int)units.size(); ++i)
+	std::map<TString, TATStageNode*>& renderNodes = TATWorld::Instance()->m_StageNodes;
+	std::map<TString, TATStageNode*>::iterator ite = renderNodes.begin();
+	TATStageNode* node = 0;
+	TATActor* actor = 0;
+	TATRenderUnit* unit = 0;
+	for (; ite != renderNodes.end(); ite++)
 	{
-		if (units[i]->m_ReadyToRender)
+		node = ite->second;
+		if(node)
+			actor = node->m_Actor;
+		if (actor)
+			unit = actor->m_RenderUnit;
+
+		if (node && node->GetVisible() && actor && unit)
 		{
-			m_Renderer->Render(*units[i]);
+			actor->FillRenderUnit();
+			if(unit->m_ReadyToRender)
+				m_Renderer->Render(unit);
 		}
+
+		node = 0;
+		actor = 0;
+		unit = 0;
 	}
 
 	m_RenderStateDirty = false;

@@ -2,6 +2,7 @@
 #include "../TATGLRender/TATCamera.h"
 #include "../TATGLRender/TATGLEntry.h"
 #include "../TATResources/TATResourceManager.h"
+#include "../TATStage/TATStageNode.h"
 #include "TAThread.h"
 
 void TestApp::Initialize()
@@ -10,11 +11,13 @@ void TestApp::Initialize()
 
 	TATGLEntry::Instance()->Initialize(1080, 720);
 
-	shared_ptr<TATMesh> mesh = TATResourceManager::Instance()->LoadMesh("test.obj");
+	TATMesh* mesh = TATResourceManager::Instance()->LoadMesh("test.obj");
 
 	//TODO Load resources;
 
 	m_MainCamera = new TATCamera("main");
+
+	m_RootNode = new TATStageNode("root");
 }
 
 void TestApp::CreateScene()

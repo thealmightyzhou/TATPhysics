@@ -58,6 +58,13 @@ public:
 		return GetRotation() * q;
 	}
 
+	inline TATransform operator*(const TATransform& tr) const
+	{
+		TATransform res = *this;
+		res *= tr;
+		return res;
+	}
+
 	inline void SetOrigin(const TATVector3& origin)
 	{
 		m_Origin = origin;

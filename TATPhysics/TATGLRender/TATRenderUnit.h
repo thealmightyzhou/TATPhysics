@@ -3,6 +3,7 @@
 #include "../TATCommon/TATransform.h"
 #include "../TATResources/TATModelLoader.h"
 #include "../TATResources/TATexture.h"
+#include "../TATCommon/TATCore.h"
 
 class TATMaterial;
 
@@ -19,41 +20,38 @@ public:
 class TATRenderUnit
 {
 public:
-	TATRenderUnit();
+	TAT_POOL_OBJECT(TATRenderUnit);
 
 	TATMaterial* m_Material;
 
 	int m_VertexCount;
 	int m_TriangleCount;
 	int m_TexCoordinateCount;
-	int m_CameraCount;
 	int m_IndicesCount;
 	int m_TexCount;
 
 	float* m_RenderBuffer; //a basic unit to render include vertex,normal,uv,tangent which transport to glbuffer
 	int* m_VertexOrder; //indices can be divided by 3;
 
-	float* m_MatrixView;
-	float* m_MatrixProj;
-	float* m_MatrixModel;
+	float m_MatrixView[16];
+	float m_MatrixProj[16];
+	float m_MatrixModel[16];
 
 	bool m_ReadyToRender; //if true render this unit
+	bool m_StaticDataUploaded;
+	bool m_UseTransform; //transform to wcs or already in wcs
 
 	TATRenderVertex* m_RenderVertices; //already sort by face's vertex indices
 
 	TATexture* m_Textures[5];
-	UINT* m_TextureIds;
+	UINT m_TextureIds[5];
 	UINT m_ShaderId;
 	UINT m_VAOId;
 	UINT m_VBOId;
 
 	TATransform *m_TransformPtr;
 
-	bool m_UseTransform; //transform to wcs or already in wcs
-
 	TATModelElementMask m_RenderEleMask;
-
-	bool m_StaticDataUploaded;
 
 	void SetMaterial(TATMaterial* mat);
 

@@ -114,6 +114,14 @@ public:
 		return m_TotalSize;
 	}
 
+	void Clear()
+	{
+		m_TexCount = 0;
+		m_BufferOffsets.clear();
+		m_TotalSize = 0;
+		m_Mask = 0;
+	}
+
 public:
 	int m_TexCount;
 	std::vector<BufferOffset> m_BufferOffsets;

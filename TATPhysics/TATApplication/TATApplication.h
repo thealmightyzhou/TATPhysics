@@ -2,9 +2,10 @@
 #include "../TATCommon/TATSingleton.h"
 #include "../TATResources/TATPaths.h"
 
-class TString;
-
 class TAThread;
+class TATStageNode;
+
+#define TAT_ROOTNODE TATApplication::Instance()->GetRootNode()
 
 class TATApplication:public Singleton<TATApplication>
 {
@@ -22,8 +23,12 @@ public:
 
 	const TString& GetAppName();
 
+	TATStageNode* GetRootNode();
+
 	TString m_AppName;
 
 	TAThread* m_PhysicThread;
 	TAThread* m_RenderThread;
+
+	TATStageNode* m_RootNode;
 };

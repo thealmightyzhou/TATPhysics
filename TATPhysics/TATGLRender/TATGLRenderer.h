@@ -3,7 +3,7 @@
 
 #include "TATGLHeader.h"
 #include "../TATResources/TATShader.h"
-#include "TATRenderUnit.h"
+#include "TATRenderunit.h"
 #include "../TATResources/TATMaterial.h"
 #include "../TATBasis/TATWorld.h"
 #include "TATLight.h"
@@ -22,29 +22,29 @@ public:
 	virtual ~TATGLRenderer() {}
 
 	//upload vertex positions and bind textures
-	virtual void UploadStaticData(TATRenderUnit& unit)
+	virtual void UploadStaticData(TATRenderUnit* unit)
 	{
-		if (unit.m_VAOId == -1)
-			glGenVertexArrays(1, &unit.m_VAOId);
-		if (unit.m_VBOId == -1)
-			glGenBuffers(1, &unit.m_VBOId);
+		if (unit->m_VAOId == -1)
+			glGenVertexArrays(1, &unit->m_VAOId);
+		if (unit->m_VBOId == -1)
+			glGenBuffers(1, &unit->m_VBOId);
 
-		UINT VAO = unit.m_VAOId;
-		UINT VBO = unit.m_VBOId;
+		UINT VAO = unit->m_VAOId;
+		UINT VBO = unit->m_VBOId;
 
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(unit.m_RenderBuffer), unit.m_RenderBuffer, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(unit->m_RenderBuffer), unit->m_RenderBuffer, GL_STATIC_DRAW);
 
-		for (int i = 0; i < (int)unit.m_RenderEleMask.m_BufferOffsets.size(); i++)
+		for (int i = 0; i < (int)unit->m_RenderEleMask.m_BufferOffsets.size(); i++)
 		{
-			const TATModelElementMask::BufferOffset& offset = unit.m_RenderEleMask.m_BufferOffsets[i];
+			const TATModelElementMask::BufferOffset& offset = unit->m_RenderEleMask.m_BufferOffsets[i];
 			glVertexAttribPointer(
 				offset.m_Index,
 				offset.m_Size,
 				GL_FLOAT,
 				GL_FALSE,
-				unit.m_RenderEleMask.m_TotalSize,
+				unit->m_RenderEleMask.m_TotalSize,
 				(void*)(offset.m_BeforeSize * sizeof(float)));
 
 			glEnableVertexAttribArray(offset.m_Index);
@@ -52,35 +52,35 @@ public:
 
 		static UINT GLTextureSeman[5]{ 0x84C0 ,0x84C1 ,0x84C2 ,0x84C3 ,0x84C4 };
 
-		if (unit.m_RenderEleMask.IsUseTexCoordinate())
+		if (unit->m_RenderEleMask.IsUseTexCoordinate())
 		{
-			unit.m_Material->m_Shader->Use();
-			for (int i = 0; i < unit.m_TexCount; i++)
+			unit->m_Material->m_Shader->Use();
+			for (int i = 0; i < unit->m_TexCount; i++)
 			{
-				unit.m_Textures[i]->Generate();
-				unit.m_Material->m_Shader->SetInt("texture" + i, i);
+				unit->m_Textures[i]->Generate();
+				unit->m_Material->m_Shader->SetInt("texture" + i, i);
 				glActiveTexture(GLTextureSeman[i]);
-				unit.m_Textures[i]->Use();
+				unit->m_Textures[i]->Use();
 			}
 		}
 
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-		unit.m_StaticDataUploaded = true;
+		unit->m_StaticDataUploaded = true;
 	}
 
 	//this will be called every frame marked dirty
-	virtual void UploadDynamicData(TATRenderUnit& unit)
+	virtual void UploadDynamicData(TATRenderUnit* unit)
 	{
-		TATShader* shader = unit.m_Material->m_Shader;
-		TATMaterial* material = unit.m_Material;
+		TATShader* shader = unit->m_Material->m_Shader;
+		TATMaterial* material = unit->m_Material;
 		float mat[16];
 		//material data
 
 		shader->Use();
 
-		shader->SetMat4("projection", unit.m_MatrixProj);
+		shader->SetMat4("projection", unit->m_MatrixProj);
 
 		material->m_Camera->GetViewMatrix(mat);
 		shader->SetMat4("view", mat);
@@ -95,17 +95,17 @@ public:
 		shader->SetVec3("lightColor", material->m_LightColor);
 	}
 
-	virtual void Draw(TATRenderUnit& unit)
+	virtual void Draw(TATRenderUnit* unit)
 	{
-		glBindVertexArray(unit.m_VAOId);
+		glBindVertexArray(unit->m_VAOId);
 
 		if (m_RenderMode == GL_TRIANGLES || m_RenderMode == GL_TRIANGLE_STRIP || m_RenderMode == GL_TRIANGLE_FAN)
 		{
-			glDrawArrays(GL_TRIANGLES, 0, 3 * unit.m_TriangleCount);
+			glDrawArrays(GL_TRIANGLES, 0, 3 * unit->m_TriangleCount);
 		}
 		else if (m_RenderMode == GL_POINTS)
 		{
-			glDrawArrays(GL_POINTS, 0, unit.m_VertexCount);
+			glDrawArrays(GL_POINTS, 0, unit->m_VertexCount);
 		}
 
 		//else if (m_renderMode == GL_LINE_LOOP || m_renderMode == GL_LINE_STRIP || m_renderMode == GL_LINES)
@@ -121,9 +121,9 @@ public:
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
-	virtual void Render(TATRenderUnit& unit)
+	virtual void Render(TATRenderUnit* unit)
 	{
-		if(!unit.m_StaticDataUploaded)
+		if(!unit->m_StaticDataUploaded)
 			UploadStaticData(unit);
 
 		UploadDynamicData(unit);
