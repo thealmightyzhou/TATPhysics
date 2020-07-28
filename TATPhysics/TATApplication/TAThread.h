@@ -5,6 +5,7 @@
 #include "../TATCommon/TATSingleton.h"
 #include "../TATCommon/TATObjectPool.h"
 #include "../TATGLRender/TATGLRenderer.h"
+#include "../TATGLRender/TATGLEntry.h"
 
 class TATRenderListener;
 class TATPhysicListener;
@@ -59,6 +60,10 @@ public:
 	TATRenderThread(): m_RenderUnitPool(TAT_MAX_RENDERUNIT_COUNT)
 	{
 		m_Renderer = new TATGLRenderer();
+
+		m_RenderStateDirty = true;
+
+		m_Window = 0;
 	}
 
 	virtual void Run() override
@@ -90,4 +95,6 @@ public:
 	TATObjectPool<TATRenderUnit> m_RenderUnitPool;
 
 	TATGLRenderer* m_Renderer;
+
+	GLFWwindow* m_Window;
 };

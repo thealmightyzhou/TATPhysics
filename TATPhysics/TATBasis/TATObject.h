@@ -24,7 +24,8 @@ public:
 
 	TString GetSubName() const
 	{
-		std::vector<TString> rec = m_GlobalName.Split("_");
+		std::vector<TString> rec;
+		m_GlobalName.Split("_", rec);
 		return rec[rec.size() - 1];
 	}
 

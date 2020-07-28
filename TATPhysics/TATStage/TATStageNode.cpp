@@ -21,17 +21,18 @@ bool TATStageNode::DumpActor()
 	return true;
 }
 
-bool TATStageNode::CreateChild(const TString& name)
+TATStageNode* TATStageNode::CreateChild(const TString& name)
 {
 	TString node_name = "node_" + name;
 	if (TATWorld::Instance()->GetNodeByName(node_name))
 	{
-		return false;
+		return 0;
 	}
 
 	TATStageNode* node = new TATStageNode(node_name);
 	node->m_ParentNode = this;
 	this->m_ChildNodes.push_back(node);
+	return node;
 }
 
 bool TATStageNode::DestroyChildByName(const TString& name)

@@ -5,6 +5,7 @@
 #include "../TATGLRender/TATLight.h"
 #include "../TATBasis/TATWorld.h"
 #include "../TATResources/TATMesh.h"
+#include "../TATResources/TATMaterial.h"
 
 TATActor::TATActor(TATMesh* ptr) :TATObject("actor_" + ptr->GetSubName() + TString::Make(GetObjectIndex()))
 {
@@ -13,6 +14,7 @@ TATActor::TATActor(TATMesh* ptr) :TATObject("actor_" + ptr->GetSubName() + TStri
 	m_RenderLight = TATWorld::Instance()->GetLight("main");
 	m_RenderUnit = TATRenderThread::Instance()->m_RenderUnitPool.FetchUnused();
 	m_RigidBodyId = -1;
+	m_WorldTransform = TATransform::GetIdentity();
 }
 
 TATActor::~TATActor()
@@ -39,8 +41,9 @@ void TATActor::FillRenderUnit()
 	m_WorldTransform.GetOpenGLMatrix(m_RenderUnit->m_MatrixModel);
 
 	m_RenderUnit->m_VertexCount = m_RenderMesh->m_VertexCount;
-	if (!m_RenderUnit->m_RenderVertices)
-		m_RenderUnit->m_RenderVertices = new TATRenderVertex[m_RenderUnit->m_VertexCount];
+
+	TAT_SAFE_NEW(m_RenderUnit->m_RenderVertices, TATRenderVertex, m_RenderUnit->m_VertexCount);
+
 	TATRenderVertex* vertices = m_RenderUnit->m_RenderVertices;
 	for (int i = 0; i < m_RenderUnit->m_VertexCount; i++)
 	{
@@ -68,8 +71,10 @@ void TATActor::FillRenderUnit()
 	}
 
 	m_RenderUnit->m_IndicesCount = 3 * m_RenderMesh->m_FaceCount;
-	if (!m_RenderUnit->m_VertexOrder && m_RenderUnit->m_IndicesCount != 0)
-		m_RenderUnit->m_VertexOrder = new int[m_RenderUnit->m_IndicesCount];
+	m_RenderUnit->m_TriangleCount = m_RenderMesh->m_FaceCount;
+
+	TAT_SAFE_NEW(m_RenderUnit->m_VertexOrder, int, m_RenderUnit->m_IndicesCount);
+
 	for (int i = 0; i < m_RenderUnit->m_IndicesCount; i += 3)
 	{
 		m_RenderUnit->m_VertexOrder[i + 0] = m_RenderMesh->m_MeshFaces[i / 3].m_Vertices[0];
@@ -77,7 +82,20 @@ void TATActor::FillRenderUnit()
 		m_RenderUnit->m_VertexOrder[i + 2] = m_RenderMesh->m_MeshFaces[i / 3].m_Vertices[2];
 	}
 
+	m_RenderUnit->m_TexCoordinateCount = m_RenderMesh->m_Loader->m_ModelElementMask.m_TexCount;
+	m_RenderUnit->m_TexCount = m_RenderUnit->m_TexCoordinateCount;
+	TAT_MEMCPY(m_RenderUnit->m_Textures, m_Material->m_Textures);
+
 	m_RenderUnit->GenerateRenderBuffer();
 
 	m_RenderUnit->m_ReadyToRender = true;
+}
+
+void TATActor::SetMaterial(TATMaterial* m)
+{
+	m_Material = m;
+	m_RenderUnit->SetMaterial(m);
+
+	m_RenderCamera = m->m_Camera;
+	m_RenderLight = m->m_Light;
 }

@@ -11,7 +11,7 @@ public:
 
 	}
 
-	static void ReadFile(const TString& path, std::vector<TString>& res)
+	static void ReadFileToLines(const TString& path, std::vector<TString>& res)
 	{
 		const int len = 500;
 		ifstream file;

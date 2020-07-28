@@ -20,7 +20,11 @@ class TATLight:public TATObject
 public:
 	TATLight(const TString& name):TATObject("light_" + name)
 	{
-		SetColor(TATVector3(1, 1, 1));
+		m_Color = TATVector3::One();
+		m_Position = TATVector3::Zero();
+		m_Ambient = TATVector3::Zero();
+		m_Diffuse = TATVector3::Zero();
+		m_Specular = TATVector3::Zero();
 	}
 
 	virtual ~TATLight() {}

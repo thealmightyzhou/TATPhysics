@@ -32,7 +32,7 @@ void TATWorld::RemoveFromWorld(TATObject* o)
 
 bool TATWorld::RemoveFromStage(TATStageNode* a)
 {
-	if (a && m_StageNodes[a->GetName()])
+	if (a && m_StageNodes.find(a->GetName()) != m_StageNodes.end())
 	{
 		m_StageNodes.erase(a->GetName());
 		a->DestroySelf();
@@ -50,7 +50,10 @@ TATObject* TATWorld::GetObjectByName(const TString& name)
 
 TATStageNode* TATWorld::GetNodeByName(const TString& name)
 {
-	return m_StageNodes[name];
+	if (m_StageNodes.find(name) != m_StageNodes.end())
+		return m_StageNodes[name];
+	else
+		return 0;
 }
 
 TATCamera* TATWorld::GetCamera(const TString& name)

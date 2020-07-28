@@ -5,10 +5,9 @@
 #include <fstream>
 #include <string>
 #include "../TATApplication/TATApplication.h"
+#include "../TATCommon/TATCore.h"
 
 using namespace std;
-
-#define MAX_TEXCOORDINATE_COUNT 5
 
 enum TATRenderPrimitiveMask
 {
@@ -97,8 +96,8 @@ public:
 		m_TotalSize = 3 + 3 * IsUseNormal() + 3 * IsUseTangent() + 2 * IsUseTexCoordinate() * m_TexCount;
 
 		int index = 0;
-		int totalSize = 0;
-		m_BufferOffsets.push_back(BufferOffset(index++, 3, totalSize+=3));
+		int totalSize = -3;
+		m_BufferOffsets.push_back(BufferOffset(index++, 3, totalSize += 3));
 		if (IsUseNormal())
 			m_BufferOffsets.push_back(BufferOffset(index++, 3, totalSize += 3));
 		if (IsUseTangent())
@@ -188,6 +187,18 @@ public:
 	float m_Normal[3];
 };
 
+struct TATexCoordinateBuffer
+{
+public:
+	TATexCoordinateBuffer(float x, float y, float z)
+	{
+		m_TexCoordinate[0] = x;
+		m_TexCoordinate[1] = y;
+		m_TexCoordinate[2] = z;
+	}
+	float m_TexCoordinate[3];
+};
+
 struct TATetraBuffer
 {
 public:
@@ -201,6 +212,7 @@ class TATModelBuffer
 public:
 	std::vector<TATVertexBuffer> vertexBuffer;
 	std::vector<TATNormalBuffer> normalBuffer;
+	std::vector<TATexCoordinateBuffer> texCoordinateBuffer;
 	std::vector<TATFaceBuffer> faceBuffer;
 	std::vector<TATetraBuffer> tetraBuffer;
 };

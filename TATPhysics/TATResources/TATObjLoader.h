@@ -16,7 +16,8 @@ public:
 	
 	virtual void Load(const TString& name, TATModelBuffer& buffer)
 	{
-		TString filePath = TATPaths::PathOfModel(TATApplication::Instance()->GetAppName(), name);
+		TString app = TATApplicationEntry::GetApplication()->GetAppName();
+		TString filePath = TATPaths::PathOfModel(TATApplicationEntry::GetApplication()->GetAppName(), name);
 
 		const int len = 100;
 		ifstream objFile;
@@ -31,7 +32,8 @@ public:
 		while (objFile.getline(lineStrBuffer, len).good())
 		{
 			TString lineStr(lineStrBuffer);
-			std::vector<TString> splitResult = lineStr.Split(" ");
+			std::vector<TString> splitResult;
+			lineStr.Split(" ", splitResult);
 			if (splitResult.size() == 0)
 				continue;
 			if (splitResult[0] == "v")
@@ -43,12 +45,19 @@ public:
 				vb.isRendVert = true;
 				buffer.vertexBuffer.push_back(vb);
 			}
-			else if (splitResult[0]=="vn")
+			else if (splitResult[0] == "vn")
 			{
 				float x = splitResult[1].ToFloat();
 				float y = splitResult[2].ToFloat();
 				float z = splitResult[3].ToFloat();
 				buffer.normalBuffer.push_back(TATNormalBuffer(x, y, z));
+			}
+			else if (splitResult[0] == "vt")
+			{
+				float x = splitResult[1].ToFloat();
+				float y = splitResult[2].ToFloat();
+				float z = splitResult[3].ToFloat();
+				buffer.texCoordinateBuffer.push_back(TATexCoordinateBuffer(x, y, z));
 			}
 			else if (splitResult[0] == "f")
 			{
@@ -56,7 +65,8 @@ public:
 				int size = 0;
 				for (int i = 1; i < (int)splitResult.size(); i++)
 				{
-					std::vector<TString> datas = splitResult[i].Split("/");
+					std::vector<TString> datas;
+					splitResult[i].Split("/", datas);
 					size = datas.size();
 					if (size > 0)
 					{
@@ -108,7 +118,8 @@ public:
 				std::vector<int> indexs;
 				for (int i = 1; i < (int)splitResult.size(); i++)
 				{
-					std::vector<TString> datas = splitResult[i].Split("/");
+					std::vector<TString> datas;
+					splitResult[i].Split("/", datas);
 					int index = datas[0].ToInt();
 					indexs.push_back(index - 1);
 				}
@@ -119,15 +130,31 @@ public:
 			}
 		}
 
-		if (buffer.normalBuffer.size()>0)
+		if (buffer.normalBuffer.size() > 0)
 		{
 			for (int i = 0; i < (int)buffer.faceBuffer.size(); i++)
 			{
+				const TATFaceBuffer& face = buffer.faceBuffer[i];
 				for (int c = 0; c < 3; c++)
 				{
-					buffer.vertexBuffer[buffer.faceBuffer[i].v1].m_Normal[i] = buffer.normalBuffer[buffer.faceBuffer[i].n1].m_Normal[i];
-					buffer.vertexBuffer[buffer.faceBuffer[i].v2].m_Normal[i] = buffer.normalBuffer[buffer.faceBuffer[i].n2].m_Normal[i];
-					buffer.vertexBuffer[buffer.faceBuffer[i].v3].m_Normal[i] = buffer.normalBuffer[buffer.faceBuffer[i].n3].m_Normal[i];
+					buffer.vertexBuffer[face.v1].m_Normal[c] = buffer.normalBuffer[face.n1].m_Normal[c];
+					buffer.vertexBuffer[face.v2].m_Normal[c] = buffer.normalBuffer[face.n2].m_Normal[c];
+					buffer.vertexBuffer[face.v3].m_Normal[c] = buffer.normalBuffer[face.n3].m_Normal[c];
+				}
+
+			}
+		}
+
+		if (buffer.texCoordinateBuffer.size() > 0)
+		{
+			for (int i = 0; i < (int)buffer.faceBuffer.size(); i++)
+			{
+				const TATFaceBuffer& face = buffer.faceBuffer[i];
+				for (int c = 0; c < 2; c++)
+				{
+					buffer.vertexBuffer[face.v1].m_TexCoordinates[0][c] = buffer.texCoordinateBuffer[face.uv1].m_TexCoordinate[c];
+					buffer.vertexBuffer[face.v2].m_TexCoordinates[0][c] = buffer.texCoordinateBuffer[face.uv2].m_TexCoordinate[c];
+					buffer.vertexBuffer[face.v3].m_TexCoordinates[0][c] = buffer.texCoordinateBuffer[face.uv3].m_TexCoordinate[c];
 				}
 
 			}
@@ -141,8 +168,6 @@ public:
 		m_ModelElementMask.SetTexNum(1);
 		//temply no texcoordinate and tangent
 	}
-
-
 };
 
 

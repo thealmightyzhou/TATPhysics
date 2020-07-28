@@ -74,6 +74,8 @@ GLFWwindow* TATGLEntry::Initialize(int width, int height)
 	// build and compile our shader zprogram
 	// ------------------------------------
 
+	m_GLWindow = window;
+
 	return window;
 }
 

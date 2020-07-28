@@ -2,15 +2,11 @@
 #include "TATApplication.h"
 #include "TATWorldListener.h"
 
-class TATCamera;
-
 class TestApp :public TATApplication,TATRenderListener,TATPhysicListener
 {
 public:
-	TestApp(const TString& name) :TATApplication()
-	{
-		m_AppName = name;
-	}
+	TestApp(const TString& name) :TATApplication(name)
+	{}
 
 	virtual void Initialize() override;
 
@@ -29,5 +25,4 @@ public:
 	virtual void SimulationEnd(float dt) override
 	{}
 
-	TATCamera* m_MainCamera;
 };

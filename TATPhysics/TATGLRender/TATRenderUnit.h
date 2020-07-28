@@ -33,9 +33,9 @@ public:
 	float* m_RenderBuffer; //a basic unit to render include vertex,normal,uv,tangent which transport to glbuffer
 	int* m_VertexOrder; //indices can be divided by 3;
 
-	float m_MatrixView[16];
-	float m_MatrixProj[16];
-	float m_MatrixModel[16];
+	float m_MatrixView[12];
+	float m_MatrixProj[12];
+	float m_MatrixModel[12];
 
 	bool m_ReadyToRender; //if true render this unit
 	bool m_StaticDataUploaded;

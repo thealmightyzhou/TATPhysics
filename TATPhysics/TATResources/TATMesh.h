@@ -51,7 +51,8 @@ public:
 
 		Clear();
 
-		std::vector<TString> strs = name.Split(".");
+		std::vector<TString> strs;
+		name.Split(".", strs);
 
 		if (strs[1] == "obj")
 		{

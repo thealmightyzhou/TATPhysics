@@ -12,11 +12,13 @@ public:
 	TATexture():TATResourcePrimitive("texture_nameless" + GetObjectIndex())
 	{
 		m_Data = 0;
+		m_GLId = TAT_SHADERID_UNUSE;
 	}
 
 	TATexture(const TString& name):TATResourcePrimitive("texture_" + name)
 	{
 		m_Data = 0;
+		m_GLId = TAT_SHADERID_UNUSE;
 	}
 
 	~TATexture()
@@ -26,13 +28,13 @@ public:
 
 	virtual void Load(const TString& name)
 	{
-		TString filePath = TATPaths::PathOfTexture(TATApplication::Instance()->GetAppName(), name);
+		TString filePath = TATPaths::PathOfTexture(TATApplicationEntry::GetApplication()->GetAppName(), name);
 		stbi_set_flip_vertically_on_load(true);
 		InternalLoad(filePath);
 		glGenTextures(1, &m_GLId);
 	}
 
-	void Generate()
+	UINT Generate()
 	{
 		glBindTexture(GL_TEXTURE_2D, m_GLId);
 		// set the texture wrapping parameters
@@ -47,6 +49,15 @@ public:
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_Width, m_Height, 0, GL_RGB, GL_UNSIGNED_BYTE, m_Data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		return m_GLId;
+	}
+
+	UINT GetGLId() const
+	{
+		return m_GLId;
 	}
 
 	void Use()

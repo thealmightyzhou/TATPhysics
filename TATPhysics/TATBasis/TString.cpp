@@ -3,7 +3,8 @@
 
 void TString::ToVector3(TATVector3& v)
 {
-	std::vector<TString> arr = Split(TString(","));
+	std::vector<TString> arr;
+	Split(",", arr);
 	assert(arr.size() >= 3);
 	v.X = arr[0].ToFloat();
 	v.Y = arr[1].ToFloat();

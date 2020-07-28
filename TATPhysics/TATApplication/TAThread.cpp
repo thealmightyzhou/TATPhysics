@@ -62,8 +62,11 @@ void TATRenderThread::RemoverListener(TATRenderListener* listener)
 
 void TATRenderThread::RenderLoop()
 {
+	if(!m_Window)
+		m_Window = TATGLEntry::Instance()->GetWindow();
+
 	float dt = float(1) / 60;
-	while (true)
+	while (!glfwWindowShouldClose(m_Window))
 	{
 		if (m_RenderStateDirty)
 		{
@@ -74,12 +77,14 @@ void TATRenderThread::RenderLoop()
 
 			RenderOneFrame(dt);
 
-			//swap buffer
+			glfwSwapBuffers(m_Window);
+			glfwPollEvents();
 
 			for (int i = 0; i < (int)m_RenderListeners.size(); ++i)
 			{
 				m_RenderListeners[i]->RenderOneFrameEnd(dt);
 			}
+
 		}
 	}
 }

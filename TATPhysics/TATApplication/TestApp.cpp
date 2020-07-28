@@ -4,6 +4,9 @@
 #include "../TATResources/TATResourceManager.h"
 #include "../TATStage/TATStageNode.h"
 #include "TAThread.h"
+#include "../TATStage/TATActor.h"
+#include "../TATResources/TATMaterial.h"
+#include "../TATResources/TATexture.h"
 
 void TestApp::Initialize()
 {
@@ -11,18 +14,25 @@ void TestApp::Initialize()
 
 	TATGLEntry::Instance()->Initialize(1080, 720);
 
-	TATMesh* mesh = TATResourceManager::Instance()->LoadMesh("test.obj");
-
 	//TODO Load resources;
-
-	m_MainCamera = new TATCamera("main");
-
-	m_RootNode = new TATStageNode("root");
 }
 
 void TestApp::CreateScene()
 {
 	__super::CreateScene();
+
+	TATMesh* mesh = TATResourceManager::Instance()->LoadMesh("cube.obj");
+
+	TATMaterial* mat = TATResourceManager::Instance()->LoadMaterial("testMat.tmaterial");
+
+	TATActor* actor = new TATActor(mesh);
+	actor->SetMaterial(mat);
+
+	TATStageNode* node = m_RootNode->CreateChild("test");
+
+	node->MountActor(actor);
+	node->SetVisible(true);
+	node->SetTransform(TATransform::GetIdentity());
 
 	//TODO put resources to world and set physic behavior coefficient
 }
@@ -40,6 +50,6 @@ void TestApp::Run()
 
 	m_PhysicThread = new TATPhysicThread;
 	m_RenderThread = new TATRenderThread;
-	m_PhysicThread->Run();
+	//m_PhysicThread->Run();
 	m_RenderThread->Run();
 }

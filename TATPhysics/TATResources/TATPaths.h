@@ -8,14 +8,29 @@ class TATPaths
 public:
 	static TString PathOfProj()
 	{
-		return PathOfExe().UpperDirect();
+		TString res = PathOfExe().UpperDirect().UpperDirect().UpperDirect();
+		return res;
 	}
 
 	static TString PathOfExe()
 	{
-		char chpath[MAX_PATH];
-		GetModuleFileName(NULL, (LPSTR)chpath, sizeof(chpath));
-		return TString(chpath);
+		TCHAR chpath[MAX_PATH];
+		GetModuleFileName(NULL, chpath, MAX_PATH);
+		char path[MAX_PATH];
+		for (int i = 0; i < MAX_PATH; i++)
+		{
+			path[i] = chpath[i];
+		}
+
+		std::vector<TString> strs;
+		TString(path).Split("\\", strs);
+
+		for (int i = 1; i < strs.size(); i++)
+		{
+			strs[0] = strs[0].Visit(strs[i]);
+		}
+
+		return strs[0];
 	}
 
 	static TString PathOfResourceRoot(const TString& appName)

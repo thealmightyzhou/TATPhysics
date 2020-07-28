@@ -43,7 +43,7 @@ public:
 		return tr;
 	}
 
-	bool CreateChild(const TString& name);
+	TATStageNode* CreateChild(const TString& name);
 
 	bool DestroyChildByName(const TString& name);
 

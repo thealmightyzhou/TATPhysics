@@ -7,6 +7,7 @@ class TATRenderUnit;
 class TATCamera;
 class TATLight;
 class TATMesh;
+class TATMaterial;
 
 //base object to show on stage
 class TATActor :public TATObject
@@ -18,6 +19,8 @@ public:
 
 	void FillRenderUnit();
 
+	void SetMaterial(TATMaterial* m);
+
 	TATRenderUnit* m_RenderUnit;
 
 	TATransform m_WorldTransform;
@@ -27,6 +30,8 @@ public:
 	TATLight* m_RenderLight;
 
 	TATMesh* m_RenderMesh;
+
+	TATMaterial* m_Material;
 
 	int m_RigidBodyId;
 

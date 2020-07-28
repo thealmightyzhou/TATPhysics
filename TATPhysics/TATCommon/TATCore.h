@@ -6,11 +6,13 @@
 
 typedef unsigned int UINT;
 
-#define TAT_EPSILON		FLT_EPSILON
-#define TAT_EPSILON2	1e-6
-#define TAT_MAX			FLT_MAX
-#define TAT_MAX2		1e10	
-#define TAT_RAND_MAX	RAND_MAX
+#define TAT_EPSILON			FLT_EPSILON
+#define TAT_EPSILON2		1e-6
+#define TAT_MAX				FLT_MAX
+#define TAT_MAX2			1e10	
+#define TAT_RAND_MAX		RAND_MAX
+#define TAT_SHADERID_UNUSE	0
+#define MAX_TEXCOORDINATE_COUNT 5
 
 #define TAT_2PI float(6.283185307179586232)
 #define TAT_PI (TAT_2PI * float(0.5))
@@ -35,6 +37,25 @@ typedef unsigned int UINT;
 	TAT_REGISTER_GET(TYPE,ATTR)
 
 #define	TAT_MEMSET(arr,val)	memset(arr,val,sizeof(arr));
+
+#define TAT_MEMCPY(arr0,arr1) memcpy(arr0,arr1,sizeof(arr1));
+
+#define TAT_ARRAY_SIZE(arr) ((int)(sizeof(arr) / sizeof(arr[0])))
+
+#define TAT_SAFE_NEW(arr,type,size)				\
+	if(size == 0)								\
+	{											\
+		if(arr)									\
+			delete arr;							\
+		arr = 0;								\
+	}											\
+	else if(!arr)								\
+		arr = new type[size];					\
+	else if(arr && TAT_ARRAY_SIZE(arr) != size)	\
+	{											\
+		delete arr;								\
+		arr = new type[size];					\
+	}											\
 
 #define TAT_MEMEMPTY(ARR,ZERO_DETERMINE,RESULT)	\
 {												\
@@ -73,7 +94,6 @@ typedef unsigned int UINT;
 #define TAT_POOL_OBJECT(classname)	\
 		classname();				\
 		void Clear();				\
-
 
 inline void _SetMax(float& x, const float& y)
 {

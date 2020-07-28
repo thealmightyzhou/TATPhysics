@@ -114,7 +114,6 @@ public:
 
 private:
 
-
 	void OnKeyPressed(int key);
 
 	void OnKeyReleased(int key);

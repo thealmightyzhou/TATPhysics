@@ -24,9 +24,9 @@ public:
 	//upload vertex positions and bind textures
 	virtual void UploadStaticData(TATRenderUnit* unit)
 	{
-		if (unit->m_VAOId == -1)
+		if (unit->m_VAOId == TAT_SHADERID_UNUSE)
 			glGenVertexArrays(1, &unit->m_VAOId);
-		if (unit->m_VBOId == -1)
+		if (unit->m_VBOId == TAT_SHADERID_UNUSE)
 			glGenBuffers(1, &unit->m_VBOId);
 
 		UINT VAO = unit->m_VAOId;
