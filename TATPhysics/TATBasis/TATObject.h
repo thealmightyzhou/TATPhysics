@@ -14,7 +14,7 @@ public:
 
 	TAT_REGISTER_ATTRIBUTE_GET(TString, GlobalName);
 
-	//for none param construct so can use object pool
+	//for none param construct to avoid confict
 	static int m_ObjectIndex;
 
 	int GetObjectIndex()

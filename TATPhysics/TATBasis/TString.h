@@ -180,6 +180,13 @@ public:
 		return str;
 	}
 
+	static TString ConvertFloat(float f)
+	{
+		TString str;
+		str.FromFloat(f);
+		return str;
+	}
+
 	static TString Make(int i)
 	{
 		TString str;
@@ -222,6 +229,11 @@ public:
 	bool operator!=(const TString& str) const
 	{
 		return !(*this == str);
+	}
+
+	bool IsEmpty() const
+	{
+		return m_Str == "";
 	}
 
 	std::string m_Str;

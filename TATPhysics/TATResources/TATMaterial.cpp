@@ -1,6 +1,5 @@
 #include "TATMaterial.h"
 #include "../TATGLRender/TATRenderUnit.h"
-#include "TATFileStream.h"
 #include "../TATBasis/TATObject.h"
 #include "../TATBasis/TATWorld.h"
 #include "TATShader.h"
@@ -13,7 +12,7 @@ void TATMaterial::Load(const TString& name)
 {
 	__super::Load(name);
 
-	TString path = TATPaths::PathOfMaterial(TATApplicationEntry::GetApplication()->GetAppName(), name);
+	TString path = TATPaths::PathOfMaterial(TAT_APPNAME, name);
 	std::vector<TString> strs;
 	TATFileStream::ReadFileToLines(path, strs);
 
@@ -28,9 +27,15 @@ void TATMaterial::Load(const TString& name)
 		}
 	}
 
-	m_Shader = new TATShader(m_MaterialSetting["VertexShader"].ToChar(), m_MaterialSetting["FragmentShader"].ToChar());
+	m_Shader = new TATShader(m_MaterialSetting["VertexShader"],
+							 m_MaterialSetting["FragmentShader"],
+							 m_MaterialSetting["GeometryShader"]);
+
 	if (m_MaterialSetting["LightName"] != "")
-		m_Light = TATWorld::Instance()->GetLight("light_" + m_MaterialSetting["VertexShader"]);
+	{
+		m_Light = TATWorld::Instance()->GetLight(m_MaterialSetting["LightName"]);
+	}
+
 	if (m_Light)
 	{
 		m_LightColor = m_Light->GetColor();

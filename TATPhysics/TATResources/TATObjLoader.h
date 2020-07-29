@@ -16,8 +16,8 @@ public:
 	
 	virtual void Load(const TString& name, TATModelBuffer& buffer)
 	{
-		TString app = TATApplicationEntry::GetApplication()->GetAppName();
-		TString filePath = TATPaths::PathOfModel(TATApplicationEntry::GetApplication()->GetAppName(), name);
+		TString app = TAT_APPNAME;
+		TString filePath = TATPaths::PathOfModel(app, name);
 
 		const int len = 100;
 		ifstream objFile;
@@ -164,6 +164,8 @@ public:
 			m_ModelElementMask.UseFace();
 		if (buffer.normalBuffer.size() > 0)
 			m_ModelElementMask.UseNormal();
+		if (buffer.texCoordinateBuffer.size() > 0)
+			m_ModelElementMask.UseTexCoordinate();
 
 		m_ModelElementMask.SetTexNum(1);
 		//temply no texcoordinate and tangent

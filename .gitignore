@@ -158,3 +158,17 @@
 /TATPhysics/Debug/TATWorldListener.obj
 /TATPhysics/Debug/TAThread.obj
 /TATPhysics/Debug/TString.obj
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/275efa18d940a177/STB_IMAGE.ipch
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/2e7d4e6034cf2a69/TATINPUTLISTENER.ipch
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/48dd83e9dafb9542/TATMATERIAL.ipch
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/4fca386da475d0f/TATACTOR.ipch
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/6d0a8a5abb8cc656/DEBUGGER_JMC.ipch
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/827eebc20d7d5b4a/TATEXTURE.ipch
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/9c8e2b8e1d2378b0/TATSTAGENODE.ipch
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/d0a19bac642a120a/TATDYNAMICWORLD.ipch
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/d830d394c76a06a6/TATRESOURCEPTR.ipch
+/TATPhysics/TATPhysics/Debug/TATActor.obj
+/TATPhysics/TATPhysics/Debug/TATMaterial.obj
+/TATPhysics/TATPhysics/Debug/TATStageNode.obj
+/TATPhysics/TATPhysics/Debug/TATexture.obj
+/TATPhysics/TATPhysics/Debug/stb_image.obj

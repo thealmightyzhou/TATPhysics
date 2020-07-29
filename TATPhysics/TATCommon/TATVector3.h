@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TATCore.h"
+#include "../TATGLRender/TATGLHeader.h"
 
 #define TAT_MAXVECTOR3 TATVector3(TAT_MAX,TAT_MAX,TAT_MAX)
 #define TAT_MINVECTOR3 TATVector3(TAT_EPSILON,TAT_EPSILON,TAT_EPSILON)
@@ -67,7 +68,7 @@ public:
 	inline TATVector3 operator/(const float& f) const
 	{
 		assert(f != 0);
-		return (*this) * (1.0f) / f;
+		return (*this) * ((1.0f) / f);
 	}
 
 	inline TATVector3& operator=(const TATVector3& other)
@@ -266,6 +267,11 @@ public:
 	bool IsZero()
 	{
 		return *this == Zero();
+	}
+
+	glm::vec3 ToGLM()
+	{
+		return glm::vec3(X, Y, Z);
 	}
 };
 

@@ -3,13 +3,13 @@
 #include "../TATCommon/TATCore.h"
 #include "../TATCommon/TATVector3.h"
 #include "../TATResources/TATResourcePrimitive.h"
+#include "../TATResources/TATexture.h"
 #include <iostream>
 #include <map>
 
 class TATShader;
 class TATLight;
 class TATCamera;
-class TATexture;
 class TATRenderUnit;
 
 using namespace std;
@@ -31,6 +31,7 @@ public:
 	{
 		m_MaterialSetting["VertexShader"] = "";
 		m_MaterialSetting["FragmentShader"] = "";
+		m_MaterialSetting["GeometryShader"] = "";
 		m_MaterialSetting["LightName"] = "main";
 		m_MaterialSetting["LightColor"] = "";
 		m_MaterialSetting["LightAmbient"] = "";

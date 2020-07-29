@@ -67,6 +67,7 @@ public:
 			return;
 
 		const TATModelBuffer& buffer = m_Loader->m_Buffer;
+		m_ModelElementMask = m_Loader->m_ModelElementMask;
 		
 		m_VertexCount = buffer.vertexBuffer.size();
 		m_MeshVertices = new TATMeshVertex[m_VertexCount];
@@ -122,4 +123,5 @@ public:
 
 	TATModelLoader* m_Loader;
 
+	TATModelElementMask m_ModelElementMask;
 };

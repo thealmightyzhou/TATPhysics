@@ -34,7 +34,8 @@ public:
 
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(unit->m_RenderBuffer), unit->m_RenderBuffer, GL_STATIC_DRAW);
+		
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * unit->m_BlockSize * unit->m_IndicesCount, unit->m_RenderBuffer, GL_STATIC_DRAW);
 
 		for (int i = 0; i < (int)unit->m_RenderEleMask.m_BufferOffsets.size(); i++)
 		{
@@ -44,7 +45,7 @@ public:
 				offset.m_Size,
 				GL_FLOAT,
 				GL_FALSE,
-				unit->m_RenderEleMask.m_TotalSize,
+				unit->m_RenderEleMask.m_TotalSize * sizeof(float),
 				(void*)(offset.m_BeforeSize * sizeof(float)));
 
 			glEnableVertexAttribArray(offset.m_Index);
@@ -58,7 +59,7 @@ public:
 			for (int i = 0; i < unit->m_TexCount; i++)
 			{
 				unit->m_Textures[i]->Generate();
-				unit->m_Material->m_Shader->SetInt("texture" + i, i);
+				unit->m_Material->m_Shader->SetInt(TString("texture") + TString::ConvertInt(i), i);
 				glActiveTexture(GLTextureSeman[i]);
 				unit->m_Textures[i]->Use();
 			}
@@ -76,16 +77,19 @@ public:
 		TATShader* shader = unit->m_Material->m_Shader;
 		TATMaterial* material = unit->m_Material;
 		float mat[16];
-		//material data
 
 		shader->Use();
 
+		material->m_Camera->GetProjectionMatrix(mat);
 		shader->SetMat4("projection", unit->m_MatrixProj);
 
 		material->m_Camera->GetViewMatrix(mat);
 		shader->SetMat4("view", mat);
 
-		material->m_Camera->GetProjectionMatrix(mat);
+		if (unit->m_UseTransform)
+			unit->m_Transform.GetOpenGLMatrix(mat);
+		else
+			TATransform::GetIdentity().GetOpenGLMatrix(mat);
 		shader->SetMat4("model", mat);
 
 		shader->SetVec3("lightPos", material->m_Light->GetPosition());
@@ -99,9 +103,9 @@ public:
 	{
 		glBindVertexArray(unit->m_VAOId);
 
-		if (m_RenderMode == GL_TRIANGLES || m_RenderMode == GL_TRIANGLE_STRIP || m_RenderMode == GL_TRIANGLE_FAN)
+		if (m_RenderMode == GL_TRIANGLES)
 		{
-			glDrawArrays(GL_TRIANGLES, 0, 3 * unit->m_TriangleCount);
+			glDrawArrays(GL_TRIANGLES, 0, unit->m_IndicesCount);
 		}
 		else if (m_RenderMode == GL_POINTS)
 		{

@@ -29,13 +29,14 @@ public:
 	int m_TexCoordinateCount;
 	int m_IndicesCount;
 	int m_TexCount;
+	int m_BlockSize;
 
 	float* m_RenderBuffer; //a basic unit to render include vertex,normal,uv,tangent which transport to glbuffer
 	int* m_VertexOrder; //indices can be divided by 3;
 
-	float m_MatrixView[12];
-	float m_MatrixProj[12];
-	float m_MatrixModel[12];
+	float m_MatrixView[16];
+	float m_MatrixProj[16];
+	float m_MatrixModel[16];
 
 	bool m_ReadyToRender; //if true render this unit
 	bool m_StaticDataUploaded;
@@ -43,13 +44,13 @@ public:
 
 	TATRenderVertex* m_RenderVertices; //already sort by face's vertex indices
 
+	TATransform m_Transform;
+
 	TATexture* m_Textures[5];
 	UINT m_TextureIds[5];
 	UINT m_ShaderId;
 	UINT m_VAOId;
 	UINT m_VBOId;
-
-	TATransform *m_TransformPtr;
 
 	TATModelElementMask m_RenderEleMask;
 

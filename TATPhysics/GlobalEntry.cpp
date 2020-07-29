@@ -3,6 +3,6 @@
 int main()
 {
 	TestApp* app = new TestApp("TestApp");
-	TATApplicationEntry::SetApplication(app);
+	TATApplicationEntry::Instance()->SetApplication(app);
 	app->Run();
 }

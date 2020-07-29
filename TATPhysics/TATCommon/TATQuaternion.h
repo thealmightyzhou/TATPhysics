@@ -73,6 +73,25 @@ public:
 				 cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw);
 	}
 
+	void FromCoordinateSys(const TATVector3& x, const TATVector3& y, const TATVector3& z)
+	{
+		TATQuaternion orient = FastestRotation(TATVector3::UintZ(), z);
+		TATVector3 dx = orient * x;
+		orient *= FastestRotation(dx, x);
+		SetValue(orient.X, orient.Y, orient.Z, orient.W);
+	}
+
+	static TATQuaternion FastestRotation(const TATVector3& v1, const TATVector3& v2)
+	{
+		TATVector3 axis0 = v1.Normalized();
+		TATVector3 axis1 = v2.Normalized();
+
+		TATVector3 rotAxis = axis0.Cross(axis1);
+		float angle = acos(axis0.Dot(axis1));
+		TATQuaternion rot;
+		rot.FromAngleAxis(rotAxis, angle);
+	}
+
 	TATQuaternion& operator*=(const float& s)
 	{
 		m_Datas[0] *= s;
@@ -213,9 +232,9 @@ public:
 	inline TATQuaternion Multi(const TATVector3& w)
 	{
 		return TATQuaternion(
-			+w.X * W + w.Y * Z - w.Z * Y,
-			+w.Y * W + w.Z * X - w.X * Z,
-			+w.Z * W + w.X * Y - w.Y * X,
+			+w.X * W + w.Z * Y - w.Y * Z,
+			+w.Y * W + w.X * Z - w.Z * X,
+			+w.Z * W + w.Y * X - w.X * Y,
 			-w.X * X - w.Y * Y - w.Z * Z);
 	}
 };

@@ -34,12 +34,10 @@ void TestApp::CreateScene()
 	node->SetVisible(true);
 	node->SetTransform(TATransform::GetIdentity());
 
-	//TODO put resources to world and set physic behavior coefficient
-}
+	m_MainCamera->SetPosition(TATVector3(30, 0, 0));
+	m_MainCamera->SetWindowSize(TATGLEntry::Instance()->m_WindowWidth, TATGLEntry::Instance()->m_WindowHeight);
 
-void TestApp::BeginRenderOneFrame(float dt)
-{
-	m_MainCamera->Move(dt);
+	//TODO put resources to world and set physic behavior coefficient
 }
 
 void TestApp::Run()
@@ -48,8 +46,6 @@ void TestApp::Run()
 
 	CreateScene();
 
-	m_PhysicThread = new TATPhysicThread;
-	m_RenderThread = new TATRenderThread;
 	//m_PhysicThread->Run();
 	m_RenderThread->Run();
 }

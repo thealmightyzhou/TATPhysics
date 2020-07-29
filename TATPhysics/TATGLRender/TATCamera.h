@@ -5,8 +5,11 @@
 #include "TATInputListener.h"
 #include <vector>
 #include "../TATBasis/TATObject.h"
+#include "../TATCommon/TATVector3.h"
+#include "../TATCommon/TATQuaternion.h"
+#include "../TATApplication/TATWorldListener.h"
 
-class TATCamera :public TATInputListener,public TATObject
+class TATCamera :public TATInputListener,public TATObject,public TATRenderListener
 {
 public:
 	enum CameraMoveState
@@ -33,34 +36,59 @@ public:
 		m_Freeze = false;
 		m_Yaw = -90.0f;
 		m_Pitch = 0.0f;
-		m_MoveSpeed = 50.0f;
+		m_Roll = 0.0f;
+		m_MoveSpeed = 10.0f;
 		m_MouseSensitivity = 0.1f;
 		m_Zoom = 45.0f;
 		m_NearPlane = 0.1f;
 		m_FarPlane = 1000.0f;
 		m_WindowWidth = 1280.0f;
 		m_WindowHeight = 800.0f;
-		m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-		m_Position = glm::vec3(0.0f, 0.0f, 0.0f);
-		m_Front = glm::vec3(0.0f, 0.0f, -1.0f);
+		m_WorldUp = TATVector3(0.0f, 1.0f, 0.0f);
+		m_Position = TATVector3(0.0f, 0.0f, 0.0f);
+		m_Front = TATVector3(0.0f, 0.0f, -1.0f);
+		m_MoveState = MOVE_NONE;
+		m_Orientation = TATQuaternion::GetIdentity();
+	}
+
+	void SetWindowSize(int w, int h)
+	{
+		m_WindowWidth = w;
+		m_WindowHeight = h;
+	}
+
+	void SetEuler(float yaw, float pitch, float roll)
+	{
+		m_Yaw = yaw;
+		m_Pitch = pitch;
+		m_Roll = roll;
+		m_Orientation.FromEuler(yaw, pitch, roll);
+	}
+
+	void SetOrientation(const TATQuaternion& q)
+	{
+		m_Orientation = q;
 	}
 
 	//call in render loop
 	void Move(float deltaTime)
 	{
 		float velocity = m_MoveSpeed * deltaTime;
-		if (m_MoveState & CameraMoveState::MOVE_FORWARD)
+
+		if (TATInputListener::m_KeyState[GLFW_KEY_W])
 			m_Position += m_Front * velocity;
-		if (m_MoveState & CameraMoveState::MOVE_BACKWARD)
+		if (TATInputListener::m_KeyState[GLFW_KEY_S])
 			m_Position -= m_Front * velocity;
-		if (m_MoveState & CameraMoveState::MOVE_LEFT)
+		if (TATInputListener::m_KeyState[GLFW_KEY_A])
 			m_Position -= m_Right * velocity;
-		if (m_MoveState & CameraMoveState::MOVE_RIGHT)
+		if (TATInputListener::m_KeyState[GLFW_KEY_D])
 			m_Position += m_Right * velocity;
-		if (m_MoveState & CameraMoveState::MOVE_UP)
+		if (TATInputListener::m_KeyState[GLFW_KEY_LEFT_SHIFT])
 			m_Position += m_Up * velocity;
-		if (m_MoveState & CameraMoveState::MOVE_DOWN)
+		if (TATInputListener::m_KeyState[GLFW_KEY_LEFT_CONTROL])
 			m_Position -= m_Up * velocity;
+
+		Update();
 	}
 
 	void Rotate(float xoffset, float yoffset, GLboolean constrainPitch = true)
@@ -71,8 +99,8 @@ public:
 		xoffset *= m_MouseSensitivity;
 		yoffset *= m_MouseSensitivity;
 
-		m_Yaw += xoffset;
-		m_Pitch += yoffset;
+		m_Yaw -= xoffset;
+		m_Pitch -= yoffset;
 
 		// Make sure that when pitch is out of bounds, screen doesn't get flipped
 		if (constrainPitch)
@@ -83,57 +111,16 @@ public:
 				m_Pitch = -89.0f;
 		}
 
+		m_Orientation.FromEuler(TAT_RADIAN(m_Yaw), TAT_RADIAN(m_Pitch), TAT_RADIAN(m_Roll));
+
 		Update();
-	}
-
-	virtual void OnCursorScroll(float offset) override
-	{
-		if (m_Zoom >= 1.0f && m_Zoom <= 45.0f)
-			m_Zoom -= offset;
-		if (m_Zoom <= 1.0f)
-			m_Zoom = 1.0f;
-		if (m_Zoom >= 45.0f)
-			m_Zoom = 45.0f;
-	}
-
-	virtual void OnCursorMove(float dx, float dy) override
-	{
-		Rotate(dx, dy, true);
-	}
-
-	virtual void OnKeyPressed(int key) override
-	{
-		//TODO use commander
-		switch (key)
-		{
-		case GLFW_KEY_W:
-			m_MoveState |= CameraMoveState::MOVE_FORWARD;
-			break;
-		case GLFW_KEY_S:
-			m_MoveState |= CameraMoveState::MOVE_BACKWARD;
-			break;
-		case GLFW_KEY_A:
-			m_MoveState |= CameraMoveState::MOVE_LEFT;
-			break;
-		case GLFW_KEY_D:
-			m_MoveState |= CameraMoveState::MOVE_RIGHT;
-			break;
-		case GLFW_KEY_LEFT_SHIFT:
-			m_MoveState |= CameraMoveState::MOVE_UP;
-			break;
-		case GLFW_KEY_LEFT_CONTROL:
-			m_MoveState |= CameraMoveState::MOVE_DOWN;
-			break;
-		default:
-			break;
-		}
 	}
 
 	void SetSpeed(float speed)
 	{
 		m_MoveSpeed = speed;
 	}
-	void SetPosition(glm::vec3 pos)
+	void SetPosition(const TATVector3& pos)
 	{
 		m_Position = pos;
 	}
@@ -145,7 +132,7 @@ public:
 
 	void GetViewMatrix(glm::mat4& mat)
 	{
-		mat = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
+		mat = glm::lookAt(m_Position.ToGLM(), (m_Position + m_Front).ToGLM(), m_Up.ToGLM());
 	}
 
 	void GetViewMatrix(float* mat)
@@ -159,7 +146,10 @@ public:
 				mat[i * 4 + j] = view[i][j];
 			}
 		}
+
+		int stop = 1;
 	}
+
 	void GetProjectionMatrix(glm::mat4& proj)
 	{
 		proj = m_ProjectionMat;
@@ -176,46 +166,81 @@ public:
 		}
 	}
 
-	glm::vec3 GetForward()
+	TATVector3 GetForward()
 	{
 		return m_Front;
 	}
-	glm::vec3 GetPosition()
+	TATVector3 GetPosition()
 	{
 		return m_Position;
 	}
-	glm::vec3 GetRight()
+	TATVector3 GetRight()
 	{
 		return m_Right;
 	}
-	glm::vec3 GetUp()
+	TATVector3 GetUp()
 	{
 		return m_Up;
 	}
 
+	//interface Implement
+	virtual void OnCursorScroll(float offset) override
+	{
+		if (m_Zoom >= 1.0f && m_Zoom <= 45.0f)
+			m_Zoom -= offset;
+		if (m_Zoom <= 1.0f)
+			m_Zoom = 1.0f;
+		if (m_Zoom >= 45.0f)
+			m_Zoom = 45.0f;
+	}
+
+	virtual void OnCursorMove(float dx, float dy) override
+	{
+		Rotate(dx, dy, true);
+	}
+
+	virtual void OnKeyPressed(int key) override
+	{}
+
+	virtual void OnKeyHold(int key) override
+	{}
+
+	virtual void BeginRenderOneFrame(float dt) override
+	{
+		Update();
+		Move(dt);
+	}
+
+	virtual void RenderOneFrameEnd(float dt) override
+	{}
+	
 private:
 	void Update()
 	{
 		if (m_Freeze)
 			return;
 
-		glm::vec3 front;
-		front.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
-		front.y = sin(glm::radians(m_Pitch));
-		front.z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
-		m_Front = glm::normalize(front);
-		m_Right = glm::normalize(glm::cross(m_Front, m_WorldUp)); 
-		m_Up = glm::normalize(glm::cross(m_Right, m_Front));
-		m_ViewMat = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
+		TATVector3 front;
+		//front.X = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+		//front.Y = sin(glm::radians(m_Pitch));
+		//front.Z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+
+		front = m_Orientation * TATVector3(0, 0, 1);
+
+		m_Front = front.Normalized();
+		m_Right = (m_Front.Cross(m_WorldUp)).Normalized();
+		m_Up = (m_Right.Cross(m_Front)).Normalized();
+		m_ViewMat = glm::lookAt(m_Position.ToGLM(), (m_Position + m_Front).ToGLM(), m_Up.ToGLM());
 		m_ProjectionMat = glm::perspective(glm::radians(m_Zoom), m_WindowWidth / m_WindowHeight, m_NearPlane, m_FarPlane);
 	}
 
 	// Camera Attributes
-	glm::vec3 m_Position;
-	glm::vec3 m_Front;
-	glm::vec3 m_Up;
-	glm::vec3 m_Right;
-	glm::vec3 m_WorldUp;
+	TATVector3 m_Position;
+	TATVector3 m_Front;
+	TATVector3 m_Up;
+	TATVector3 m_Right;
+	TATVector3 m_WorldUp;
+	TATQuaternion m_Orientation;
 	glm::mat4 m_ProjectionMat;
 	glm::mat4 m_ViewMat;
 
@@ -225,6 +250,7 @@ private:
 	float m_Zoom;
 	float m_Yaw;
 	float m_Pitch;
+	float m_Roll;
 	float m_NearPlane;
 	float m_FarPlane;
 	float m_WindowHeight;

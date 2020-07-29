@@ -1,12 +1,13 @@
 #include "TATWorldListener.h"
 #include "TAThread.h"
+#include "TATApplication.h"
 
 TATRenderListener::TATRenderListener()
 {
-	TATRenderThread::Instance()->AddListener(this);
+	TAT_RENDER_THREAD->AddListener(this);
 }
 
 TATPhysicListener::TATPhysicListener()
 {
-	TATPhysicThread::Instance()->AddListener(this);
+	TAT_PHYSIC_THREAD->AddListener(this);
 }

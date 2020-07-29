@@ -6,8 +6,14 @@ class TAThread;
 class TATStageNode;
 class TATCamera;
 class TATLight;
+class TATPhysicThread;
+class TATRenderThread;
 
-#define TAT_ROOTNODE TATApplicationEntry::GetApplication()->GetRootNode()
+#define TAT_ROOTNODE TATApplicationEntry::Instance()->GetApplication()->GetRootNode()
+#define TAT_RENDER_THREAD TATApplicationEntry::Instance()->GetApplication()->m_RenderThread
+#define TAT_PHYSIC_THREAD TATApplicationEntry::Instance()->GetApplication()->m_PhysicThread
+#define TAT_APPNAME TATApplicationEntry::Instance()->GetApplication()->GetAppName()
+#define TAT_APP TATApplicationEntry::Instance()->GetApplication()
 
 class TATApplication
 {
@@ -29,9 +35,9 @@ public:
 
 	TString m_AppName;
 
-	TAThread* m_PhysicThread;
+	TATPhysicThread* m_PhysicThread;
 
-	TAThread* m_RenderThread;
+	TATRenderThread* m_RenderThread;
 
 	TATStageNode* m_RootNode;
 
@@ -54,15 +60,19 @@ public:
 		}
 	}
 
-	static void SetApplication(TATApplication* app)
+	void SetApplication(TATApplication* app)
 	{
-		Instance()->m_App = app;
+		m_App = app;
 	}
 
-	static TATApplication* GetApplication()
+	TATApplication* GetApplication()
 	{
-		return Instance()->m_App;
+		return m_App;
 	}
+
+	static TATRenderThread* GetRenderThread();
+
+	static TATPhysicThread* GetPhysicThread();
 
 	TATApplication* m_App;
 

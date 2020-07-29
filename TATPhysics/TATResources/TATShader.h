@@ -9,6 +9,8 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include "TATPaths.h"
+#include "../TATApplication/TATApplication.h"
 
 class TATShader
 {
@@ -16,8 +18,12 @@ public:
 	unsigned int ID;
 	// constructor generates the shader on the fly
 	// ------------------------------------------------------------------------
-	TATShader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr)
+	TATShader(const TString& vertexPath, const TString& fragmentPath, const TString& geometryPath)
 	{
+		TString vPath = TATPaths::PathOfShader(TAT_APPNAME, vertexPath);
+		TString fPath = TATPaths::PathOfShader(TAT_APPNAME, fragmentPath);
+		TString gPath = TATPaths::PathOfShader(TAT_APPNAME, geometryPath);
+
 		// 1. retrieve the vertex/fragment source code from filePath
 		std::string vertexCode;
 		std::string fragmentCode;
@@ -32,8 +38,8 @@ public:
 		try
 		{
 			// open files
-			vShaderFile.open(vertexPath);
-			fShaderFile.open(fragmentPath);
+			vShaderFile.open(vPath.ToChar());
+			fShaderFile.open(fPath.ToChar());
 			std::stringstream vShaderStream, fShaderStream;
 			// read file's buffer contents into streams
 			vShaderStream << vShaderFile.rdbuf();
@@ -45,9 +51,9 @@ public:
 			vertexCode = vShaderStream.str();
 			fragmentCode = fShaderStream.str();
 			// if geometry shader path is present, also load a geometry shader
-			if (geometryPath != nullptr)
+			if (!gPath.IsEmpty())
 			{
-				gShaderFile.open(geometryPath);
+				gShaderFile.open(gPath.ToChar());
 				std::stringstream gShaderStream;
 				gShaderStream << gShaderFile.rdbuf();
 				gShaderFile.close();
@@ -74,7 +80,7 @@ public:
 		CheckCompileErrors(fragment, "FRAGMENT");
 		// if geometry shader is given, compile geometry shader
 		unsigned int geometry;
-		if (geometryPath != nullptr)
+		if (!gPath.IsEmpty())
 		{
 			const char * gShaderCode = geometryCode.c_str();
 			geometry = glCreateShader(GL_GEOMETRY_SHADER);
@@ -86,14 +92,14 @@ public:
 		ID = glCreateProgram();
 		glAttachShader(ID, vertex);
 		glAttachShader(ID, fragment);
-		if (geometryPath != nullptr)
+		if (!gPath.IsEmpty())
 			glAttachShader(ID, geometry);
 		glLinkProgram(ID);
 		CheckCompileErrors(ID, "PROGRAM");
 		// delete the shaders as they're linked into our program now and no longer necessery
 		glDeleteShader(vertex);
 		glDeleteShader(fragment);
-		if (geometryPath != nullptr)
+		if (!gPath.IsEmpty())
 			glDeleteShader(geometry);
 
 	}

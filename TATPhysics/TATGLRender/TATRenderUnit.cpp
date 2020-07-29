@@ -8,14 +8,9 @@ TATRenderUnit::TATRenderUnit()
 	m_RenderBuffer = 0;
 	m_VertexOrder = 0;
 	m_RenderVertices = 0;
-	m_IndicesCount = 0;
-	m_VertexCount = 0;
 	m_VAOId = TAT_SHADERID_UNUSE;
 	m_VBOId = TAT_SHADERID_UNUSE;
-	m_StaticDataUploaded = false;
-	TATMatrix3::GetIdentity().GetOpenGLSubMatrix(m_MatrixModel);
-	TATMatrix3::GetIdentity().GetOpenGLSubMatrix(m_MatrixProj);
-	TATMatrix3::GetIdentity().GetOpenGLSubMatrix(m_MatrixView);
+	Clear();
 }
 
 void TATRenderUnit::SetMaterial(TATMaterial* mat)
@@ -38,16 +33,18 @@ void TATRenderUnit::GenerateRenderBuffer()
 		{
 			m_VertexOrder[i] = i;
 		}
+
+		m_IndicesCount = m_VertexCount;
 	}
 
-	int blockSize = m_RenderEleMask.ComputeSize();
+	m_BlockSize = m_RenderEleMask.ComputeSize();
 
-	TAT_SAFE_NEW(m_RenderBuffer, float, blockSize * m_IndicesCount);
+	TAT_SAFE_NEW(m_RenderBuffer, float, m_BlockSize * m_IndicesCount);
 
 	int curr = 0;
-	for (int i = 0; i < blockSize * m_IndicesCount; i += blockSize)
+	for (int i = 0; i < m_BlockSize * m_IndicesCount; i += m_BlockSize)
 	{
-		int index = i / blockSize;
+		int index = i / m_BlockSize;
 		const TATRenderVertex& vertex = m_RenderVertices[m_VertexOrder[index]];
 
 		m_RenderBuffer[i + curr++] = vertex.m_Position[0];
@@ -77,7 +74,7 @@ void TATRenderUnit::GenerateRenderBuffer()
 			}
 		}
 
-		assert(curr == blockSize);
+		assert(curr == m_BlockSize);
 
 		curr = 0;
 	}
@@ -119,7 +116,6 @@ void TATRenderUnit::Clear()
 	m_StaticDataUploaded = false;
 	m_TriangleCount = 0;
 	m_UseTransform = false;
-	m_StaticDataUploaded = false;
 	TAT_MEMSET(m_TextureIds, TAT_SHADERID_UNUSE);
 	TAT_MEMSET(m_Textures, 0);
 	TATMatrix3::GetIdentity().GetOpenGLSubMatrix(m_MatrixModel);
@@ -133,4 +129,6 @@ void TATRenderUnit::Clear()
 
 	m_VAOId = TAT_SHADERID_UNUSE;
 	m_VBOId = TAT_SHADERID_UNUSE;
+
+	m_Transform = TATransform::GetIdentity();
 }

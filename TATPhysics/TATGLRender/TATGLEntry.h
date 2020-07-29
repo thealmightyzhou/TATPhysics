@@ -34,16 +34,14 @@ public:
 	{
 		return m_Instance;
 	}
-	// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-	// ---------------------------------------------------------------------------------------------------------
-	virtual void processInput(GLFWwindow* window);
+
+	virtual void OnKeyPressedCallback(GLFWwindow* window);
 
 	void OnFrameBufferResizeCallback(GLFWwindow* window, int width, int height)
 	{
 		glViewport(0, 0, width, height);
 	}
-	// glfw: whenever the mouse moves, this callback is called
-	// -------------------------------------------------------
+
 	void OnCursorMoveCallback(GLFWwindow* window, double xpos, double ypos)
 	{
 		if (m_FirstCursor)
@@ -98,9 +96,6 @@ public:
 		return;
 	}
 
-
-	// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-	// ----------------------------------------------------------------------
 	void OnMouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 	{
 		OnCursorScroll((float)yoffset);
@@ -110,8 +105,8 @@ public:
 
 	void RemoveInputListener(TATInputListener* listener);
 
-	static TATGLEntry* m_Instance;
-
+	int m_WindowWidth;
+	int m_WindowHeight;
 private:
 
 	void OnKeyPressed(int key);
@@ -130,6 +125,8 @@ private:
 
 	void OnCursorScroll(float offset);
 
+	void RegisterKeys();
+
 	std::map<void*, TATInputListener*> m_InputListeners;
 
 	float m_CursorLastX;
@@ -137,10 +134,9 @@ private:
 	bool m_FirstCursor;
 	bool m_IsMouseDown;
 
-	int m_WindowWidth;
-	int m_WindowHeight;
-
 	GLFWwindow* m_GLWindow;
+
+	static TATGLEntry* m_Instance;
 };
 
 #endif // !THEALMIGHTY_GLUTILITY

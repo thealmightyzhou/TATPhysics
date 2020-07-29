@@ -27,7 +27,20 @@ TATStageNode* TATApplication::GetRootNode()
 
 void TATApplication::Initialize()
 {
+	m_PhysicThread = new TATPhysicThread;
+	m_RenderThread = new TATRenderThread;
+
 	m_MainCamera = new TATCamera("main");
 
 	m_MainLight = new TATLight("main");
+}
+
+TATRenderThread* TATApplicationEntry::GetRenderThread()
+{
+	return Instance()->m_App->m_RenderThread;
+}
+
+TATPhysicThread* TATApplicationEntry::GetPhysicThread()
+{
+	return Instance()->m_App->m_PhysicThread;
 }

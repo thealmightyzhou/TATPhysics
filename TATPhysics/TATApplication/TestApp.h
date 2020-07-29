@@ -2,7 +2,7 @@
 #include "TATApplication.h"
 #include "TATWorldListener.h"
 
-class TestApp :public TATApplication,TATRenderListener,TATPhysicListener
+class TestApp :public TATApplication
 {
 public:
 	TestApp(const TString& name) :TATApplication(name)
@@ -13,16 +13,4 @@ public:
 	virtual void CreateScene() override;
 
 	virtual void Run() override;
-
-	virtual void BeginRenderOneFrame(float dt) override;
-
-	virtual void RenderOneFrameEnd(float dt) override
-	{}
-
-	virtual void SimulationStart(float dt) override
-	{}
-
-	virtual void SimulationEnd(float dt) override
-	{}
-
 };

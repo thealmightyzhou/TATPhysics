@@ -96,20 +96,29 @@ public:
 		m_TotalSize = 3 + 3 * IsUseNormal() + 3 * IsUseTangent() + 2 * IsUseTexCoordinate() * m_TexCount;
 
 		int index = 0;
-		int totalSize = -3;
-		m_BufferOffsets.push_back(BufferOffset(index++, 3, totalSize += 3));
+		int beforeSize = 0;
+		m_BufferOffsets.push_back(BufferOffset(index++, 3, beforeSize));
+		beforeSize += 3;
 		if (IsUseNormal())
-			m_BufferOffsets.push_back(BufferOffset(index++, 3, totalSize += 3));
+		{
+			m_BufferOffsets.push_back(BufferOffset(index++, 3, beforeSize));
+			beforeSize += 3;
+		}
+
 		if (IsUseTangent())
-			m_BufferOffsets.push_back(BufferOffset(index++, 3, totalSize += 3));
+		{
+			m_BufferOffsets.push_back(BufferOffset(index++, 3, beforeSize));
+			beforeSize += 3;
+		}
+
 		if (IsUseTexCoordinate())
 		{
 			for (int i = 0; i < m_TexCount; i++)
 			{
-				m_BufferOffsets.push_back(BufferOffset(index++, 2, totalSize += 2));
+				m_BufferOffsets.push_back(BufferOffset(index++, 2, beforeSize));
+				beforeSize += 2;
 			}
 		}
-		assert(totalSize == m_TotalSize);
 		return m_TotalSize;
 	}
 

@@ -30,7 +30,7 @@ public:
 	thread m_Thread;
 };
 
-class TATPhysicThread :public TAThread,public Singleton<TATPhysicThread>
+class TATPhysicThread :public TAThread
 {
 public:
 	TATPhysicThread()
@@ -54,7 +54,8 @@ public:
 	std::vector<TATPhysicListener*> m_PhysicListeners;
 };
 
-class TATRenderThread :public TAThread,public Singleton<TATRenderThread>
+//opengl function only used in main thread?
+class TATRenderThread// :public TAThread
 {
 public:
 	TATRenderThread(): m_RenderUnitPool(TAT_MAX_RENDERUNIT_COUNT)
@@ -66,11 +67,13 @@ public:
 		m_Window = 0;
 	}
 
-	virtual void Run() override
+	virtual void Run()
 	{
-		m_Thread = thread(&TATRenderThread::RenderLoop, this);
-		if (m_Thread.joinable())
-			m_Thread.join();
+		//m_Thread = thread(&TATRenderThread::RenderLoop, this);
+		//if (m_Thread.joinable())
+		//	m_Thread.join();
+
+		RenderLoop();
 	}
 
 	void RenderLoop();

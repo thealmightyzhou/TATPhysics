@@ -68,8 +68,13 @@ void TATRenderThread::RenderLoop()
 	float dt = float(1) / 60;
 	while (!glfwWindowShouldClose(m_Window))
 	{
+		m_RenderStateDirty = true;
+
 		if (m_RenderStateDirty)
 		{
+			glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 			for (int i = 0; i < (int)m_RenderListeners.size(); ++i)
 			{
 				m_RenderListeners[i]->BeginRenderOneFrame(dt);

@@ -1,5 +1,6 @@
 #include "TATGLEntry.h"
 #include "TATInputListener.h"
+#include <vector>
 
 static TATGLEntry* global_GLEntry = new TATGLEntry;
 
@@ -29,6 +30,12 @@ void MousePressedCallbackWrapper(GLFWwindow* window, int button, int action, int
 		global_GLEntry->OnMousePressedCallback(global_GLEntry->GetWindow(), button, action, mods);
 }
 
+void KeyPressedCallbackWrapper(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+	if (global_GLEntry)
+		global_GLEntry->OnKeyPressedCallback(window);
+}
+
 GLFWwindow* TATGLEntry::Initialize(int width, int height)
 {
 	m_Instance = global_GLEntry;
@@ -41,8 +48,6 @@ GLFWwindow* TATGLEntry::Initialize(int width, int height)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	// glfw window creation
-	// --------------------
 	GLFWwindow* window = glfwCreateWindow(width, height, "", NULL, NULL);
 	if (window == NULL)
 	{
@@ -56,6 +61,7 @@ GLFWwindow* TATGLEntry::Initialize(int width, int height)
 	glfwSetCursorPosCallback(window, CursorMoveCallbackWrapper);
 	glfwSetScrollCallback(window, MouseScrollCallbackWrapper);
 	glfwSetMouseButtonCallback(window, MousePressedCallbackWrapper);
+	glfwSetKeyCallback(window, KeyPressedCallbackWrapper);
 
 	// tell GLFW to capture our mouse
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -71,8 +77,7 @@ GLFWwindow* TATGLEntry::Initialize(int width, int height)
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
 
-	// build and compile our shader zprogram
-	// ------------------------------------
+	RegisterKeys();
 
 	m_GLWindow = window;
 
@@ -87,14 +92,14 @@ GLFWwindow* TATGLEntry::Initialize(int width, int height)
 
 void TATGLEntry::OnKeyPressed(int key)
 {
-	ALL_LISTENERS_DO(OnKeyPressed(key));
 	TATInputListener::m_KeyState[key] = true;
+	ALL_LISTENERS_DO(OnKeyPressed(key));
 }
 
 void TATGLEntry::OnKeyReleased(int key)
 {
-	ALL_LISTENERS_DO(OnKeyReleased(key));
 	TATInputListener::m_KeyState[key] = false;
+	ALL_LISTENERS_DO(OnKeyReleased(key));
 }
 
 void TATGLEntry::OnKeyHold(int key)
@@ -139,7 +144,7 @@ void TATGLEntry::RemoveInputListener(TATInputListener* listener)
 	m_InputListeners.erase((void*)listener);
 }
 
-void TATGLEntry::processInput(GLFWwindow* window)
+void TATGLEntry::OnKeyPressedCallback(GLFWwindow* window)
 {
 	std::map<int, bool>::iterator ite = TATInputListener::m_KeyState.begin();
 	for (ite; ite != TATInputListener::m_KeyState.end(); ite++)
@@ -161,5 +166,13 @@ void TATGLEntry::processInput(GLFWwindow* window)
 				OnKeyReleased(ite->first);
 			}
 		}
+	}
+}
+
+void TATGLEntry::RegisterKeys()
+{
+	for (int i = 0; i < 350; i++) 
+	{
+		TATInputListener::m_KeyState[i] = false;
 	}
 }

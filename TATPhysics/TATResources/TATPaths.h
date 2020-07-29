@@ -60,21 +60,29 @@ public:
 
 	static TString PathOfShader(const TString& appName, const TString& name)
 	{
+		if (name.IsEmpty())
+			return "";
 		return PathOfShaderRoot(appName).Visit(name);
 	}
 
 	static TString PathOfModel(const TString& appName, const TString& name)
 	{
+		if (name.IsEmpty())
+			return "";
 		return PathOfModelRoot(appName).Visit(name);
 	}
 
 	static TString PathOfTexture(const TString& appName, const TString& name)
 	{
+		if (name.IsEmpty())
+			return "";
 		return PathOfTextureRoot(appName).Visit(name);
 	}
 
 	static TString PathOfMaterial(const TString& appName, const TString& name)
 	{
+		if (name.IsEmpty())
+			return "";
 		return PathOfMaterialRoot(appName).Visit(name);
 	}
 };
