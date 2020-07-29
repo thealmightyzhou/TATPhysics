@@ -1,0 +1,15 @@
+type:
+vec2 ;vec3 ;vec4 ;mat3 ;mat4 ;sampler2D
+
+keyword
+in ;out ;uniform ;layout (location = 0)
+
+func:
+texture(sampler2D,vec2)
+inverse(mat4)
+transpose(mat4)
+normalize(vec3)
+dot(vec3,vec3)
+max(float,float)
+reflect(vec3,vec3)
+pow(float,int)

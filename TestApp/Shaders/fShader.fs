@@ -3,10 +3,12 @@ out vec4 color;
 
 in vec3 onormal;  
 in vec3 ofragPos;  
+in vec2 otexcoord;
   
 uniform vec3 lightPos; 
 uniform vec3 viewPos;
 uniform vec3 lightColor;
+uniform sampler2D tex0;
 
 void main()
 {
@@ -28,5 +30,5 @@ void main()
     vec3 specular = specularStrength * spec * lightColor;  
         
     vec3 result = (ambient + diffuse + specular);
-    color = vec4(result, 1.0f);
+    color = vec4(result, 1.0f) * texture(tex0,otexcoord);
 } 

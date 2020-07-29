@@ -24,7 +24,7 @@ public:
 		objFile.open(filePath.m_Str, ios::in);
 		if (!objFile.is_open())
 		{
-			std::cout << "file not exist!" << endl;
+			std::cout << filePath.m_Str + " file not exist!" << endl;
 			return;
 		}
 
