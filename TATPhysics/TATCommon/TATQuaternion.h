@@ -75,7 +75,7 @@ public:
 
 	void FromCoordinateSys(const TATVector3& x, const TATVector3& y, const TATVector3& z)
 	{
-		TATQuaternion orient = FastestRotation(TATVector3::UintZ(), z);
+		TATQuaternion orient = FastestRotation(TATVector3::UnitZ(), z);
 		TATVector3 dx = orient * x;
 		orient *= FastestRotation(dx, x);
 		SetValue(orient.X, orient.Y, orient.Z, orient.W);

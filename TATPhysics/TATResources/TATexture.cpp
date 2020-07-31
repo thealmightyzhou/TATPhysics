@@ -2,9 +2,8 @@
 
 #include "../../ThirdParty/stb_image/stb_image.h"
 
-void TATexture::Load(const TString& name)
+void TATexture::Load(const TString& filePath)
 {
-	TString filePath = TATPaths::PathOfTexture(TAT_APPNAME, name);
 	stbi_set_flip_vertically_on_load(true);
 	InternalLoad(filePath);
 	glGenTextures(1, &m_GLId);

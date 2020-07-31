@@ -3,7 +3,7 @@
 
 #include "TATGLHeader.h"
 #include "../TATResources/TATShader.h"
-#include "TATRenderunit.h"
+#include "TATRenderUnit.h"
 #include "../TATResources/TATMaterial.h"
 #include "../TATBasis/TATWorld.h"
 #include "TATLight.h"
@@ -11,17 +11,11 @@
 
 using namespace std;
 
-#define TAT_RENDERMODE_TRIANGLES GL_TRIANGLES
-#define TAT_RENDERMODE_POINTS GL_POINTS
-#define TAT_RENDERMODE_LINES GL_LINES
-
 class TATGLRenderer//:public TATRenderer
 {
 public:
 	TATGLRenderer()
-	{
-		m_RenderMode = GL_TRIANGLES;
-	}
+	{}
 
 	virtual ~TATGLRenderer() {}
 
@@ -107,14 +101,7 @@ public:
 	{
 		glBindVertexArray(unit->m_VAOId);
 
-		if (m_RenderMode == GL_TRIANGLES)
-		{
-			glDrawArrays(GL_TRIANGLES, 0, unit->m_IndicesCount);
-		}
-		else if (m_RenderMode == GL_POINTS)
-		{
-			glDrawArrays(GL_POINTS, 0, unit->m_VertexCount);
-		}
+		glDrawArrays(unit->m_RenderMode, 0, unit->m_IndicesCount);
 
 		//else if (m_renderMode == GL_LINE_LOOP || m_renderMode == GL_LINE_STRIP || m_renderMode == GL_LINES)
 		//{
@@ -138,14 +125,6 @@ public:
 
 		Draw(unit);
 	}
-
-	//GL_TRIANGLES | GL_LINES | GL_POINTS
-	void SetRenderMode(UINT mode)
-	{
-		m_RenderMode = mode;
-	}
-
-	UINT m_RenderMode;
 };
 
 #endif // !THEALMIGHTY_RENDERER

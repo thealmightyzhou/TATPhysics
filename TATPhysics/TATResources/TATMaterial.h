@@ -45,6 +45,13 @@ public:
 		m_MaterialSetting["TextureUnit4"] = "";
 	}
 
+	void GetShaderPaths(TString& vs, TString& fs, TString& gs)
+	{
+		vs = m_MaterialSetting["VertexShader"];
+		fs = m_MaterialSetting["FragmentShader"];
+		gs = m_MaterialSetting["GeometryShader"];
+	}
+
 	//called in SetMaterial(a)
 	void OnMaterialSetted(TATRenderUnit* unit);
 

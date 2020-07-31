@@ -7,6 +7,7 @@
 #include "../TATStage/TATActor.h"
 #include "../TATResources/TATMaterial.h"
 #include "../TATResources/TATexture.h"
+#include "../TATStage/TATLinePainter.h"
 
 void TestApp::Initialize()
 {
@@ -21,6 +22,9 @@ void TestApp::CreateScene()
 {
 	__super::CreateScene();
 
+	m_MainCamera->SetPosition(TATVector3(30, 0, 0));
+	m_MainCamera->SetWindowSize(TATGLEntry::Instance()->m_WindowWidth, TATGLEntry::Instance()->m_WindowHeight);
+
 	TATMesh* mesh = TATResourceManager::Instance()->LoadMesh("cube.obj");
 
 	TATMaterial* mat = TATResourceManager::Instance()->LoadMaterial("testMat.tmaterial");
@@ -34,8 +38,7 @@ void TestApp::CreateScene()
 	node->SetVisible(true);
 	node->SetTransform(TATransform::GetIdentity());
 
-	m_MainCamera->SetPosition(TATVector3(30, 0, 0));
-	m_MainCamera->SetWindowSize(TATGLEntry::Instance()->m_WindowWidth, TATGLEntry::Instance()->m_WindowHeight);
+	m_LinePainter = new TATLinePainter();
 
 	//TODO put resources to world and set physic behavior coefficient
 }
@@ -48,4 +51,11 @@ void TestApp::Run()
 
 	//m_PhysicThread->Run();
 	m_RenderThread->Run();
+}
+
+void TestApp::BeginRenderOneFrame(float dt)
+{
+	m_LinePainter->PaintLine(TATVector3::Zero(), TATVector3::UnitY() * 50, TATVector3(1, 0, 0));
+
+	m_LinePainter->PaintLine(TATVector3(20, 20, 20), TATVector3::UnitX() * 50, TATVector3(0, 1, 0));
 }

@@ -172,3 +172,15 @@
 /TATPhysics/TATPhysics/Debug/TATStageNode.obj
 /TATPhysics/TATPhysics/Debug/TATexture.obj
 /TATPhysics/TATPhysics/Debug/stb_image.obj
+/.vs/TATPhysics/v16/ipch/AutoPCH/184a4f05514ab3f0/TATWORLDLISTENER.ipch
+/.vs/TATPhysics/v16/ipch/AutoPCH/2eb77614c2416435/TATMANUALOBJECT.ipch
+/.vs/TATPhysics/v16/ipch/AutoPCH/305201292838e8b6/TATERRORREPORTER.ipch
+/.vs/TATPhysics/v16/ipch/AutoPCH/4e537fd417d3b42c/TATEXTURE.ipch
+/.vs/TATPhysics/v16/ipch/AutoPCH/e7b01330977ffd84/TATMATERIAL.ipch
+/.vs/TATPhysics/v16/ipch/AutoPCH/f252effe07510386/TATRESOURCEMANAGER.ipch
+/.vs/TATPhysics/v16/ipch/AutoPCH/fa7ecd31e3bb74aa/TATLINEPAINTER.ipch
+/TATPhysics/Debug/TATManualObject.obj
+/TATPhysics/Debug/TATMaterial.obj
+/TATPhysics/Debug/TATResourceManager.obj
+/TATPhysics/Debug/TATexture.obj
+/TATPhysics/Debug/stb_image.obj

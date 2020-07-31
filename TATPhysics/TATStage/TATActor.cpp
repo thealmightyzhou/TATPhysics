@@ -67,6 +67,11 @@ void TATActor::FillRenderUnit()
 			vertices[i].m_Tangent = m_RenderMesh->m_MeshVertices[i].m_Tangent;
 		}
 
+		if (m_RenderUnit->m_RenderEleMask.IsUseColour())
+		{
+			vertices[i].m_Colour = m_RenderMesh->m_MeshVertices[i].m_Colour;
+		}
+
 		if (m_RenderUnit->m_RenderEleMask.IsUseTexCoordinate())
 		{
 			vertices[i].m_TexCoordinateCount = m_RenderUnit->m_RenderEleMask.m_TexCount;
@@ -79,7 +84,6 @@ void TATActor::FillRenderUnit()
 	}
 
 	m_RenderUnit->m_IndicesCount = 3 * m_RenderMesh->m_FaceCount;
-	m_RenderUnit->m_TriangleCount = m_RenderMesh->m_FaceCount;
 
 	TAT_SAFE_NEW(m_RenderUnit->m_VertexOrder, int, m_RenderUnit->m_IndicesCount);
 

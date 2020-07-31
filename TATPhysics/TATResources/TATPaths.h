@@ -8,7 +8,7 @@ class TATPaths
 public:
 	static TString PathOfProj()
 	{
-		TString res = PathOfExe().UpperDirect().UpperDirect().UpperDirect();
+		TString res = PathOfExe().UpperDirect().UpperDirect();
 		return res;
 	}
 
@@ -94,5 +94,10 @@ public:
 	static TString PathOfDefaultShader(const TString& name)
 	{
 		return PathOfProj().Visit("Default").Visit("Shaders").Visit(name);
+	}
+
+	static TString PathOfLog()
+	{
+		return PathOfProj().Visit("log.log");
 	}
 };

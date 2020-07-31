@@ -11,6 +11,17 @@ public:
 
 	}
 
+	static bool FileExists(const TString& path)
+	{
+		errno_t err;
+		FILE* file;
+		err = fopen_s(&file, path.ToChar(), "r");
+		if (file)
+			return true;
+		else
+			return false;
+	}
+
 	static void ReadFileToLines(const TString& path, std::vector<TString>& res)
 	{
 		const int len = 500;
@@ -36,6 +47,6 @@ public:
 
 	static void AppendLine(const TString& path, const TString& line)
 	{
-
+		//TODO
 	}
 };

@@ -62,7 +62,7 @@ public:
 		float len2 = axis.Length2();
 		if (len2 < TAT_EPSILON * TAT_EPSILON)
 		{
-			axis = TATVector3::UintX();
+			axis = TATVector3::UnitX();
 		}
 		else
 		{

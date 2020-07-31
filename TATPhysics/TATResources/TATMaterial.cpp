@@ -7,22 +7,14 @@
 #include "TATFileStream.h"
 #include "../TATGLRender/TATCamera.h"
 #include "../TATGLRender/TATLight.h"
+#include "TATResourceManager.h"
 
-void TATMaterial::Load(const TString& name)
+void TATMaterial::Load(const TString& path)
 {
-	__super::Load(name);
+	__super::Load(path);
 
-	bool isDefault = false;
-	TString path = TATPaths::PathOfMaterial(TAT_APPNAME, name);
 	std::vector<TString> strs;
 	TATFileStream::ReadFileToLines(path, strs);
-	if (strs.size() == 0)
-	{
-		path = TATPaths::PathOfDefaultMaterial(name);
-		TATFileStream::ReadFileToLines(path, strs);
-		if (strs.size() > 0)
-			isDefault = true;
-	}
 
 	for (int i = 0; i < (int)strs.size(); i++)
 	{
@@ -34,22 +26,6 @@ void TATMaterial::Load(const TString& name)
 			m_MaterialSetting[pair[0]] = pair[1];
 		}
 	}
-
-	TString vPath, fPath, gPath;
-	if (!isDefault)
-	{
-		vPath = TATPaths::PathOfShader(TAT_APPNAME, m_MaterialSetting["VertexShader"]);
-		fPath = TATPaths::PathOfShader(TAT_APPNAME, m_MaterialSetting["FragmentShader"]);
-		gPath = TATPaths::PathOfShader(TAT_APPNAME, m_MaterialSetting["GeometryShader"]);
-	}
-	else
-	{
-		vPath = TATPaths::PathOfDefaultShader(m_MaterialSetting["VertexShader"]);
-		fPath = TATPaths::PathOfDefaultShader(m_MaterialSetting["FragmentShader"]);
-		gPath = TATPaths::PathOfDefaultShader(m_MaterialSetting["GeometryShader"]);
-	}
-
-	m_Shader = new TATShader(vPath, fPath, gPath);
 
 	if (m_MaterialSetting["LightName"] != "")
 	{
@@ -85,7 +61,6 @@ void TATMaterial::Load(const TString& name)
 			m_Textures[i]->Load(m_MaterialSetting[TString("TextureUnit") + TString::ConvertInt(i)]);
 		}
 	}
-
 }
 
 void TATMaterial::OnMaterialSetted(TATRenderUnit* unit)

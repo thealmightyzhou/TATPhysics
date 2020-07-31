@@ -13,6 +13,7 @@ TATApplication::TATApplication(const TString& name):m_AppName(name)
 	m_PhysicThread = 0;
 	m_RenderThread = 0;
 	m_RootNode = new TATStageNode("root");
+	TATApplicationEntry::Instance()->SetApplication(this);
 }
 
 const TString& TATApplication::GetAppName()
@@ -29,6 +30,9 @@ void TATApplication::Initialize()
 {
 	m_PhysicThread = new TATPhysicThread;
 	m_RenderThread = new TATRenderThread;
+
+	m_RenderThread->AddListener(this);
+	m_PhysicThread->AddListener(this);
 
 	m_MainCamera = new TATCamera("main");
 

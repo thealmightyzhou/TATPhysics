@@ -1,6 +1,7 @@
 #pragma once
 #include "../TATCommon/TATSingleton.h"
 #include "../TATResources/TATPaths.h"
+#include "TATWorldListener.h"
 
 class TAThread;
 class TATStageNode;
@@ -15,7 +16,7 @@ class TATRenderThread;
 #define TAT_APPNAME TATApplicationEntry::Instance()->GetApplication()->GetAppName()
 #define TAT_APP TATApplicationEntry::Instance()->GetApplication()
 
-class TATApplication
+class TATApplication:public TATRenderListener,public TATPhysicListener
 {
 public:
 	TATApplication(const TString& name);
@@ -32,6 +33,14 @@ public:
 	const TString& GetAppName();
 
 	TATStageNode* GetRootNode();
+
+	virtual void BeginRenderOneFrame(float dt) {}
+
+	virtual void RenderOneFrameEnd(float dt) {}
+
+	virtual void SimulationStart(float dt) {}
+
+	virtual void SimulationEnd(float dt) {}
 
 	TString m_AppName;
 

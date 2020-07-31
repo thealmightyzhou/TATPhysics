@@ -14,11 +14,8 @@ public:
 		Load(filePath,m_Buffer);
 	}
 	
-	virtual void Load(const TString& name, TATModelBuffer& buffer)
+	virtual void Load(const TString& filePath, TATModelBuffer& buffer)
 	{
-		TString app = TAT_APPNAME;
-		TString filePath = TATPaths::PathOfModel(app, name);
-
 		const int len = 100;
 		ifstream objFile;
 		objFile.open(filePath.m_Str, ios::in);

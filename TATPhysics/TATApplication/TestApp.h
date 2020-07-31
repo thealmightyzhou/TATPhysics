@@ -1,6 +1,7 @@
 #pragma once
 #include "TATApplication.h"
-#include "TATWorldListener.h"
+
+class TATLinePainter;
 
 class TestApp :public TATApplication
 {
@@ -13,4 +14,14 @@ public:
 	virtual void CreateScene() override;
 
 	virtual void Run() override;
+
+	virtual void BeginRenderOneFrame(float dt);
+
+	virtual void RenderOneFrameEnd(float dt) {}
+
+	virtual void SimulationStart(float dt) {}
+
+	virtual void SimulationEnd(float dt) {}
+
+	TATLinePainter* m_LinePainter;
 };

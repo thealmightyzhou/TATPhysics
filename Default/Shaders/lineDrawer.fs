@@ -1,9 +1,8 @@
 #version 330 core
 out vec4 color;
-  
-uniform vec3 lineColor;
+in vec3 ocolour;
 
 void main()
 {
-  	color = lineColor;
+  	color = vec4(ocolour,1.0f);
 } 

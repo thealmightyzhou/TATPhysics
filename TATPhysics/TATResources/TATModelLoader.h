@@ -15,7 +15,8 @@ enum TATRenderPrimitiveMask
 	TATModelFaceMask,
 	TATModelNormalMask,
 	TATModelTexCoordinateMask,
-	TATModelTangentMask
+	TATModelTangentMask,
+	TATModelColourMask
 };
 
 class TATModelElementMask
@@ -40,42 +41,52 @@ public:
 
 	inline void UseNormal()
 	{
-		m_Mask |= TATModelNormalMask;
+		m_Mask |= (1 << TATModelNormalMask);
 	}
 
 	inline void UseTexCoordinate()
 	{
-		m_Mask |= TATModelTexCoordinateMask;
+		m_Mask |= (1 << TATModelTexCoordinateMask);
 	}
 
 	inline void UseTangent()
 	{
-		m_Mask |= TATModelTangentMask;
+		m_Mask |= (1 << TATModelTangentMask);
 	}
 
 	inline void UseFace()
 	{
-		m_Mask |= TATModelFaceMask;
+		m_Mask |= (1 << TATModelFaceMask);
+	}
+
+	inline void UseColour()
+	{
+		m_Mask |= (1 << TATModelColourMask);
 	}
 
 	inline bool IsUseNormal()
 	{
-		return (m_Mask & TATModelNormalMask);
+		return (m_Mask & (1 << TATModelNormalMask));
 	}
 
 	inline bool IsUseTexCoordinate()
 	{
-		return (m_Mask & TATModelTexCoordinateMask);
+		return (m_Mask & (1 << TATModelTexCoordinateMask));
 	}
 
 	inline bool IsUseTangent()
 	{
-		return (m_Mask & TATModelTangentMask);
+		return (m_Mask & (1 << TATModelTangentMask));
 	}
 
 	inline bool IsUseFace()
 	{
-		return (m_Mask & TATModelFaceMask);
+		return (m_Mask & (1 << TATModelFaceMask));
+	}
+
+	inline bool IsUseColour()
+	{
+		return (m_Mask & (1 << TATModelColourMask));
 	}
 
 	void SetTexNum(int n)
@@ -93,7 +104,7 @@ public:
 	{
 		m_BufferOffsets.clear();
 
-		m_TotalSize = 3 + 3 * IsUseNormal() + 3 * IsUseTangent() + 2 * IsUseTexCoordinate() * m_TexCount;
+		m_TotalSize = 3 + 3 * IsUseNormal() + 3 * IsUseTangent() + 3 * IsUseColour() + 2 * IsUseTexCoordinate() * m_TexCount;
 
 		int index = 0;
 		int beforeSize = 0;
@@ -106,6 +117,12 @@ public:
 		}
 
 		if (IsUseTangent())
+		{
+			m_BufferOffsets.push_back(BufferOffset(index++, 3, beforeSize));
+			beforeSize += 3;
+		}
+
+		if (IsUseColour())
 		{
 			m_BufferOffsets.push_back(BufferOffset(index++, 3, beforeSize));
 			beforeSize += 3;

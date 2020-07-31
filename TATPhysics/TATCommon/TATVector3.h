@@ -234,22 +234,22 @@ public:
 		SetValue(float(0.), float(0.), float(0.));
 	}
 
-	inline static TATVector3 UintX()
+	inline static TATVector3 UnitX()
 	{
-		static const TATVector3 uintXVector(1, 0, 0);
-		return uintXVector;
+		static const TATVector3 unitXVector(1, 0, 0);
+		return unitXVector;
 	}
 
-	inline static TATVector3 UintY()
+	inline static TATVector3 UnitY()
 	{
-		static const TATVector3 uintYVector(0, 1, 0);
-		return uintYVector;
+		static const TATVector3 unitYVector(0, 1, 0);
+		return unitYVector;
 	}
 
-	inline static TATVector3 UintZ()
+	inline static TATVector3 UnitZ()
 	{
-		static const TATVector3 uintZVector(0, 0, 1);
-		return uintZVector;
+		static const TATVector3 unitZVector(0, 0, 1);
+		return unitZVector;
 	}
 
 	inline static TATVector3 Zero()

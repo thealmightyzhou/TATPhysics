@@ -20,6 +20,10 @@ typedef unsigned int UINT;
 #define TAT_PI (TAT_2PI * float(0.5))
 #define TAT_HALF_PI (TAT_2PI * float(0.25))
 
+#define TAT_RENDERMODE_TRIANGLES GL_TRIANGLES
+#define TAT_RENDERMODE_POINTS GL_POINTS
+#define TAT_RENDERMODE_LINES GL_LINES
+
 #define TAT_REGISTER_GET(TYPE,ATTR)							\
 	inline const TYPE& Get##ATTR() const {return m_##ATTR;}
 

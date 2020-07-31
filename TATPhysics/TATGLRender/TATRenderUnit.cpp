@@ -2,7 +2,6 @@
 #include "../TATResources/TATMaterial.h"
 #include "../TATCommon/TATCore.h"
 #include "TATGLHeader.h"
-
 TATRenderUnit::TATRenderUnit()
 {
 	m_RenderBuffer = 0;
@@ -10,6 +9,7 @@ TATRenderUnit::TATRenderUnit()
 	m_RenderVertices = 0;
 	m_VAOId = TAT_SHADERID_UNUSE;
 	m_VBOId = TAT_SHADERID_UNUSE;
+	m_RenderMode = TAT_RENDERMODE_TRIANGLES;
 	Clear();
 }
 
@@ -63,6 +63,13 @@ void TATRenderUnit::GenerateRenderBuffer()
 			m_RenderBuffer[i + curr++] = vertex.m_Tangent[0];
 			m_RenderBuffer[i + curr++] = vertex.m_Tangent[1];
 			m_RenderBuffer[i + curr++] = vertex.m_Tangent[2];
+		}
+
+		if (m_RenderEleMask.IsUseColour())
+		{
+			m_RenderBuffer[i + curr++] = vertex.m_Colour[0];
+			m_RenderBuffer[i + curr++] = vertex.m_Colour[1];
+			m_RenderBuffer[i + curr++] = vertex.m_Colour[2];
 		}
 
 		if (m_RenderEleMask.IsUseTexCoordinate())

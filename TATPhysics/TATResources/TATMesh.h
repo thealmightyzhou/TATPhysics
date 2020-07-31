@@ -11,6 +11,7 @@ public:
 	float m_Normal[3];
 	float m_TexCoordinate[MAX_TEXCOORDINATE_COUNT][2];
 	float m_Tangent[3];
+	float m_Colour[3];
 };
 
 struct TATMeshFace
