@@ -15,9 +15,11 @@ class TATActor :public TATObject
 public:
 	TATActor(TATMesh* ptr);
 
+	TATActor();
+
 	virtual ~TATActor();
 
-	void FillRenderUnit();
+	virtual void FillRenderUnit();
 
 	void SetMaterial(TATMaterial* m);
 

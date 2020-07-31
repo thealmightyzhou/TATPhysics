@@ -11,6 +11,10 @@
 
 using namespace std;
 
+#define TAT_RENDERMODE_TRIANGLES GL_TRIANGLES
+#define TAT_RENDERMODE_POINTS GL_POINTS
+#define TAT_RENDERMODE_LINES GL_LINES
+
 class TATGLRenderer//:public TATRenderer
 {
 public:

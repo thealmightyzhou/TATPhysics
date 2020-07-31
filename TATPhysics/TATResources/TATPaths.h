@@ -85,4 +85,14 @@ public:
 			return "";
 		return PathOfMaterialRoot(appName).Visit(name);
 	}
+
+	static TString PathOfDefaultMaterial(const TString& name)
+	{
+		return PathOfProj().Visit("Default").Visit("Materials").Visit(name);
+	}
+
+	static TString PathOfDefaultShader(const TString& name)
+	{
+		return PathOfProj().Visit("Default").Visit("Shaders").Visit(name);
+	}
 };

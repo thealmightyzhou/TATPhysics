@@ -59,6 +59,7 @@ public:
 		return strs[0];
 	}
 
+	//in d:/a/b/c/d.obj return d:/a/b/c
 	inline TString UpperDirect()
 	{
 		std::vector<TString> strs;

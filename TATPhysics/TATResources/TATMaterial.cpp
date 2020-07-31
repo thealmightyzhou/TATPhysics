@@ -12,9 +12,17 @@ void TATMaterial::Load(const TString& name)
 {
 	__super::Load(name);
 
+	bool isDefault = false;
 	TString path = TATPaths::PathOfMaterial(TAT_APPNAME, name);
 	std::vector<TString> strs;
 	TATFileStream::ReadFileToLines(path, strs);
+	if (strs.size() == 0)
+	{
+		path = TATPaths::PathOfDefaultMaterial(name);
+		TATFileStream::ReadFileToLines(path, strs);
+		if (strs.size() > 0)
+			isDefault = true;
+	}
 
 	for (int i = 0; i < (int)strs.size(); i++)
 	{
@@ -27,9 +35,21 @@ void TATMaterial::Load(const TString& name)
 		}
 	}
 
-	m_Shader = new TATShader(m_MaterialSetting["VertexShader"],
-							 m_MaterialSetting["FragmentShader"],
-							 m_MaterialSetting["GeometryShader"]);
+	TString vPath, fPath, gPath;
+	if (!isDefault)
+	{
+		vPath = TATPaths::PathOfShader(TAT_APPNAME, m_MaterialSetting["VertexShader"]);
+		fPath = TATPaths::PathOfShader(TAT_APPNAME, m_MaterialSetting["FragmentShader"]);
+		gPath = TATPaths::PathOfShader(TAT_APPNAME, m_MaterialSetting["GeometryShader"]);
+	}
+	else
+	{
+		vPath = TATPaths::PathOfDefaultShader(m_MaterialSetting["VertexShader"]);
+		fPath = TATPaths::PathOfDefaultShader(m_MaterialSetting["FragmentShader"]);
+		gPath = TATPaths::PathOfDefaultShader(m_MaterialSetting["GeometryShader"]);
+	}
+
+	m_Shader = new TATShader(vPath, fPath, gPath);
 
 	if (m_MaterialSetting["LightName"] != "")
 	{

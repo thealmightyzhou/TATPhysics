@@ -25,7 +25,6 @@ public:
 	TATMaterial* m_Material;
 
 	int m_VertexCount;
-	int m_TriangleCount;
 	int m_TexCoordinateCount;
 	int m_IndicesCount;
 	int m_TexCount;
@@ -53,6 +52,8 @@ public:
 	UINT m_VBOId;
 
 	TATModelElementMask m_RenderEleMask;
+
+	int m_RenderMode;
 
 	void SetMaterial(TATMaterial* mat);
 

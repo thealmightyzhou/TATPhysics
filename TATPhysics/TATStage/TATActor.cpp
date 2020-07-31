@@ -8,6 +8,16 @@
 #include "../TATResources/TATMesh.h"
 #include "../TATResources/TATMaterial.h"
 
+TATActor::TATActor() : TATObject("actor_manual_" + TString::Make(GetObjectIndex()))
+{
+	m_RenderMesh = 0;
+	m_RenderUnit = TAT_RENDER_THREAD->m_RenderUnitPool.FetchUnused();
+	m_RigidBodyId = -1;
+	m_WorldTransform = TATransform::GetIdentity();
+	m_RenderCamera = TATWorld::Instance()->GetCamera("main");
+	m_RenderLight = TATWorld::Instance()->GetLight("main");
+}
+
 TATActor::TATActor(TATMesh* ptr) :TATObject("actor_" + ptr->GetSubName() + TString::Make(GetObjectIndex()))
 {
 	m_RenderMesh = ptr;

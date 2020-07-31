@@ -20,10 +20,6 @@ public:
 	// ------------------------------------------------------------------------
 	TATShader(const TString& vertexPath, const TString& fragmentPath, const TString& geometryPath)
 	{
-		TString vPath = TATPaths::PathOfShader(TAT_APPNAME, vertexPath);
-		TString fPath = TATPaths::PathOfShader(TAT_APPNAME, fragmentPath);
-		TString gPath = TATPaths::PathOfShader(TAT_APPNAME, geometryPath);
-
 		// 1. retrieve the vertex/fragment source code from filePath
 		std::string vertexCode;
 		std::string fragmentCode;
@@ -38,8 +34,8 @@ public:
 		try
 		{
 			// open files
-			vShaderFile.open(vPath.ToChar());
-			fShaderFile.open(fPath.ToChar());
+			vShaderFile.open(vertexPath.ToChar());
+			fShaderFile.open(fragmentPath.ToChar());
 			std::stringstream vShaderStream, fShaderStream;
 			// read file's buffer contents into streams
 			vShaderStream << vShaderFile.rdbuf();
@@ -51,9 +47,9 @@ public:
 			vertexCode = vShaderStream.str();
 			fragmentCode = fShaderStream.str();
 			// if geometry shader path is present, also load a geometry shader
-			if (!gPath.IsEmpty())
+			if (!geometryPath.IsEmpty())
 			{
-				gShaderFile.open(gPath.ToChar());
+				gShaderFile.open(geometryPath.ToChar());
 				std::stringstream gShaderStream;
 				gShaderStream << gShaderFile.rdbuf();
 				gShaderFile.close();
@@ -80,7 +76,7 @@ public:
 		CheckCompileErrors(fragment, "FRAGMENT");
 		// if geometry shader is given, compile geometry shader
 		unsigned int geometry;
-		if (!gPath.IsEmpty())
+		if (!geometryPath.IsEmpty())
 		{
 			const char * gShaderCode = geometryCode.c_str();
 			geometry = glCreateShader(GL_GEOMETRY_SHADER);
@@ -92,14 +88,14 @@ public:
 		ID = glCreateProgram();
 		glAttachShader(ID, vertex);
 		glAttachShader(ID, fragment);
-		if (!gPath.IsEmpty())
+		if (!geometryPath.IsEmpty())
 			glAttachShader(ID, geometry);
 		glLinkProgram(ID);
 		CheckCompileErrors(ID, "PROGRAM");
 		// delete the shaders as they're linked into our program now and no longer necessery
 		glDeleteShader(vertex);
 		glDeleteShader(fragment);
-		if (!gPath.IsEmpty())
+		if (!geometryPath.IsEmpty())
 			glDeleteShader(geometry);
 
 	}

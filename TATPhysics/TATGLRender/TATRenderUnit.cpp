@@ -114,7 +114,6 @@ void TATRenderUnit::Clear()
 	m_ReadyToRender = false;
 	m_ShaderId = -1;
 	m_StaticDataUploaded = false;
-	m_TriangleCount = 0;
 	m_UseTransform = false;
 	TAT_MEMSET(m_TextureIds, TAT_SHADERID_UNUSE);
 	TAT_MEMSET(m_Textures, 0);
