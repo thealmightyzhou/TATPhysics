@@ -88,11 +88,15 @@ public:
 
 	static TString PathOfDefaultMaterial(const TString& name)
 	{
+		if (name.IsEmpty())
+			return "";
 		return PathOfProj().Visit("Default").Visit("Materials").Visit(name);
 	}
 
 	static TString PathOfDefaultShader(const TString& name)
 	{
+		if (name.IsEmpty())
+			return "";
 		return PathOfProj().Visit("Default").Visit("Shaders").Visit(name);
 	}
 

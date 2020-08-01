@@ -57,8 +57,7 @@ void TATMaterial::Load(const TString& path)
 	{
 		if (m_MaterialSetting[TString("TextureUnit") + TString::ConvertInt(i)] != "")
 		{
-			m_Textures[i] = new TATexture(m_MaterialSetting[TString("TextureUnit") + TString::ConvertInt(i)].FetchInnerName());
-			m_Textures[i]->Load(m_MaterialSetting[TString("TextureUnit") + TString::ConvertInt(i)]);
+			m_Textures[i] = TATResourceManager::Instance()->LoadTexture(m_MaterialSetting[TString("TextureUnit") + TString::ConvertInt(i)]);
 		}
 	}
 }

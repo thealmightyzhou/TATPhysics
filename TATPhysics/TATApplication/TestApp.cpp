@@ -55,7 +55,7 @@ void TestApp::Run()
 
 void TestApp::BeginRenderOneFrame(float dt)
 {
-	m_LinePainter->PaintLine(TATVector3::Zero(), TATVector3::UnitY() * 50, TATVector3(1, 0, 0));
+	m_LinePainter->PaintLine(TATVector3::Zero(), TATVector3::UnitY() * 50, TATVector3(1, 1, 0));
 
-	m_LinePainter->PaintLine(TATVector3(20, 20, 20), TATVector3::UnitX() * 50, TATVector3(0, 1, 0));
+	m_LinePainter->PaintLine(TATVector3(20, 20, 20), TATVector3::UnitX() * 50, TATVector3(0, 1, 1));
 }
