@@ -4,6 +4,8 @@
 #include "TATRigidBodyData.h"
 #include "../TATBroadPhase/TATBvh.h"
 #include "../TATCommon/TATSingleton.h"
+#include "../TATResources/TATMesh.h"
+
 
 class TATPgsJacobiSolver;
 
@@ -12,13 +14,11 @@ class TATDynamicWorld:public Singleton<TATDynamicWorld>
 public:
 	TATDynamicWorld();
 
-	std::vector<TATRigidBody*> m_RigidBodys;
+	TATObjectPool<TATRigidBody> m_RigidBodys;
 
-	std::vector<TATRigidBodyData> m_RigidBodyDatas;
-	//TATRigidBodyData* m_RigidBodyDatas;
+	TATObjectPool<TATRigidBodyData> m_RigidBodyDatas;
 
-	std::vector<TATInertiaData> m_InertiaDatas;
-	//TATInertiaData* m_InertiaDatas;
+	TATObjectPool<TATInertiaData> m_InertiaDatas;
 
 	TATPgsJacobiSolver* m_ConstraintSolver;
 
@@ -28,5 +28,7 @@ public:
 
 	void StepSimulation(float dt);
 
-	void AddRigidBody();
+	void DestroyRigidBody(TATRigidBody* rb);
+
+	TATRigidBody* CreateConvex(TATMesh* mesh);
 };

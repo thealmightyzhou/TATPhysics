@@ -14,6 +14,9 @@ typedef unsigned int UINT;
 #define TAT_SHADERID_UNUSE	0
 #define MAX_TEXCOORDINATE_COUNT 5
 
+#define TAT_MAXRIGIDBODY_COUNT 100
+#define TAT_MAXSOLVERCONSTRAINT_COUNT 1000
+
 #define TAT_RADIAN(f) (f * static_cast<float>(0.01745329251994329576923690768489))
 
 #define TAT_2PI float(6.283185307179586232)
@@ -100,6 +103,7 @@ typedef unsigned int UINT;
 #define TAT_POOL_OBJECT(classname)	\
 		classname();				\
 		void Clear();				\
+		int m_IndexInPool;			\
 
 inline void _SetMax(float& x, const float& y)
 {

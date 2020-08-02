@@ -34,9 +34,14 @@ struct TATContactPoint
 class TATPgsJacobiSolver
 {
 public:
+	TATPgsJacobiSolver():m_SolverBodyPool(TAT_MAXRIGIDBODY_COUNT), m_SolverContactConstraintPool(TAT_MAXSOLVERCONSTRAINT_COUNT)
+	{
 
-	std::vector<TATSolverBody> m_SolverBodyPool;
-	std::vector<TATSolverConstraint> m_SolverContactConstraintPool;
+	}
+
+	TATObjectPool<TATSolverBody> m_SolverBodyPool;
+	
+	TATObjectPool<TATSolverConstraint> m_SolverContactConstraintPool;
 
 	void ResolveSingleConstraintRowGeneric(TATSolverBody& bodyA, TATSolverBody& bodyB, const TATSolverConstraint& contactConstraint);
 

@@ -53,6 +53,8 @@ public:
 			m_Objects[index].Clear();
 
 			m_UsedCount++;
+			m_Objects[index].m_IndexInPool = index;
+			m_UsedObjects.push_back(&m_Objects[index]);
 			return &m_Objects[index];
 		}
 
@@ -61,6 +63,13 @@ public:
 
 	void ReturnUsed(T*& obj)
 	{
+		std::vector<T*>::iterator it = m_UsedObjects.begin();
+		for (it; it != m_UsedObjects.end(); it++)
+		{
+			if (*it == obj)
+				m_UsedObjects.erase(it);
+		}
+
 		for (int i = 0; i < m_MaxSize; i++)
 		{
 			if (&m_Objects[i] == obj)
@@ -77,15 +86,35 @@ public:
 		obj = 0;
 	}
 
-	void FetchAllUsed(std::vector<T*>& obj)
+	void ReturnUsed(int index)
 	{
-		for (int i = 0; i < m_MaxSize; ++i)
+		std::vector<T*>::iterator it = m_UsedObjects.begin();
+		for (it; it != m_UsedObjects.end(); it++)
 		{
-			if (m_UsedMap[i])
-			{
-				obj.push_back(&m_Objects[i]);
-			}
+			if (*it == &m_Objects[index])
+				m_UsedObjects.erase(it);
 		}
+
+		m_NextUnused = index;
+		m_UsedMap[index] = false;
+		m_UsedCount--;
+		m_Objects[index].Clear();
+		return;
+	}
+
+	const std::vector<T*>& FetchAllUsed()
+	{
+		return m_UsedObjects;
+	}
+
+	T* GetPool()
+	{
+		return m_Objects;
+	}
+
+	T* operator[](int index)
+	{
+		return &m_Objects[index];
 	}
 
 protected:
@@ -94,4 +123,5 @@ protected:
 	bool* m_UsedMap;
 	int m_MaxSize;
 	int m_UsedCount;
+	std::vector<T*> m_UsedObjects;
 };

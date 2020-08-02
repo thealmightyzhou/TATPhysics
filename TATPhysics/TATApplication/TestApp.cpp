@@ -15,6 +15,8 @@ void TestApp::Initialize()
 
 	TATGLEntry::Instance()->Initialize(1080, 720);
 
+	m_LinePainter = new TATLinePainter();
+
 	//TODO Load resources;
 }
 
@@ -37,8 +39,15 @@ void TestApp::CreateScene()
 	node->MountActor(actor);
 	node->SetVisible(true);
 	node->SetTransform(TATransform::GetIdentity());
+	
+	TATRigidBody* rb0 = TATDynamicWorld::Instance()->CreateConvex(mesh);
+	TATransform tr;
+	tr.SetOrigin(TATVector3(0, 50, 10));
+	rb0->SetWorldTransform(tr);
 
-	m_LinePainter = new TATLinePainter();
+	TATRigidBody* rb1 = TATDynamicWorld::Instance()->CreateConvex(mesh);
+	tr.SetOrigin(TATVector3(0, 20, 20));
+	rb1->SetWorldTransform(tr);
 
 	//TODO put resources to world and set physic behavior coefficient
 }
@@ -49,7 +58,7 @@ void TestApp::Run()
 
 	CreateScene();
 
-	//m_PhysicThread->Run();
+	m_PhysicThread->Run();
 	m_RenderThread->Run();
 }
 

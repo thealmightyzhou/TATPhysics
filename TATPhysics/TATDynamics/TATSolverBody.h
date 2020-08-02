@@ -1,10 +1,13 @@
 #pragma once
 
 #include "../TATCommon/TATransformUtil.h"
+#include "../TATCommon/TATCore.h"
 
 class TATSolverBody
 {
 public:
+	TAT_POOL_OBJECT(TATSolverBody);
+
 	TATVector3		m_LinVel;
 	TATVector3		m_AngVel;
 

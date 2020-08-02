@@ -20,7 +20,7 @@ TATCollideShapeCuboid::TATCollideShapeCuboid(const TATVector3& center, const TAT
 }
 
 //========================
-
+//will automatically fill the physic infomation
 TATCollideShapeConvex::TATCollideShapeConvex(const TATPhyMeshData& meshData) :m_CollideMeshData(meshData)
 {
 	TATVector3 min, max;
@@ -28,4 +28,23 @@ TATCollideShapeConvex::TATCollideShapeConvex(const TATPhyMeshData& meshData) :m_
 	m_LocalAabb.SetOrigin(min, max);
 	m_LocalInertiaTensor = TATInertiaComputer::ComputeInertia(this);
 	m_LocalInvInertiaTensor = m_LocalInertiaTensor.Inverse();
+	TATPhyMeshDataComputer::CompleteMeshData(m_CollideMeshData.m_Vertices, m_CollideMeshData.m_Faces, m_CollideMeshData.m_Edges);
+}
+
+TATRigidBody::TATRigidBody()
+{
+	Clear();
+	m_IndexInPool = -1;
+}
+
+void TATRigidBody::Clear()
+{
+	if (m_CollideShape)
+		delete m_CollideShape;
+	m_CollideShape = 0;
+	m_BodyIndex = -1;
+	m_DataIndex = -1;
+	m_InertiaIndex = -1;
+	m_InvMass = 0.0f;
+	m_WorldTransform.SetIdentity();
 }

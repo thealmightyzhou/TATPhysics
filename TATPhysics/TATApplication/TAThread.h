@@ -10,10 +10,13 @@
 class TATRenderListener;
 class TATPhysicListener;
 class TATRenderUnit;
+class TATRigidBodyData;
+class TATInertiaData;
 
 using namespace std;
 
 #define TAT_MAX_RENDERUNIT_COUNT 100
+#define TAT_MAX_RIGIDBODY£ßCOUNT 100
 
 class TAThread
 {

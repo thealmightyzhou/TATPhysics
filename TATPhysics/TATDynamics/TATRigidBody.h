@@ -2,6 +2,7 @@
 #include "../TATGeometry/TATMeshInfo.h"
 #include "../TATCommon/TATransform.h"
 #include "../TATCommon/TATAabb.h"
+#include "../TATCommon/TATObjectPool.h"
 
 enum CollideShapeType
 {
@@ -96,6 +97,8 @@ public:
 
 	}
 
+	TAT_POOL_OBJECT(TATRigidBody);
+
 	TAT_REGISTER_ATTRIBUTE(TATransform, WorldTransform);
 
 	CollideShapeType GetShapeType() 
@@ -124,10 +127,19 @@ public:
 			m_InvMass = float(1) / m;
 	}
 
+	void SetCollideShape(TATCollideShapePrimitive* cs)
+	{
+		m_CollideShape = cs;
+	}
+
 	TATCollideShapePrimitive* m_CollideShape;
 
 	float m_InvMass;
 	
 	int m_BodyIndex;
+
+	int m_DataIndex;
+
+	int m_InertiaIndex;
 };
 
