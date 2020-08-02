@@ -194,3 +194,8 @@
 /TATPhysics/TATPhysics/Debug/TATResourceManager.obj
 /TATPhysics/TATPhysics/Debug/TATRigidBodyData.obj
 /TATPhysics/TATPhysics/Debug/TATSolverBody.obj
+/.vs/TATPhysics/v16/ipch/AutoPCH/8e4fd6cb62c441d1/TATSOLVERBODY.ipch
+/.vs/TATPhysics/v16/ipch/AutoPCH/d2a105b991900c09/TATRIGIDBODYDATA.ipch
+/TATPhysics/Debug/TATRigidBodyData.obj
+/TATPhysics/Debug/TATSolverBody.obj
+/TATPhysics/Debug/tatpgsjacobisolver.obj.enc

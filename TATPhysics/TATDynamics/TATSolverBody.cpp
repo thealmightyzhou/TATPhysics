@@ -15,6 +15,6 @@ void TATSolverBody::Clear()
 	m_DeltaLinVel.SetZero();
 	m_PushVel.SetZero();
 	m_TurnVel.SetZero();
-	m_LinFactor.SetZero();
-	m_AngFactor.SetZero();
+	m_LinFactor.SetValue(1, 1, 1);
+	m_AngFactor.SetValue(1, 1, 1);
 }

@@ -34,22 +34,30 @@ void TestApp::CreateScene()
 	TATActor* actor = new TATActor(mesh);
 	actor->SetMaterial(mat);
 
-	TATStageNode* node = m_RootNode->CreateChild("test");
+	TATActor* actor1 = new TATActor(mesh);
+	actor1->SetMaterial(mat);
 
+	TATStageNode* node = m_RootNode->CreateChild("test");
 	node->MountActor(actor);
 	node->SetVisible(true);
 	node->SetTransform(TATransform::GetIdentity());
+
+	TATStageNode* node2 = m_RootNode->CreateChild("cube2");
+	node2->MountActor(actor1);
+	node2->SetVisible(true);
+	node2->SetTransform(TATransform::GetIdentity());
 	
 	TATRigidBody* rb0 = TATDynamicWorld::Instance()->CreateConvex(mesh, 1.0f);
 	TATransform tr;
 	tr.SetOrigin(TATVector3(0, 50, 10));
-	TATDynamicWorld::Instance()->InitializeRb(rb0, tr, 1.0f, 0.8, 0.2);
+	TATDynamicWorld::Instance()->InitializeRb(rb0, tr, 1.0f, 0.8, 0.2, TATVector3(0, -9, 0));
 
 	TATRigidBody* rb1 = TATDynamicWorld::Instance()->CreateConvex(mesh, 1.0f);
 	tr.SetOrigin(TATVector3(0, 20, 20));
-	TATDynamicWorld::Instance()->InitializeRb(rb1, tr, 2.0f, 0.8, 0.2);
+	TATDynamicWorld::Instance()->InitializeRb(rb1, tr, 2.0f, 0.8, 0.2, TATVector3(0, -4, 0));
 
 	actor->SetRigidBody(rb0->m_IndexInPool);
+	actor1->SetRigidBody(rb1->m_IndexInPool);
 
 	//TODO put resources to world and set physic behavior coefficient
 }

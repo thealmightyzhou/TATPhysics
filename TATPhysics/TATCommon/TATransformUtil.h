@@ -39,7 +39,7 @@ public:
 		predictTr.SetRotation(predictedOrn);
 	}
 
-	static void IntegrateTransform(TATRigidBodyData* body, float timeStep, float angularDamping, const TATVector3& gravityAcc);
+	static void IntegrateTransform(TATRigidBodyData* body, float timeStep, float angularDamping);
 
 	static void CalculateVelocity(const TATransform& tr0, const TATransform& tr1, float timeStep, TATVector3& linVel, TATVector3& angVel)
 	{

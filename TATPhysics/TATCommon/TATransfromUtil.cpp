@@ -1,7 +1,7 @@
 #include "TATransformUtil.h"
 #include "../TATDynamics/TATRigidBodyData.h"
 
-void TATransformUtil::IntegrateTransform(TATRigidBodyData* body, float timeStep, float angularDamping, const TATVector3& gravityAcc)
+void TATransformUtil::IntegrateTransform(TATRigidBodyData* body, float timeStep, float angularDamping)
 {
 	if ((body->m_InvMass != 0.f))
 	{
@@ -38,7 +38,7 @@ void TATransformUtil::IntegrateTransform(TATRigidBodyData* body, float timeStep,
 		}
 
 		//apply gravity
-		body->m_LinVel += gravityAcc * timeStep;
+		body->m_LinVel += body->m_Gravity * timeStep;
 
 		//linear velocity
 		body->m_Pos += body->m_LinVel * timeStep;

@@ -10,6 +10,7 @@ struct TATRigidBodyData
 	TATQuaternion m_Quat;
 	TATVector3 m_LinVel;
 	TATVector3 m_AngVel;
+	TATVector3 m_Gravity;
 
 	float m_InvMass;
 	float m_RestituitionCoeff;

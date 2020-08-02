@@ -33,6 +33,7 @@ public:
 		m_RbB = 0;
 	}
 
+	//always point from A to B
 	TATVector3 m_CollideNormal;
 	TATVector3 m_CollidePtA;
 	TATVector3 m_CollidePtB;
@@ -71,6 +72,8 @@ public:
 
 		cd.m_TrA = tr0;
 		cd.m_TrB = tr1;
+		cd.m_RbA = rb0;
+		cd.m_RbB = rb1;
 
 		TATVector3 dir = tr1 * rb1->m_CollideShape->m_LocalMassCenter -
 						 tr0 * rb0->m_CollideShape->m_LocalMassCenter;
@@ -173,7 +176,7 @@ public:
 		float proj;
 		indices[0] = indices[2] = -1;
 		indices[1] = indices[3] = -1;
-		projects[1] = projects[2] =  TAT_MAX;
+		projects[0] = projects[2] =  TAT_MAX;
 		projects[1] = projects[3] = -TAT_MAX;
 		while (i < (int)vertices0.size() || j < (int)vertices1.size())
 		{
@@ -231,8 +234,8 @@ public:
 		TATRange range1(projs[0], projs[1]);
 		TATRange range2(projs[2], projs[3]);
 
-		range1.SetUserData((void*)(&indices[0]), (void*)(&indices[1]));
-		range2.SetUserData((void*)(&indices[2]), (void*)(&indices[3]));
+		range1.SetUserData((void*)(indices[0]), (void*)(indices[1]));
+		range2.SetUserData((void*)(indices[2]), (void*)(indices[3]));
 
 		if (!range1.Coincide(range2))
 		{
@@ -293,13 +296,13 @@ public:
 	{
 		if (cd.m_ResFlag == 0)
 		{
-			cd.m_CollidePtB = cd.m_TrB * cd.m_ResVertexB->GetPosition();
-			cd.m_CollidePtA = cd.m_CollidePtB + cd.m_CollideNormal * cd.m_Penetration;
+			cd.m_CollidePtA = cd.m_TrB * cd.m_ResVertexA->GetPosition();
+			cd.m_CollidePtB = cd.m_CollidePtA + cd.m_CollideNormal * cd.m_Penetration;
 		}
 		else if (cd.m_ResFlag == 1)
 		{
-			cd.m_CollidePtA = cd.m_TrA * cd.m_ResVertexA->GetPosition();
-			cd.m_CollidePtB = cd.m_CollidePtA - cd.m_CollideNormal * cd.m_Penetration;
+			cd.m_CollidePtB = cd.m_TrA * cd.m_ResVertexB->GetPosition();
+			cd.m_CollidePtA = cd.m_CollidePtB - cd.m_CollideNormal * cd.m_Penetration;
 		}
 		else if (cd.m_ResFlag == 2)
 		{
