@@ -146,13 +146,13 @@ public:
 	UINT			m_HashMask;
 };
 
-struct TATPhyEdgeComparer
-{
-	bool operator()(const TATPhyEdge& e1, const TATPhyEdge& e2) const
-	{
-		return !(e1 == e2);
-	}
-};
+//struct TATPhyEdgeComparer
+//{
+//	bool operator()(const TATPhyEdge& e1, const TATPhyEdge& e2) const
+//	{
+//		return !(e1 == e2);
+//	}
+//};
 
 struct TATPhyEdgeHasher
 {
@@ -161,10 +161,12 @@ struct TATPhyEdgeHasher
 		std::hash<int> hasher;
 		size_t seed = 0;
 
-		for (int i = 0; i < 2; i++)
-		{
-			seed ^= hasher(e.m_VertexIndices[i]) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-		}
+		int xy = e.m_VertexIndices[0] * e.m_VertexIndices[1];
+		int x_y = e.m_VertexIndices[0] + e.m_VertexIndices[1];
+
+		seed ^= hasher(xy) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(x_y) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+
 		return seed;
 	}
 };

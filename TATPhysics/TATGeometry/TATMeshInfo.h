@@ -106,11 +106,12 @@ public:
 		}
 	}
 
-	typedef std::unordered_set<TATPhyEdge, TATPhyEdgeHasher, TATPhyEdgeComparer> TEdgeSet;
+	typedef std::unordered_set<TATPhyEdge, TATPhyEdgeHasher> TEdgeSet;
 
 	void static CreateEdges(std::vector<TATPhyVertex>& vertices, std::vector<TATPhyFace>& faces, std::vector<TATPhyEdge>& edges)
 	{
 		TEdgeSet edgeSet;
+		TATPhyEdgeHasher hasher;
 		for (int f = 0; f < (int)faces.size(); f++)
 		{
 			TATPhyFace& face = faces[f];
@@ -119,9 +120,9 @@ public:
 				TATPhyEdge(face.m_VertexIndices[1], face.m_VertexIndices[2]),
 				TATPhyEdge(face.m_VertexIndices[2], face.m_VertexIndices[0]), };
 
-			tmpEdges[0].m_HashMask = tmpEdges[0].m_VertexIndices[0] + tmpEdges[0].m_VertexIndices[1] << 16;
-			tmpEdges[1].m_HashMask = tmpEdges[1].m_VertexIndices[0] + tmpEdges[1].m_VertexIndices[1] << 16;
-			tmpEdges[2].m_HashMask = tmpEdges[2].m_VertexIndices[0] + tmpEdges[2].m_VertexIndices[1] << 16;
+			tmpEdges[0].m_HashMask = hasher(tmpEdges[0]);
+			tmpEdges[1].m_HashMask = hasher(tmpEdges[1]);
+			tmpEdges[2].m_HashMask = hasher(tmpEdges[2]);
 
 			TEdgeSet::iterator it;
 			for (int i = 0; i < 3; i++)

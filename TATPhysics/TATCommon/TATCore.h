@@ -7,9 +7,12 @@
 typedef unsigned int UINT;
 
 #define TAT_EPSILON			FLT_EPSILON
-#define TAT_EPSILON2		1e-6
+#define TAT_EPSILON2		1e-6F
+#define TAT_EPSILON3		1.2e-07F
 #define TAT_MAX				FLT_MAX
 #define TAT_MAX2			1e10	
+#define TAT_MIN				FLT_MIN
+#define TAT_MIN2			1e-20F
 #define TAT_RAND_MAX		RAND_MAX
 #define TAT_SHADERID_UNUSE	0
 #define MAX_TEXCOORDINATE_COUNT 5

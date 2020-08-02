@@ -79,8 +79,8 @@ public:
 		float y1 = m_OriginMax.Y;
 		float z1 = m_OriginMax.Z;
 
-		TATVector3 pts[8]{ m_Min ,TATVector3(x1,y0,z0) ,TATVector3(x1,y0,z1) ,TATVector3(x0,y0,z1),
-						  TATVector3(x0,y1,z0) ,TATVector3(x1,y1,z0) ,m_Max ,TATVector3(x0,y1,z1) };
+		TATVector3 pts[8]{ m_OriginMin ,TATVector3(x1,y0,z0) ,TATVector3(x1,y0,z1) ,TATVector3(x0,y0,z1),
+						  TATVector3(x0,y1,z0) ,TATVector3(x1,y1,z0) ,m_OriginMax ,TATVector3(x0,y1,z1) };
 
 		m_Min = TAT_MAXVECTOR3;
 		m_Max = -TAT_MAXVECTOR3;

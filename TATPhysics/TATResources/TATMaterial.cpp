@@ -8,6 +8,7 @@
 #include "../TATGLRender/TATCamera.h"
 #include "../TATGLRender/TATLight.h"
 #include "TATResourceManager.h"
+#include "../TATResources/TATexture.h"
 
 void TATMaterial::Load(const TString& path)
 {

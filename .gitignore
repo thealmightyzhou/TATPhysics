@@ -184,3 +184,13 @@
 /TATPhysics/Debug/TATResourceManager.obj
 /TATPhysics/Debug/TATexture.obj
 /TATPhysics/Debug/stb_image.obj
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/7847ad0688f76e87/TATSOLVERBODY.ipch
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/7d5339eda10c851a/TATIMER.ipch
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/b9f8939b1585b521/TATRANSFROMUTIL.ipch
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/e238ea32828c948f/TATRIGIDBODY.ipch
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/f44629113dcc7b40/TATMANUALOBJECT.ipch
+/TATPhysics/.vs/TATPhysics/v16/ipch/AutoPCH/f90224d3ffde4f3c/TATLINEPAINTER.ipch
+/TATPhysics/TATPhysics/Debug/TATManualObject.obj
+/TATPhysics/TATPhysics/Debug/TATResourceManager.obj
+/TATPhysics/TATPhysics/Debug/TATRigidBodyData.obj
+/TATPhysics/TATPhysics/Debug/TATSolverBody.obj

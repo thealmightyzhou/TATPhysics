@@ -8,7 +8,11 @@ public:
 	TATMatrix3 m_Basis;
 	TATVector3 m_Origin;
 
-	TATransform() {}
+	TATransform()
+	{
+		m_Origin.SetZero();
+		m_Basis.SetIdentity();
+	}
 
 	TATransform(const TATQuaternion& q, const TATVector3& v) :m_Basis(q), m_Origin(v)
 	{}

@@ -77,7 +77,7 @@ bool TATBvh::ProcessTraverse(int id, TATBVNode* node, TATBvhCollideCallBack* cb)
 	{
 		if (m_BVTree[id]->GetIsLeaf() && node->GetIsLeaf())
 		{
-			if ((m_BVTree[id] == node && m_CanCollideSelf) || m_BVTree[id] != node)
+			if (m_BVTree[id] != node)
 			{
 				cb->NodeOverlapped(m_BVTree[id], node);
 				return true;

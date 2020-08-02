@@ -1,8 +1,10 @@
 #include "TATRigidBody.h"
 #include "../TATGeometry/TATInertia.h"
 
-TATCollideShapeSphere::TATCollideShapeSphere(const TATVector3& center, float radius) :m_Center(center), m_Radius(radius)
+TATCollideShapeSphere::TATCollideShapeSphere(const TATVector3& center, float radius, float invMass)
+	:m_Center(center), m_Radius(radius), TATCollideShapePrimitive(invMass)
 {
+	m_ShapeType = CollideShapeType::CollideSphere;
 	m_LocalMassCenter = m_Center;
 	m_LocalInertiaTensor = TATInertiaComputer::ComputeInertia(this);
 	m_LocalInvInertiaTensor = m_LocalInertiaTensor.Inverse();
@@ -11,8 +13,10 @@ TATCollideShapeSphere::TATCollideShapeSphere(const TATVector3& center, float rad
 
 //=======================
 
-TATCollideShapeCuboid::TATCollideShapeCuboid(const TATVector3& center, const TATVector3& extend) :m_Center(center), m_Extend(extend)
+TATCollideShapeCuboid::TATCollideShapeCuboid(const TATVector3& center, const TATVector3& extend, float invMass)
+	:m_Center(center), m_Extend(extend), TATCollideShapePrimitive(invMass)
 {
+	m_ShapeType = CollideShapeType::CollideCuboid;
 	m_LocalMassCenter = m_Center;
 	m_LocalInertiaTensor = TATInertiaComputer::ComputeInertia(this);
 	m_LocalInvInertiaTensor = m_LocalInertiaTensor.Inverse();
@@ -21,8 +25,10 @@ TATCollideShapeCuboid::TATCollideShapeCuboid(const TATVector3& center, const TAT
 
 //========================
 //will automatically fill the physic infomation
-TATCollideShapeConvex::TATCollideShapeConvex(const TATPhyMeshData& meshData) :m_CollideMeshData(meshData)
+TATCollideShapeConvex::TATCollideShapeConvex(const TATPhyMeshData& meshData,float invMass)
+	:m_CollideMeshData(meshData), TATCollideShapePrimitive(invMass)
 {
+	m_ShapeType = CollideShapeType::CollideConvex;
 	TATVector3 min, max;
 	m_LocalMassCenter = TATPhyMeshDataComputer::ComputeMassCentreAndLocalAabb(m_CollideMeshData.m_Vertices, min, max);
 	m_LocalAabb.SetOrigin(min, max);
@@ -33,6 +39,7 @@ TATCollideShapeConvex::TATCollideShapeConvex(const TATPhyMeshData& meshData) :m_
 
 TATRigidBody::TATRigidBody()
 {
+	m_CollideShape = 0;
 	Clear();
 	m_IndexInPool = -1;
 }

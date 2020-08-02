@@ -194,7 +194,7 @@ public:
 			i++;
 			if (j < (int)vertices1.size())
 			{
-				proj = (tr1 * vertices1[i].m_Position).Dot(dir);
+				proj = (tr1 * vertices1[j].m_Position).Dot(dir);
 				if (proj < projects[2])
 				{
 					projects[2] = proj;

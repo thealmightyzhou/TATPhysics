@@ -63,7 +63,7 @@ public:
 
 	void ReturnUsed(T*& obj)
 	{
-		std::vector<T*>::iterator it = m_UsedObjects.begin();
+		typename std::vector<T*>::iterator it = m_UsedObjects.begin();
 		for (it; it != m_UsedObjects.end(); it++)
 		{
 			if (*it == obj)
@@ -88,7 +88,7 @@ public:
 
 	void ReturnUsed(int index)
 	{
-		std::vector<T*>::iterator it = m_UsedObjects.begin();
+		typename std::vector<T*>::iterator it = m_UsedObjects.begin();
 		for (it; it != m_UsedObjects.end(); it++)
 		{
 			if (*it == &m_Objects[index])
@@ -112,9 +112,9 @@ public:
 		return m_Objects;
 	}
 
-	T* operator[](int index)
+	T& operator[](int index)
 	{
-		return &m_Objects[index];
+		return m_Objects[index];
 	}
 
 protected:

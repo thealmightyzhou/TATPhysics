@@ -9,7 +9,7 @@ class TATLight;
 class TATMesh;
 class TATMaterial;
 
-//base object to show on stage
+//base object to show on stage also can relative with rigidbody by m_RigidBodyId
 class TATActor :public TATObject
 {
 public:
@@ -22,6 +22,10 @@ public:
 	virtual void FillRenderUnit();
 
 	void SetMaterial(TATMaterial* m);
+
+	virtual void Update(float dt);
+
+	void SetRigidBody(int index);
 
 	TATRenderUnit* m_RenderUnit;
 

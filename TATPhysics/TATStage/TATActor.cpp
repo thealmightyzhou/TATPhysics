@@ -7,6 +7,7 @@
 #include "../TATBasis/TATWorld.h"
 #include "../TATResources/TATMesh.h"
 #include "../TATResources/TATMaterial.h"
+#include "../TATDynamics/TATDynamicWorld.h"
 
 TATActor::TATActor() : TATObject("actor_manual_" + TString::Make(GetObjectIndex()))
 {
@@ -110,4 +111,25 @@ void TATActor::SetMaterial(TATMaterial* m)
 
 	m_RenderCamera = m->m_Camera;
 	m_RenderLight = m->m_Light;
+}
+
+void TATActor::SetRigidBody(int index)
+{
+	m_RigidBodyId = index;
+	if (m_RenderUnit)
+		m_RenderUnit->m_UseTransform = true;
+}
+
+void TATActor::Update(float dt)
+{
+	if (m_RigidBodyId >= 0)
+	{
+		const TATRigidBody& rb = TATDynamicWorld::Instance()->m_RigidBodys[m_RigidBodyId];
+		m_WorldTransform = rb.GetWorldTransform();
+		
+		if (m_RenderUnit->m_UseTransform)
+		{
+			m_RenderUnit->m_Transform = m_WorldTransform;
+		}
+	}
 }

@@ -55,7 +55,7 @@ public:
 
 	void GetContactPoint(const TATSATCollideData& contact, TATContactPoint& out);
 
-	void SolveContact(const TATSATCollideData& contact, TATRigidBodyData* bodies, TATInertiaData* inertias, const TATContactSolverInfo& info);
+	void SolveContact(const TATSATCollideData& contact, TATRigidBodyData* bodies, TATInertiaData* inertias, TATContactSolverInfo& info);
 
 	void SolveFinish(TATRigidBodyData* bodies, TATInertiaData* inertias, const TATContactSolverInfo& info);
 };

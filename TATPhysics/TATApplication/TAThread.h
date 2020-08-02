@@ -45,7 +45,7 @@ public:
 	{
 		m_Thread = thread(&TATPhysicThread::PhysicLoop, this);
 		if (m_Thread.joinable())
-			m_Thread.join();
+			m_Thread.detach();
 	}
 
 	void PhysicLoop();

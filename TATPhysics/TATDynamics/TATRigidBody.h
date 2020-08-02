@@ -18,7 +18,7 @@ enum CollideShapeType
 class TATCollideShapePrimitive
 {
 public:
-	TATCollideShapePrimitive()
+	TATCollideShapePrimitive(float invMass) :m_InvMass(invMass)
 	{
 		m_LocalMassCenter = TATVector3::Zero();
 		m_LocalInertiaTensor = TATMatrix3::GetIdentity();
@@ -52,7 +52,7 @@ public:
 class TATCollideShapeSphere : public TATCollideShapePrimitive
 {
 public:
-	TATCollideShapeSphere(const TATVector3& center, float radius);
+	TATCollideShapeSphere(const TATVector3& center, float radius, float invMass);
 	TATVector3 m_Center;
 	float m_Radius;
 
@@ -61,7 +61,7 @@ public:
 class TATCollideShapeCuboid : public TATCollideShapePrimitive
 {
 public:
-	TATCollideShapeCuboid(const TATVector3& center, const TATVector3& extend);
+	TATCollideShapeCuboid(const TATVector3& center, const TATVector3& extend, float invMass);
 	TATVector3 m_Center;
 	TATVector3 m_Extend;
 };
@@ -78,7 +78,7 @@ public:
 class TATCollideShapeConvex :public TATCollideShapePrimitive
 {
 public:
-	TATCollideShapeConvex(const TATPhyMeshData& meshData);
+	TATCollideShapeConvex(const TATPhyMeshData& meshData, float invMass);
 
 	TATPhyMeshData m_CollideMeshData;
 

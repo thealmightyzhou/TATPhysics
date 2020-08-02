@@ -101,21 +101,21 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 	const TATVector3& pos1 = cp.GetPositionWorldOnA();
 	const TATVector3& pos2 = cp.GetPositionWorldOnB();
 
-	TATSolverBody* bodyA = &m_SolverBodyPool[solverBodyIdA];
-	TATSolverBody* bodyB = &m_SolverBodyPool[solverBodyIdB];
+	TATSolverBody& bodyA = m_SolverBodyPool[solverBodyIdA];
+	TATSolverBody& bodyB = m_SolverBodyPool[solverBodyIdB];
 
-	TATRigidBodyData* rb0 = &bodies[bodyA->m_OriginalBodyIndex];
-	TATRigidBodyData* rb1 = &bodies[bodyB->m_OriginalBodyIndex];
+	TATRigidBodyData* rb0 = &bodies[bodyA.m_OriginalBodyIndex];
+	TATRigidBodyData* rb1 = &bodies[bodyB.m_OriginalBodyIndex];
 
-	rel_pos1 = pos1 - bodyA->GetWorldTransform().GetOrigin();
-	rel_pos2 = pos2 - bodyB->GetWorldTransform().GetOrigin();
+	rel_pos1 = pos1 - bodyA.GetWorldTransform().GetOrigin();
+	rel_pos2 = pos2 - bodyB.GetWorldTransform().GetOrigin();
 
 	relaxation = 1.f;
 
 	TATVector3 torqueAxis0 = rel_pos1.Cross(cp.m_NormalWorldOnA);
-	solverConstraint.m_AngularComponentA = rb0 ? GetInvInertiaTensorWorld(&inertias[bodyA->m_OriginalBodyIndex]) * torqueAxis0 : TATVector3::Zero();
+	solverConstraint.m_AngularComponentA = rb0 ? GetInvInertiaTensorWorld(&inertias[bodyA.m_OriginalBodyIndex]) * torqueAxis0 : TATVector3::Zero();
 	TATVector3 torqueAxis1 = rel_pos2.Cross(cp.m_NormalWorldOnA);
-	solverConstraint.m_AngularComponentB = rb1 ? GetInvInertiaTensorWorld(&inertias[bodyB->m_OriginalBodyIndex]) * -torqueAxis1 : TATVector3::Zero();
+	solverConstraint.m_AngularComponentB = rb1 ? GetInvInertiaTensorWorld(&inertias[bodyB.m_OriginalBodyIndex]) * -torqueAxis1 : TATVector3::Zero();
 
 	float scaledDenom;
 
@@ -165,14 +165,14 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 
 	solverConstraint.m_AppliedImpulse = cp.m_AppliedImpulse * infoGlobal.m_WarmstartingFactor;
 	if (rb0)
-		bodyA->ApplyImpulse(solverConstraint.m_ContactNormal * bodyA->GetInvMass(), solverConstraint.m_AngularComponentA, solverConstraint.m_AppliedImpulse);
+		bodyA.ApplyImpulse(solverConstraint.m_ContactNormal * bodyA.GetInvMass(), solverConstraint.m_AngularComponentA, solverConstraint.m_AppliedImpulse);
 	if (rb1)
-		bodyB->ApplyImpulse(solverConstraint.m_ContactNormal * bodyB->GetInvMass(), -solverConstraint.m_AngularComponentB, -(float)solverConstraint.m_AppliedImpulse);
+		bodyB.ApplyImpulse(solverConstraint.m_ContactNormal * bodyB.GetInvMass(), -solverConstraint.m_AngularComponentB, -(float)solverConstraint.m_AppliedImpulse);
 
 	solverConstraint.m_AppliedPushImpulse = 0.f;
 
-	float vel1Dotn = solverConstraint.m_ContactNormal.Dot(rb0 ? bodyA->m_LinVel : TATVector3::Zero()) + solverConstraint.m_RelPos1CrossNormal.Dot(rb0 ? bodyA->m_AngVel : TATVector3::Zero());
-	float vel2Dotn = -solverConstraint.m_ContactNormal.Dot(rb1 ? bodyB->m_LinVel : TATVector3::Zero()) + solverConstraint.m_RelPos2CrossNormal.Dot(rb1 ? bodyB->m_AngVel : TATVector3::Zero());
+	float vel1Dotn = solverConstraint.m_ContactNormal.Dot(rb0 ? bodyA.m_LinVel : TATVector3::Zero()) + solverConstraint.m_RelPos1CrossNormal.Dot(rb0 ? bodyA.m_AngVel : TATVector3::Zero());
+	float vel2Dotn = -solverConstraint.m_ContactNormal.Dot(rb1 ? bodyB.m_LinVel : TATVector3::Zero()) + solverConstraint.m_RelPos2CrossNormal.Dot(rb1 ? bodyB.m_AngVel : TATVector3::Zero());
 	float rel_vel = vel1Dotn + vel2Dotn;
 
 	float positionalError = 0.f;
@@ -221,8 +221,9 @@ float TATPgsJacobiSolver::RestitutionCurve(float rel_vel, float restitution)
 	return rest;
 }
 
-void TATPgsJacobiSolver::SolveContact(const TATSATCollideData& contact, TATRigidBodyData* bodies, TATInertiaData* inertias, const TATContactSolverInfo& info)
+void TATPgsJacobiSolver::SolveContact(const TATSATCollideData& contact, TATRigidBodyData* bodies, TATInertiaData* inertias, TATContactSolverInfo& info)
 {
+	info.m_SplitImpulse = false;
 	TATVector3 vel;
 	TATVector3 relPos1;
 	TATVector3 resPos2;
@@ -240,28 +241,32 @@ void TATPgsJacobiSolver::SolveContact(const TATSATCollideData& contact, TATRigid
 		cp, info, vel, relVel, relaxation, relPos1, resPos2);
 
 	ResolveSingleConstraintRowGeneric(m_SolverBodyPool[index0], m_SolverBodyPool[index1], constr);
+
+	SolveFinish(bodies, inertias, info);
 }
 
 void TATPgsJacobiSolver::SolveFinish(TATRigidBodyData* bodies, TATInertiaData* inertias, const TATContactSolverInfo& info)
 {
-	for (int i = 0; i < (int)m_SolverBodyPool.size(); i++)
-	{
-		TATRigidBodyData& data = bodies[i];
-		TATSolverBody& body = m_SolverBodyPool[i];
-		if (info.m_SplitImpulse)
-			body.WriteBackVelocityAndTransform(info.m_TimeStep, info.m_SplitImpulseTurnErp);
-		else
-			body.WriteBackVelocity();
+	const std::vector<TATSolverBody*>& bodys = m_SolverBodyPool.FetchAllUsed();
 
-		data.m_LinVel = body.m_LinVel;
-		data.m_AngVel = body.m_AngVel;
+	for (int i = 0; i < (int)bodys.size(); i++)
+	{
+		TATRigidBody& rb = TATDynamicWorld::Instance()->m_RigidBodys[bodys[i]->m_OriginalBodyIndex];
+
+		TATRigidBodyData& data = bodies[rb.m_DataIndex];
+		TATSolverBody* body = bodys[i];
+		if (info.m_SplitImpulse)
+			body->WriteBackVelocityAndTransform(info.m_TimeStep, info.m_SplitImpulseTurnErp);
+		else
+			body->WriteBackVelocity();
+
+		data.m_LinVel = body->m_LinVel;
+		data.m_AngVel = body->m_AngVel;
 
 		if (info.m_SplitImpulse)
 		{
-			data.m_Pos = body.GetWorldTransform().GetOrigin();
-			TATQuaternion orn;
-			orn = body.GetWorldTransform().GetRotation();
-			data.m_Quat = orn;
+			data.m_Pos = body->GetWorldTransform().GetOrigin();
+			data.m_Quat = body->GetWorldTransform().GetRotation();
 		}
 	}
 }

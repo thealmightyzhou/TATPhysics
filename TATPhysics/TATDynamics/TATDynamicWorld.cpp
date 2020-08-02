@@ -52,8 +52,8 @@ void TATDynamicWorld::StepSimulation(float dt)
 	std::vector<TATSATCollideData> satCollideDatas;
 	for (int i = 0; i < (int)bpCollides.size(); i++)
 	{
-		rbA = (TATRigidBody*)bpCollides[i].m_node1;
-		rbB = (TATRigidBody*)bpCollides[i].m_node2;
+		rbA = (TATRigidBody*)bpCollides[i].m_node1->m_Data;
+		rbB = (TATRigidBody*)bpCollides[i].m_node2->m_Data;
 
 		TATSATCollideData cd;
 		if(TATSAT::SeparateAxisTest(TATRigidBodyGroup(rbA, rbB), cd))
@@ -67,16 +67,20 @@ void TATDynamicWorld::StepSimulation(float dt)
 		m_ConstraintSolver->SolveContact(satCollideDatas[i], m_RigidBodyDatas.GetPool(), m_InertiaDatas.GetPool(), info);
 	}
 
-	m_ConstraintSolver->SolveFinish(m_RigidBodyDatas.GetPool(), m_InertiaDatas.GetPool(), info);
-
 	const std::vector<TATRigidBodyData*> rbDatas = m_RigidBodyDatas.FetchAllUsed();
 	for (int i = 0; i < rbDatas.size(); i++)
 	{
 		TATransformUtil::IntegrateTransform(rbDatas[i], info.m_TimeStep, info.m_Damping, TATVector3(0, -9, 0));
 	}
+
+	const std::vector<TATRigidBody*> rbs = m_RigidBodys.FetchAllUsed();
+	for (int i = 0; i < rbs.size(); ++i)
+	{
+		SyncRigidBodyData(rbs[i]);
+	}
 }
 
-TATRigidBody* TATDynamicWorld::CreateConvex(TATMesh* mesh)
+TATRigidBody* TATDynamicWorld::CreateConvex(TATMesh* mesh, float invMass)
 {
 	TATPhyMeshData data;
 	data.m_Vertices.resize(mesh->m_VertexCount);
@@ -92,11 +96,10 @@ TATRigidBody* TATDynamicWorld::CreateConvex(TATMesh* mesh)
 		data.m_Faces[i].m_VertexIndices[2] = mesh->m_MeshFaces[i].m_Vertices[2];
 	}
 
-	TATCollideShapeConvex* convex = new TATCollideShapeConvex(data);
+	TATCollideShapeConvex* convex = new TATCollideShapeConvex(data, invMass);
 
 	TATRigidBodyData* rbdata = m_RigidBodyDatas.FetchUnused();
 	TATInertiaData* in =  m_InertiaDatas.FetchUnused();
-	in->m_InitInvInertia = convex->m_LocalInvInertiaTensor;
 
 	TATRigidBody* rb = m_RigidBodys.FetchUnused();
 	rb->SetCollideShape(convex);
@@ -108,11 +111,47 @@ TATRigidBody* TATDynamicWorld::CreateConvex(TATMesh* mesh)
 	rb->m_DataIndex = rbdata->m_IndexInPool;
 	rb->m_InertiaIndex = in->m_IndexInPool;
 
+	return rb;
 }
 
 void TATDynamicWorld::DestroyRigidBody(TATRigidBody* rb)
 {
+	if (rb == 0)
+		return;
 	m_InertiaDatas.ReturnUsed(rb->m_InertiaIndex);
 	m_RigidBodyDatas.ReturnUsed(rb->m_DataIndex);
 	m_RigidBodys.ReturnUsed(rb->m_IndexInPool);
+	if(m_ConstraintSolver)
+		m_ConstraintSolver->m_SolverBodyPool.ReturnUsed(rb->m_BodyIndex);
+}
+
+void TATDynamicWorld::InitializeRb(TATRigidBody* rb, const TATransform& tr, float invMass, float restituitionCoeff, float frictionCoeff)
+{
+	rb->SetWorldTransform(tr);
+	rb->m_InvMass = invMass;
+
+	TATRigidBodyData& rbdata = m_RigidBodyDatas[rb->m_DataIndex];
+	TATInertiaData& in = m_InertiaDatas[rb->m_InertiaIndex];
+	TATSolverBody& body = m_ConstraintSolver->m_SolverBodyPool[rb->m_BodyIndex];
+
+	rbdata.m_Pos = tr.GetOrigin();
+	rbdata.m_Quat = tr.GetRotation();
+	rbdata.m_LinVel = rbdata.m_AngVel = TATVector3::Zero();
+	rbdata.m_FrictionCoeff = frictionCoeff;
+	rbdata.m_RestituitionCoeff = restituitionCoeff;
+	rbdata.m_InvMass = invMass;
+
+	in.m_InitInvInertia = rb->m_CollideShape->m_LocalInvInertiaTensor;
+	in.m_InvInertiaWorld = in.m_InitInvInertia * tr.GetBasis();
+
+	body.Clear();
+	body.m_InvMass = TATVector3(invMass);
+	body.m_WorldTransform = tr;
+}
+
+
+void TATDynamicWorld::SyncRigidBodyData(TATRigidBody* rb)
+{
+	rb->m_WorldTransform.SetOrigin(m_RigidBodyDatas[rb->m_DataIndex].m_Pos);
+	rb->m_WorldTransform.SetRotation(m_RigidBodyDatas[rb->m_DataIndex].m_Quat);
 }

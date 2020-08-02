@@ -28,6 +28,11 @@ public:
 		m_Datas[2] = bf[2];
 	}
 
+	TATVector3(float x)
+	{
+		SetValue(x, x, x);
+	}
+
 	TATVector3()
 	{
 		SetZero();

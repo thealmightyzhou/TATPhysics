@@ -40,14 +40,16 @@ void TestApp::CreateScene()
 	node->SetVisible(true);
 	node->SetTransform(TATransform::GetIdentity());
 	
-	TATRigidBody* rb0 = TATDynamicWorld::Instance()->CreateConvex(mesh);
+	TATRigidBody* rb0 = TATDynamicWorld::Instance()->CreateConvex(mesh, 1.0f);
 	TATransform tr;
 	tr.SetOrigin(TATVector3(0, 50, 10));
-	rb0->SetWorldTransform(tr);
+	TATDynamicWorld::Instance()->InitializeRb(rb0, tr, 1.0f, 0.8, 0.2);
 
-	TATRigidBody* rb1 = TATDynamicWorld::Instance()->CreateConvex(mesh);
+	TATRigidBody* rb1 = TATDynamicWorld::Instance()->CreateConvex(mesh, 1.0f);
 	tr.SetOrigin(TATVector3(0, 20, 20));
-	rb1->SetWorldTransform(tr);
+	TATDynamicWorld::Instance()->InitializeRb(rb1, tr, 2.0f, 0.8, 0.2);
+
+	actor->SetRigidBody(rb0->m_IndexInPool);
 
 	//TODO put resources to world and set physic behavior coefficient
 }
@@ -59,6 +61,7 @@ void TestApp::Run()
 	CreateScene();
 
 	m_PhysicThread->Run();
+
 	m_RenderThread->Run();
 }
 

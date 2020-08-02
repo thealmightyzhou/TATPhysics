@@ -5,6 +5,8 @@
 #include "../TATBasis/TATWorld.h"
 #include "../TATStage/TATStageNode.h"
 #include "../TATStage/TATActor.h"
+#include "../TATBasis/TATErrorReporter.h"
+#include "../TATBasis/TATimer.h"
 
 void TATPhysicThread::AddListener(TATPhysicListener* listener)
 {
@@ -23,23 +25,37 @@ void TATPhysicThread::RemoveListener(TATPhysicListener* listener)
 
 void TATPhysicThread::PhysicLoop()
 {
-	float dt = float(1) / 60;
+	float timeStep = float(1) / 200;
+	float dt = 0;
+
+	TATimer timer;
+
 	while (true)
 	{
+		timer.Begin();
 
-		for (int i = 0; i < (int)m_PhysicListeners.size(); ++i)
+		if (!timer.Block(dt, timeStep))
 		{
-			m_PhysicListeners[i]->SimulationStart(dt);
+			for (int i = 0; i < (int)m_PhysicListeners.size(); ++i)
+			{
+				m_PhysicListeners[i]->SimulationStart(timeStep);
+			}
+
+			TATDynamicWorld::Instance()->StepSimulation(timeStep);
+
+			//TODO lock , fill the render buffer and mark as dirty
+
+			for (int i = 0; i < (int)m_PhysicListeners.size(); ++i)
+			{
+				m_PhysicListeners[i]->SimulationEnd(timeStep);
+			}
+
+			TATErrorReporter::Instance()->ReportErr("physic one step:" + TString::ConvertFloat(timeStep));
 		}
 
-		TATDynamicWorld::Instance()->StepSimulation(dt);
+		timer.End();
 
-		//TODO lock , fill the render buffer and mark as dirty
-
-		for (int i = 0; i < (int)m_PhysicListeners.size(); ++i)
-		{
-			m_PhysicListeners[i]->SimulationEnd(dt);
-		}
+		dt = timer.DeltaTime(timeStep);
 	}
 }
 
@@ -107,7 +123,10 @@ void TATRenderThread::RenderOneFrame(float dt)
 		if(node)
 			actor = node->m_Actor;
 		if (actor)
+		{
+			actor->Update(dt);
 			unit = actor->m_RenderUnit;
+		}
 
 		if (node && node->GetVisible() && actor && unit)
 		{
