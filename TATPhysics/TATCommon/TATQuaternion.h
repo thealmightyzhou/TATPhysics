@@ -67,17 +67,28 @@ public:
 		float sinPitch = sin(halfPitch);
 		float cosRoll = cos(halfRoll);
 		float sinRoll = sin(halfRoll);
-		SetValue(cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw,
-				 cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw,
-				 sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw,
-				 cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw);
+		SetValue(sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw,   //x
+			cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw,   //y
+			cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw,   //z
+			cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw);  //formerly yzx
+
+		Normalize();
 	}
 
 	void FromCoordinateSys(const TATVector3& x, const TATVector3& y, const TATVector3& z)
 	{
-		TATQuaternion orient = FastestRotation(TATVector3::UnitZ(), z);
-		TATVector3 dx = orient * x;
-		orient *= FastestRotation(dx, x);
+		TATQuaternion orient = FastestRotation(TATVector3::UnitX(), x);
+		TATVector3 dz = orient * z;
+		orient *= FastestRotation(dz, z);
+		SetValue(orient.X, orient.Y, orient.Z, orient.W);
+	}
+
+	void FromTwoCoordinateSys(const TATVector3& fromX, const TATVector3& fromY, const TATVector3& fromZ,
+		const TATVector3& toX, const TATVector3& toY, const TATVector3& toZ)
+	{
+		TATQuaternion orient = FastestRotation(fromZ, toZ);
+		TATVector3 dy = orient * fromY;
+		orient *= FastestRotation(dy, toY);
 		SetValue(orient.X, orient.Y, orient.Z, orient.W);
 	}
 
@@ -90,6 +101,8 @@ public:
 		float angle = acos(axis0.Dot(axis1));
 		TATQuaternion rot;
 		rot.FromAngleAxis(rotAxis, angle);
+
+		return rot;
 	}
 
 	TATQuaternion& operator*=(const float& s)
@@ -236,5 +249,22 @@ public:
 			+w.Y * W + w.X * Z - w.Z * X,
 			+w.Z * W + w.Y * X - w.X * Y,
 			-w.X * X - w.Y * Y - w.Z * Z);
+	}
+
+	void GetEulerZYX(float& yawZ, float& pitchY, float& rollX) const
+	{
+		float squ;
+		float sqx;
+		float sqy;
+		float sqz;
+		float sarg;
+		sqx = m_Datas[0] * m_Datas[0];
+		sqy = m_Datas[1] * m_Datas[1];
+		sqz = m_Datas[2] * m_Datas[2];
+		squ = m_Datas[3] * m_Datas[3];
+		rollX = atan2(2 * (m_Datas[1] * m_Datas[2] + m_Datas[3] * m_Datas[0]), squ - sqx - sqy + sqz);
+		sarg = float(-2.) * (m_Datas[0] * m_Datas[2] - m_Datas[3] * m_Datas[1]);
+		pitchY = sarg <= float(-1.0) ? float(-0.5) * TAT_PI : (sarg >= float(1.0) ? float(0.5) * TAT_PI : asin(sarg));
+		yawZ = atan2(2 * (m_Datas[0] * m_Datas[1] + m_Datas[3] * m_Datas[2]), squ + sqx - sqy - sqz);
 	}
 };

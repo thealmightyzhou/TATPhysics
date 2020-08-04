@@ -20,8 +20,9 @@ void TestApp::CreateScene()
 {
 	__super::CreateScene();
 
-	m_MainCamera->SetPosition(TATVector3(30, 0, 0));
+	m_MainCamera->SetPosition(TATVector3(20, 20, -100));
 	m_MainCamera->SetWindowSize(TATGLEntry::Instance()->m_WindowWidth, TATGLEntry::Instance()->m_WindowHeight);
+	m_MainCamera->SetDirection((TATVector3(0, 50, 10) - m_MainCamera->GetPosition()).Normalized());
 
 	TATMesh* mesh = TATResourceManager::Instance()->LoadMesh("cube.obj");
 

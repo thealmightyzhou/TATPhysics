@@ -34,7 +34,7 @@ public:
 	void Initialize()
 	{
 		m_Freeze = false;
-		m_Yaw = -90.0f;
+		m_Yaw = 0.0f;
 		m_Pitch = 0.0f;
 		m_Roll = 0.0f;
 		m_MoveSpeed = 10.0f;
@@ -49,6 +49,7 @@ public:
 		m_Front = TATVector3(0.0f, 0.0f, -1.0f);
 		m_MoveState = MOVE_NONE;
 		m_Orientation = TATQuaternion::GetIdentity();
+		m_FirstCursor = true;
 	}
 
 	void SetWindowSize(int w, int h)
@@ -68,6 +69,10 @@ public:
 	void SetOrientation(const TATQuaternion& q)
 	{
 		m_Orientation = q;
+		m_Orientation.GetEulerZYX(m_Yaw, m_Pitch, m_Roll);
+		m_Yaw = TAT_DEGREE(m_Yaw);
+		m_Pitch = TAT_DEGREE(m_Pitch);
+		m_Roll = TAT_DEGREE(m_Roll);
 	}
 
 	//call in render loop
@@ -91,7 +96,7 @@ public:
 		Update();
 	}
 
-	void Rotate(float xoffset, float yoffset, GLboolean constrainPitch = true)
+	void Rotate(float xoffset, float yoffset, GLboolean constrainRoll = true)
 	{
 		if (m_Freeze)
 			return;
@@ -99,16 +104,26 @@ public:
 		xoffset *= m_MouseSensitivity;
 		yoffset *= m_MouseSensitivity;
 
-		m_Yaw -= xoffset;
-		m_Pitch -= yoffset;
+		//m_Yaw -= xoffset;
+		//m_Pitch -= yoffset;
 
-		// Make sure that when pitch is out of bounds, screen doesn't get flipped
-		if (constrainPitch)
+		//if (constrainPitch)
+		//{
+		//	if (m_Pitch > 89.0f)
+		//		m_Pitch = 89.0f;
+		//	if (m_Pitch < -89.0f)
+		//		m_Pitch = -89.0f;
+		//}
+
+		m_Pitch -= xoffset;
+		m_Roll -= yoffset;
+
+		if (constrainRoll)
 		{
-			if (m_Pitch > 89.0f)
-				m_Pitch = 89.0f;
-			if (m_Pitch < -89.0f)
-				m_Pitch = -89.0f;
+			if (m_Roll > 89.0f)
+				m_Roll = 89.0f;
+			if (m_Roll < -89.0f)
+				m_Roll = -89.0f;
 		}
 
 		m_Orientation.FromEuler(TAT_RADIAN(m_Yaw), TAT_RADIAN(m_Pitch), TAT_RADIAN(m_Roll));
@@ -128,6 +143,17 @@ public:
 	{
 		m_Freeze = f;
 		Update();
+	}
+
+	void SetDirection(const TATVector3& dir)
+	{
+		TATVector3 up = dir.Cross(TATVector3::UnitX()).Normalized();
+		TATVector3 right = up.Cross(dir);
+		right.Y = 0;
+		right.SafeNormalize();
+		TATQuaternion q;
+		q.FromCoordinateSys(right, up, dir);
+		SetOrientation(q);
 	}
 
 	void GetViewMatrix(glm::mat4& mat)
@@ -196,6 +222,12 @@ public:
 
 	virtual void OnCursorMove(float dx, float dy) override
 	{
+		if (m_FirstCursor)
+		{
+			m_FirstCursor = false;
+			return;
+		}
+	
 		Rotate(dx, dy, true);
 	}
 
@@ -256,6 +288,7 @@ private:
 	float m_WindowHeight;
 	float m_WindowWidth;
 	bool m_Freeze;
+	bool m_FirstCursor;
 
 	UINT m_MoveState;
 };

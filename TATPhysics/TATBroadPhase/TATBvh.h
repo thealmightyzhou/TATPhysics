@@ -1,6 +1,8 @@
 #pragma once
 #include "../TATCommon/TATVector3.h"
+#include "../TATBasis/TATHasher.h"
 #include <vector>
+#include <set>
 
 class TATBvhCollideCallBack;
 
@@ -72,6 +74,7 @@ public:
 		head->SetIsLeaf(false);
 		m_BVTree.push_back(head);
 		m_NodeCount = 0;
+		m_CollideWithTree = false;
 	}
 	~TATBvh()
 	{
@@ -98,6 +101,7 @@ public:
 		head->SetIsLeaf(false);
 		m_BVTree.push_back(head);
 		m_NodeCount = 0;
+		m_OverlapSet.clear();
 	}
 
 	void FinishBuild();
@@ -117,8 +121,13 @@ public:
 	bool CollideWithBVTree(TATBvh* other, TATBvhCollideCallBack* cb);
 
 protected:
+	bool InternalCollideWithAabbNode(TATBVNode* node, TATBvhCollideCallBack* cb);
+
 	bool ProcessTraverse(int id, TATBVNode* node, TATBvhCollideCallBack* cb);
 
 	bool ProcessTraverseTree(int id, TATBvh* tree, TATBvhCollideCallBack* cb);
 
+	std::set<int> m_OverlapSet;
+
+	bool m_CollideWithTree;
 };

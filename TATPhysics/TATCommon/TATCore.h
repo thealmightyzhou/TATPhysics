@@ -20,7 +20,8 @@ typedef unsigned int UINT;
 #define TAT_MAXRIGIDBODY_COUNT 100
 #define TAT_MAXSOLVERCONSTRAINT_COUNT 1000
 
-#define TAT_RADIAN(f) (f * static_cast<float>(0.01745329251994329576923690768489))
+#define TAT_RADIAN(d) (d * static_cast<float>(0.01745329251994329576923690768489))
+#define TAT_DEGREE(r) (r * static_cast<float>(57.295779513082320876798154814092))
 
 #define TAT_2PI float(6.283185307179586232)
 #define TAT_PI (TAT_2PI * float(0.5))

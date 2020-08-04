@@ -167,15 +167,15 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 
 
 	solverConstraint.m_AppliedImpulse = cp.m_AppliedImpulse * infoGlobal.m_WarmstartingFactor;
-	//if (rb0)
-	//	bodyA.ApplyImpulse(solverConstraint.m_ContactNormal * bodyA.GetInvMass(), solverConstraint.m_AngularComponentA, solverConstraint.m_AppliedImpulse);
-	//if (rb1)
-	//	bodyB.ApplyImpulse(solverConstraint.m_ContactNormal * bodyB.GetInvMass(), -solverConstraint.m_AngularComponentB, -(float)solverConstraint.m_AppliedImpulse);
-
 	if (rbData0)
-		bodyA.ApplyImpulse(solverConstraint.m_ContactNormal * bodyA.GetInvMass(), -solverConstraint.m_AngularComponentA, -solverConstraint.m_AppliedImpulse);
+		bodyA.ApplyImpulse(solverConstraint.m_ContactNormal * bodyA.GetInvMass(), solverConstraint.m_AngularComponentA, solverConstraint.m_AppliedImpulse);
 	if (rbData1)
-		bodyB.ApplyImpulse(solverConstraint.m_ContactNormal * bodyB.GetInvMass(), solverConstraint.m_AngularComponentB, solverConstraint.m_AppliedImpulse);
+		bodyB.ApplyImpulse(solverConstraint.m_ContactNormal * bodyB.GetInvMass(), -solverConstraint.m_AngularComponentB, -(float)solverConstraint.m_AppliedImpulse);
+
+	//if (rbData0)
+	//	bodyA.ApplyImpulse(solverConstraint.m_ContactNormal * bodyA.GetInvMass(), -solverConstraint.m_AngularComponentA, -solverConstraint.m_AppliedImpulse);
+	//if (rbData1)
+	//	bodyB.ApplyImpulse(solverConstraint.m_ContactNormal * bodyB.GetInvMass(), solverConstraint.m_AngularComponentB, solverConstraint.m_AppliedImpulse);
 
 	solverConstraint.m_AppliedPushImpulse = 0.f;
 
@@ -238,17 +238,33 @@ void TATPgsJacobiSolver::SolveContact(const TATSATCollideData& contact, TATRigid
 	float relVel;
 	float relaxation;
 
-	int index0 = contact.m_RbA->m_BodyIndex;
-	int index1 = contact.m_RbB->m_BodyIndex;
+	int bodyIndex0 = contact.m_RbA->m_BodyIndex;
+	int bodyIndex1 = contact.m_RbB->m_BodyIndex;
+
+	int dataIndex0 = contact.m_RbA->m_DataIndex;
+	int dataIndex1 = contact.m_RbB->m_DataIndex;
+
+	TATSolverBody& bodyA = m_SolverBodyPool[bodyIndex0];
+	TATSolverBody& bodyB = m_SolverBodyPool[bodyIndex1];
+
+	TATRigidBodyData& data0 = bodies[dataIndex0];
+	TATRigidBodyData& data1 = bodies[dataIndex1];
+
+	bodyA.SetWorldTransform(TATransform(data0.m_Quat, data0.m_Pos));
+	bodyA.m_LinVel = data0.m_LinVel;
+	bodyA.m_AngVel = data0.m_AngVel;
+	bodyB.SetWorldTransform(TATransform(data1.m_Quat, data1.m_Pos));
+	bodyB.m_LinVel = data1.m_LinVel;
+	bodyB.m_AngVel = data1.m_AngVel;
 
 	TATSolverConstraint constr;
 	TATContactPoint cp;
 	GetContactPoint(contact, cp);
 
-	SetupContactConstraint(bodies, inertias, constr, index0, index1,
+	SetupContactConstraint(bodies, inertias, constr, bodyIndex0, bodyIndex1,
 		cp, info, vel, relVel, relaxation, relPos1, resPos2);
 
-	ResolveSingleConstraintRowGeneric(m_SolverBodyPool[index0], m_SolverBodyPool[index1], constr);
+	ResolveSingleConstraintRowGeneric(bodyA, bodyB, constr);
 
 	SolveFinish(bodies, inertias, info);
 }

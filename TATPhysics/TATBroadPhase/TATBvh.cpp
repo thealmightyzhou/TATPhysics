@@ -52,6 +52,15 @@ void TATBvh::FinishBuild()
 
 bool TATBvh::CollideWithAabbNode(TATBVNode* node, TATBvhCollideCallBack* cb)
 {
+	m_CollideWithTree = false;
+
+	if (!node->IsOverlapped(m_BVTree[0]))
+		return false;
+	return ProcessTraverse(1, node, cb);
+}
+
+bool TATBvh::InternalCollideWithAabbNode(TATBVNode* node, TATBvhCollideCallBack* cb)
+{
 	if (!node->IsOverlapped(m_BVTree[0]))
 		return false;
 	return ProcessTraverse(1, node, cb);
@@ -79,8 +88,28 @@ bool TATBvh::ProcessTraverse(int id, TATBVNode* node, TATBvhCollideCallBack* cb)
 		{
 			if (m_BVTree[id] != node)
 			{
-				cb->NodeOverlapped(m_BVTree[id], node);
-				return true;
+				if (m_CollideWithTree)
+				{
+					//if collide with a tree need to avoid repeat overlaps
+					int hash = TATHasher::HashTwo((int)m_BVTree[id], (int)node);
+					std::set<int>::iterator it = m_OverlapSet.find(hash);
+					if (it == m_OverlapSet.end())
+					{
+						m_OverlapSet.insert(hash);
+						cb->NodeOverlapped(m_BVTree[id], node);
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+				else
+				{
+					cb->NodeOverlapped(m_BVTree[id], node);
+					return true;
+				}
+
 			}
 			else
 				return false;
@@ -105,11 +134,13 @@ bool TATBvh::ProcessTraverse(int id, TATBVNode* node, TATBvhCollideCallBack* cb)
 
 bool TATBvh::ProcessTraverseTree(int id, TATBvh* tree, TATBvhCollideCallBack* cb)
 {
+	m_CollideWithTree = true;
+
 	if (id >= (int)m_BVTree.size())
 		return false;
 
 	bool success = false;
-	if (tree->CollideWithAabbNode(m_BVTree[id], cb))
+	if (tree->InternalCollideWithAabbNode(m_BVTree[id], cb))
 	{
 		success = true;
 		ProcessTraverseTree(id * 2, tree, cb);
