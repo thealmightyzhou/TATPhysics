@@ -22,6 +22,7 @@ public:
 	{
 		delete m_Objects;
 		delete m_UsedMap;
+		m_UsedObjects.clear();
 	}
 
 	T* FetchUnused()

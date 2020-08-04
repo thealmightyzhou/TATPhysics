@@ -9,12 +9,14 @@ class TATCamera;
 class TATLight;
 class TATPhysicThread;
 class TATRenderThread;
+class TATRenderTaskList;
 
 #define TAT_ROOTNODE TATApplicationEntry::Instance()->GetApplication()->GetRootNode()
 #define TAT_RENDER_THREAD TATApplicationEntry::Instance()->GetApplication()->m_RenderThread
 #define TAT_PHYSIC_THREAD TATApplicationEntry::Instance()->GetApplication()->m_PhysicThread
 #define TAT_APPNAME TATApplicationEntry::Instance()->GetApplication()->GetAppName()
 #define TAT_APP TATApplicationEntry::Instance()->GetApplication()
+#define TAT_RENDER_TASK_LIST (&TAT_RENDER_THREAD->m_RenderTaskList)
 
 class TATApplication:public TATRenderListener,public TATPhysicListener
 {

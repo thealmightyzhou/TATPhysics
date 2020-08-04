@@ -6,6 +6,9 @@
 #include "../TATCommon/TATObjectPool.h"
 #include "../TATGLRender/TATGLRenderer.h"
 #include "../TATGLRender/TATGLEntry.h"
+#include "TATRenderTask.h"
+#include "../TATStage/TATLinePainter.h"
+#include <mutex>
 
 class TATRenderListener;
 class TATPhysicListener;
@@ -72,9 +75,7 @@ public:
 
 	virtual void Run()
 	{
-		//m_Thread = thread(&TATRenderThread::RenderLoop, this);
-		//if (m_Thread.joinable())
-		//	m_Thread.join();
+		m_LinePainter = new TATLinePainter();
 
 		RenderLoop();
 	}
@@ -103,4 +104,8 @@ public:
 	TATGLRenderer* m_Renderer;
 
 	GLFWwindow* m_Window;
+
+	TATRenderTaskList m_RenderTaskList;
+
+	TATLinePainter* m_LinePainter;
 };

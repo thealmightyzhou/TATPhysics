@@ -96,6 +96,8 @@ void TATRenderThread::RenderLoop()
 				m_RenderListeners[i]->BeginRenderOneFrame(dt);
 			}
 
+			m_RenderTaskList.HandleTask();
+
 			RenderOneFrame(dt);
 
 			glfwSwapBuffers(m_Window);

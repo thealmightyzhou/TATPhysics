@@ -3,6 +3,8 @@
 #include "../TATNarrowPhase/TATCCD.h"
 #include "TATPgsJacobiSolver.h"
 #include "../TATBroadPhase/TATBvhCollideCallBack.h"
+#include "../TATApplication/TATApplication.h"
+#include "../TATApplication/TAThread.h"
 
 class TATRigidBodyOverlapCallBack :public TATBvhCollideCallBack
 {
@@ -65,6 +67,16 @@ void TATDynamicWorld::StepSimulation(float dt)
 
 	for (int i = 0; i < (int)satCollideDatas.size(); i++)
 	{
+		TAT_RENDER_TASK_LIST->PushTask([](const TATVector3& p0, const TATVector3& p1, const TATVector3& col)->void
+		{
+			if (TAT_RENDER_THREAD->m_LinePainter)
+			{
+				TAT_RENDER_THREAD->m_LinePainter->Clear();
+				TAT_RENDER_THREAD->m_LinePainter->PaintLine(p0, p1, col);
+			}
+
+		}, satCollideDatas[i].m_CollidePtA, satCollideDatas[i].m_CollidePtB, TATVector3(1, 0, 0));
+
 		m_ConstraintSolver->SolveContact(satCollideDatas[i], m_RigidBodyDatas.GetPool(), m_InertiaDatas.GetPool(), info);
 	}
 

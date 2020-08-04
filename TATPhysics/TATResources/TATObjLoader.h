@@ -2,7 +2,6 @@
 #define THEALMIGHTY_OBJLOADER
 
 #include "TATModelLoader.h"
-#include "../TATBasis/TString.h"
 
 using namespace std;
 

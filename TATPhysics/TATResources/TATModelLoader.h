@@ -4,8 +4,8 @@
 #include <vector>
 #include <fstream>
 #include <string>
-#include "../TATApplication/TATApplication.h"
 #include "../TATCommon/TATCore.h"
+#include "../TATBasis/TString.h"
 
 using namespace std;
 
@@ -250,7 +250,7 @@ public:
 	{
 	}
 
-	virtual void Load(const TString&, TATModelBuffer& buffer) {}
+	virtual void Load(const TString& str, TATModelBuffer& buffer) {}
 
 	virtual ~TATModelLoader() {}
 

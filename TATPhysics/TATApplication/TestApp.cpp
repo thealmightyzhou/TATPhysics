@@ -14,10 +14,6 @@ void TestApp::Initialize()
 	__super::Initialize();
 
 	TATGLEntry::Instance()->Initialize(1080, 720);
-
-	m_LinePainter = new TATLinePainter();
-
-	//TODO Load resources;
 }
 
 void TestApp::CreateScene()
@@ -37,7 +33,7 @@ void TestApp::CreateScene()
 	TATActor* actor1 = new TATActor(mesh);
 	actor1->SetMaterial(mat);
 
-	TATStageNode* node = m_RootNode->CreateChild("test");
+	TATStageNode* node = m_RootNode->CreateChild("cube1");
 	node->MountActor(actor);
 	node->SetVisible(true);
 	node->SetTransform(TATransform::GetIdentity());
@@ -59,7 +55,6 @@ void TestApp::CreateScene()
 	actor->SetRigidBody(rb0->m_IndexInPool);
 	actor1->SetRigidBody(rb1->m_IndexInPool);
 
-	//TODO put resources to world and set physic behavior coefficient
 }
 
 void TestApp::Run()
@@ -75,7 +70,5 @@ void TestApp::Run()
 
 void TestApp::BeginRenderOneFrame(float dt)
 {
-	m_LinePainter->PaintLine(TATVector3::Zero(), TATVector3::UnitY() * 50, TATVector3(1, 1, 0));
 
-	m_LinePainter->PaintLine(TATVector3(20, 20, 20), TATVector3::UnitX() * 50, TATVector3(0, 1, 1));
 }

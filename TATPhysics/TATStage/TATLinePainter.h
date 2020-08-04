@@ -3,13 +3,14 @@
 #include "TATStageNode.h"
 #include "../TATApplication/TATWorldListener.h"
 #include "../TATResources/TATResourceManager.h"
+#include "../TATApplication/TATApplication.h"
 
 class TATLinePainter : public TATManualObject,public TATRenderListener
 {
 public:
 	TATLinePainter()
 	{
-		TATStageNode* node = TAT_ROOTNODE->CreateChild("linePainter" + GetObjectIndex());
+		TATStageNode* node = TAT_ROOTNODE->CreateChild(TString("linePainter") + TString::ConvertInt(GetObjectIndex()));
 		node->MountActor(this);
 		node->SetVisible(true);
 		m_RenderMode = TAT_RENDERMODE_LINES;
@@ -31,7 +32,8 @@ public:
 
 	void ComputeOrder()
 	{
-		m_RenderOrder.resize(m_RenderVertices.size());
+		if(m_RenderOrder.size() != m_RenderVertices.size())
+			m_RenderOrder.resize(m_RenderVertices.size());
 		for (int i = 0; i < m_RenderVertices.size(); ++i)
 		{
 			m_RenderOrder[i] = i;
@@ -39,6 +41,11 @@ public:
 	}
 
 	virtual void RenderOneFrameEnd(float dt) override
+	{
+
+	}
+
+	void Clear()
 	{
 		m_RenderVertices.clear();
 		m_RenderOrder.clear();
