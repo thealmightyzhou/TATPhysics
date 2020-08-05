@@ -103,15 +103,6 @@ public:
 
 		glDrawArrays(unit->m_RenderMode, 0, unit->m_IndicesCount);
 
-		//else if (m_renderMode == GL_LINE_LOOP || m_renderMode == GL_LINE_STRIP || m_renderMode == GL_LINES)
-		//{
-		//	glDrawArrays(GL_LINES, 0, 6 * m_mesh->m_Triangles.size() + 12 * m_mesh->m_Tetras.size());
-		//}
-		//else if (m_renderMode == GL_LINE)
-		//{
-		//	glDrawArrays(GL_LINES, 0, m_mesh->m_Edges.size() * 2);
-		//}
-
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}

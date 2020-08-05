@@ -7,7 +7,7 @@ TATMatrix3 TATInertiaComputer::ComputeInertia(TATCollideShapePrimitive* cShape)
 	TATCollideShapeSphere* sphere = 0;
 	TATCollideShapeCuboid* cb = 0;
 	TATCollideShapeConvex* cx = 0;
-
+	TATCollideShapePlane* cp = 0;
 	switch (type)
 	{
 	case CollideShapeType::CollideSphere:
@@ -21,6 +21,10 @@ TATMatrix3 TATInertiaComputer::ComputeInertia(TATCollideShapePrimitive* cShape)
 	case CollideShapeType::CollideConvex:
 		cx = dynamic_cast<TATCollideShapeConvex*>(cShape);
 		return ConvexInertia(cx->m_CollideMeshData, cx->m_LocalMassCenter, cx->m_InvMass);
+		break;
+	case CollideShapeType::CollidePlane:
+		cp = dynamic_cast<TATCollideShapePlane*>(cShape);
+		return TATMatrix3::GetIdentity();
 	default:
 		break;
 	}
