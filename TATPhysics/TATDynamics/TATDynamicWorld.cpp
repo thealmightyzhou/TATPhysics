@@ -147,7 +147,7 @@ void TATDynamicWorld::InitializeRb(TATRigidBody* rb, const TATransform& tr, floa
 	TATInertiaData& in = m_InertiaDatas[rb->m_InertiaIndex];
 	TATSolverBody& body = m_ConstraintSolver->m_SolverBodyPool[rb->m_BodyIndex];
 
-	rbdata.m_Pos = tr.GetOrigin();
+	rbdata.m_Pos = rb->GetMassCenter(); // tr.GetOrigin();
 	rbdata.m_Quat = tr.GetRotation();
 	rbdata.m_LinVel = rbdata.m_AngVel = TATVector3::Zero();
 	rbdata.m_FrictionCoeff = frictionCoeff;

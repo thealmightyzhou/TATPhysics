@@ -19,6 +19,7 @@ public:
 	TAT_REGISTER_ATTRIBUTE_GET(TATVector3, TurnVel);
 	TAT_REGISTER_ATTRIBUTE_GET(TATVector3, LinFactor);
 	TAT_REGISTER_ATTRIBUTE_GET(TATVector3, AngFactor);
+	TAT_REGISTER_ATTRIBUTE_GET(TATVector3, MassCenter);
 
 	union 
 	{

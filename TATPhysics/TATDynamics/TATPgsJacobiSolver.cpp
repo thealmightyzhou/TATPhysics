@@ -88,8 +88,8 @@ void TATPgsJacobiSolver::ResolveSingleConstraintRowGeneric(TATSolverBody& body1,
 		c.m_AppliedImpulse = sum;
 	}
 
-	body1.ApplyImpulse(c.m_ContactNormal * body1.GetInvMass(), c.m_AngularComponentA, deltaImpulse);
-	body2.ApplyImpulse(-c.m_ContactNormal * body2.GetInvMass(), c.m_AngularComponentB, deltaImpulse);
+	body1.ApplyImpulse(-c.m_ContactNormal * body1.GetInvMass(), c.m_AngularComponentA, deltaImpulse);
+	body2.ApplyImpulse(c.m_ContactNormal * body2.GetInvMass(), c.m_AngularComponentB, deltaImpulse);
 }
 
 void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATInertiaData* inertias, TATSolverConstraint& solverConstraint,
@@ -107,11 +107,14 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 	TATRigidBody& rb0 = TATDynamicWorld::Instance()->m_RigidBodys[bodyA.m_OriginalBodyIndex];
 	TATRigidBody& rb1 = TATDynamicWorld::Instance()->m_RigidBodys[bodyB.m_OriginalBodyIndex];
 
+	bodyA.m_MassCenter = rb0.GetMassCenter();
+	bodyB.m_MassCenter = rb1.GetMassCenter();
+
 	TATRigidBodyData* rbData0 = &bodies[bodyA.m_OriginalBodyIndex];
 	TATRigidBodyData* rbData1 = &bodies[bodyB.m_OriginalBodyIndex];
 
-	rel_pos1 = pos1 - bodyA.GetWorldTransform().GetOrigin();
-	rel_pos2 = pos2 - bodyB.GetWorldTransform().GetOrigin();
+	rel_pos1 = pos1 - bodyA.m_MassCenter;
+	rel_pos2 = pos2 - bodyB.m_MassCenter;
 
 	relaxation = 1.f;
 
@@ -147,7 +150,7 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 	solverConstraint.m_RelPos2CrossNormal = -torqueAxis1;
 
 	float restitution = 0.f;
-	float penetration = cp.GetDistance() + infoGlobal.m_LinearSlop;
+	float penetration = -(cp.GetDistance() + infoGlobal.m_LinearSlop);
 
 	TATVector3 vel1, vel2;
 
@@ -167,15 +170,15 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 
 
 	solverConstraint.m_AppliedImpulse = cp.m_AppliedImpulse * infoGlobal.m_WarmstartingFactor;
-	if (rbData0)
-		bodyA.ApplyImpulse(solverConstraint.m_ContactNormal * bodyA.GetInvMass(), solverConstraint.m_AngularComponentA, solverConstraint.m_AppliedImpulse);
-	if (rbData1)
-		bodyB.ApplyImpulse(solverConstraint.m_ContactNormal * bodyB.GetInvMass(), -solverConstraint.m_AngularComponentB, -(float)solverConstraint.m_AppliedImpulse);
-
 	//if (rbData0)
-	//	bodyA.ApplyImpulse(solverConstraint.m_ContactNormal * bodyA.GetInvMass(), -solverConstraint.m_AngularComponentA, -solverConstraint.m_AppliedImpulse);
+	//	bodyA.ApplyImpulse(solverConstraint.m_ContactNormal * bodyA.GetInvMass(), solverConstraint.m_AngularComponentA, solverConstraint.m_AppliedImpulse);
 	//if (rbData1)
-	//	bodyB.ApplyImpulse(solverConstraint.m_ContactNormal * bodyB.GetInvMass(), solverConstraint.m_AngularComponentB, solverConstraint.m_AppliedImpulse);
+	//	bodyB.ApplyImpulse(solverConstraint.m_ContactNormal * bodyB.GetInvMass(), -solverConstraint.m_AngularComponentB, -(float)solverConstraint.m_AppliedImpulse);
+
+	if (rbData0)
+		bodyA.ApplyImpulse(solverConstraint.m_ContactNormal * bodyA.GetInvMass(), -solverConstraint.m_AngularComponentA, -solverConstraint.m_AppliedImpulse);
+	if (rbData1)
+		bodyB.ApplyImpulse(solverConstraint.m_ContactNormal * bodyB.GetInvMass(), solverConstraint.m_AngularComponentB, solverConstraint.m_AppliedImpulse);
 
 	solverConstraint.m_AppliedPushImpulse = 0.f;
 
@@ -184,7 +187,7 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 	float rel_vel = vel1Dotn + vel2Dotn;
 
 	float positionalError = 0.f;
-	float velocityError = restitution - rel_vel;  // * damping;
+	float velocityError = restitution + rel_vel;  // * damping;
 
 	float erp = infoGlobal.m_Erp2;
 	if (!infoGlobal.m_SplitImpulse || (penetration > infoGlobal.m_SplitImpulsePenetrationThreshold))
@@ -253,6 +256,7 @@ void TATPgsJacobiSolver::SolveContact(const TATSATCollideData& contact, TATRigid
 	bodyA.SetWorldTransform(TATransform(data0.m_Quat, data0.m_Pos));
 	bodyA.m_LinVel = data0.m_LinVel;
 	bodyA.m_AngVel = data0.m_AngVel;
+
 	bodyB.SetWorldTransform(TATransform(data1.m_Quat, data1.m_Pos));
 	bodyB.m_LinVel = data1.m_LinVel;
 	bodyB.m_AngVel = data1.m_AngVel;

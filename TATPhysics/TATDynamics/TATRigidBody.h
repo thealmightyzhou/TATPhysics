@@ -132,6 +132,11 @@ public:
 		m_CollideShape = cs;
 	}
 
+	TATVector3 GetMassCenter()
+	{
+		return  m_WorldTransform * m_CollideShape->m_LocalMassCenter;
+	}
+
 	TATCollideShapePrimitive* m_CollideShape;
 
 	float m_InvMass;
