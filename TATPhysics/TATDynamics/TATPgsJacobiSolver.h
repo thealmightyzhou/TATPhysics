@@ -3,7 +3,7 @@
 #include "TATRigidBodyData.h"
 #include <vector>
 
-struct TATSATCollideData;
+struct TATRigidBodyCollideData;
 
 struct TATContactPoint
 {
@@ -53,9 +53,9 @@ public:
 
 	float RestitutionCurve(float rel_vel, float restitution);
 
-	void GetContactPoint(const TATSATCollideData& contact, TATContactPoint& out);
+	void GetContactPoint(const TATRigidBodyCollideData& contact, TATContactPoint& out);
 
-	void SolveContact(const TATSATCollideData& contact, TATRigidBodyData* bodies, TATInertiaData* inertias, TATContactSolverInfo& info);
+	void SolveContact(const TATRigidBodyCollideData& contact, TATRigidBodyData* bodies, TATInertiaData* inertias, TATContactSolverInfo& info);
 
 	void SolveFinish(TATRigidBodyData* bodies, TATInertiaData* inertias, const TATContactSolverInfo& info);
 };

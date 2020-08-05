@@ -20,6 +20,8 @@ public:
 class TATCollideAlgoPrimitive
 {
 public:
+	virtual ~TATCollideAlgoPrimitive() {}
+
 	void Support(TATCollideShapeConvex* convex, const TATransform& tr, const TATVector3& dir,
 		int& min, int& max, float& proj0, float& proj1)
 	{
@@ -42,6 +44,11 @@ public:
 			}
 
 		}
+	}
+
+	virtual bool ComputeCollision(TATRigidBody* rb0, TATRigidBody* rb1)
+	{
+		return false;
 	}
 
 	TATRigidBodyCollideData m_CollideData;

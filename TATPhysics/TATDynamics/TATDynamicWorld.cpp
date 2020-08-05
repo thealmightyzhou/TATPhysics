@@ -5,6 +5,7 @@
 #include "../TATBroadPhase/TATBvhCollideCallBack.h"
 #include "../TATApplication/TATApplication.h"
 #include "../TATApplication/TAThread.h"
+#include "../TATNarrowPhase/TATRigidBodyCollisionEntry.h"
 
 class TATRigidBodyOverlapCallBack :public TATBvhCollideCallBack
 {
@@ -31,6 +32,8 @@ TATDynamicWorld::TATDynamicWorld():m_RigidBodys(TAT_MAXRIGIDBODY_COUNT),
 
 void TATDynamicWorld::StepSimulation(float dt)
 {
+	//broad phase
+	//-----------------
 	m_RigidBodyBVTree.Clear();
 	TATVector3 aabbMin, aabbMax;
 
@@ -50,22 +53,30 @@ void TATDynamicWorld::StepSimulation(float dt)
 	m_RigidBodyBVTree.FinishBuild();
 	m_RigidBodyBVTree.CollideWithBVTree(&m_RigidBodyBVTree, &cb);
 
+	//narrow phase
+	//-----------------
+
 	TATRigidBody* rbA = 0;
 	TATRigidBody* rbB = 0;
-	std::vector<TATSATCollideData> satCollideDatas;
+	std::vector<TATRigidBodyCollideData> rbCollideDatas;
 	for (int i = 0; i < (int)bpCollides.size(); i++)
 	{
 		rbA = (TATRigidBody*)bpCollides[i].m_node1->m_Data;
 		rbB = (TATRigidBody*)bpCollides[i].m_node2->m_Data;
 
-		TATSATCollideData cd;
-		if(TATSAT::SeparateAxisTest(TATRigidBodyGroup(rbA, rbB), cd))
-			satCollideDatas.push_back(cd);
+		TATRigidBodyCollideData cd;
+		if (TATRbCollision::RbCollision(rbA, rbB, cd))
+		{
+			rbCollideDatas.push_back(cd);
+		}
 	}
+
+	//solve
+	//-----------------
 
 	TATContactSolverInfo info;
 
-	for (int i = 0; i < (int)satCollideDatas.size(); i++)
+	for (int i = 0; i < (int)rbCollideDatas.size(); i++)
 	{
 		TAT_RENDER_TASK_LIST->PushTask([](const TATVector3& p0, const TATVector3& p1, const TATVector3& col)->void
 		{
@@ -75,10 +86,13 @@ void TATDynamicWorld::StepSimulation(float dt)
 				TAT_RENDER_THREAD->m_LinePainter->PaintLine(p0, p1, col);
 			}
 
-		}, satCollideDatas[i].m_CollidePtA, satCollideDatas[i].m_CollidePtB, TATVector3(1, 0, 0));
+		}, rbCollideDatas[i].m_CollidePt0, rbCollideDatas[i].m_CollidePt1, TATVector3(1, 0, 0));
 
-		m_ConstraintSolver->SolveContact(satCollideDatas[i], m_RigidBodyDatas.GetPool(), m_InertiaDatas.GetPool(), info);
+		m_ConstraintSolver->SolveContact(rbCollideDatas[i], m_RigidBodyDatas.GetPool(), m_InertiaDatas.GetPool(), info);
 	}
+
+	//integrate
+	//-----------------
 
 	const std::vector<TATRigidBodyData*> rbDatas = m_RigidBodyDatas.FetchAllUsed();
 	for (int i = 0; i < rbDatas.size(); i++)
@@ -123,6 +137,28 @@ TATRigidBody* TATDynamicWorld::CreateConvex(TATMesh* mesh, float invMass)
 	rb->m_BodyIndex = body->m_IndexInPool;
 	rb->m_DataIndex = rbdata->m_IndexInPool;
 	rb->m_InertiaIndex = in->m_IndexInPool;
+
+	return rb;
+}
+
+TATRigidBody* TATDynamicWorld::CreatePlane(const TATVector3& origin, const TATVector3& normal)
+{
+	TATCollideShapePlane* plane = new TATCollideShapePlane(origin, normal);
+	TATRigidBodyData* rbdata = m_RigidBodyDatas.FetchUnused();
+	TATInertiaData* in = m_InertiaDatas.FetchUnused();
+	TATRigidBody* rb = m_RigidBodys.FetchUnused();
+	rb->SetCollideShape(plane);
+
+	TATSolverBody* body = m_ConstraintSolver->m_SolverBodyPool.FetchUnused();
+
+	body->m_OriginalBodyIndex = rb->m_IndexInPool;
+	rb->m_BodyIndex = body->m_IndexInPool;
+	rb->m_DataIndex = rbdata->m_IndexInPool;
+	rb->m_InertiaIndex = in->m_IndexInPool;
+
+	rb->m_InvMass = 0;
+	body->m_InvMass = TATVector3::Zero();
+	rbdata->m_InvMass = 0;
 
 	return rb;
 }

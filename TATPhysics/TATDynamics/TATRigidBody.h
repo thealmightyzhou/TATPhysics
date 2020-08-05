@@ -94,6 +94,7 @@ public:
 		m_LocalInertiaTensor = TATMatrix3::GetIdentity();
 		m_LocalMassCenter = m_Origin;
 		m_LocalAabb.SetOrigin(-TAT_MAXVECTOR3, TAT_MAXVECTOR3);
+		m_ShapeType = CollideShapeType::CollidePlane;
 	}
 
 	TATVector3 m_Origin;

@@ -154,7 +154,7 @@ public:
 		return sqrt(Length2());
 	}
 
-	inline float Distance(const TATVector3& other)
+	inline float Distance(const TATVector3& other) const
 	{
 		return TATVector3(X - other.X, Y - other.Y, Z - other.Z).Length();
 	}

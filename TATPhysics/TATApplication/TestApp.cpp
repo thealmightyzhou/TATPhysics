@@ -69,6 +69,8 @@ void TestApp::CreateScene()
 	actor->SetRigidBody(rb0->m_IndexInPool);
 	actor1->SetRigidBody(rb1->m_IndexInPool);
 	actor2->SetRigidBody(rb2->m_IndexInPool);
+
+	TATDynamicWorld::Instance()->CreatePlane(TATVector3(0, -300, 0), TATVector3(0, 1, 0));
 }
 
 void TestApp::Run()

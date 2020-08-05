@@ -4,7 +4,7 @@
 class TATConvexCollidePlaneAlgo:public TATCollideAlgoPrimitive
 {
 	//default can collide double direction on plane
-	bool ConvexCollidePlane(TATRigidBody* rbConvex, TATRigidBody* rbPlane)
+	bool ComputeCollision(TATRigidBody* rbConvex, TATRigidBody* rbPlane) override
 	{
 		TATCollideShapeConvex* convex = dynamic_cast<TATCollideShapeConvex*>(rbConvex->m_CollideShape);
 		TATCollideShapePlane* plane = dynamic_cast<TATCollideShapePlane*>(rbPlane->m_CollideShape);

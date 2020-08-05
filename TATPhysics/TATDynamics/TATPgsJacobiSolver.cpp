@@ -2,6 +2,7 @@
 #include "TATRigidBodyData.h"
 #include "TATDynamicWorld.h"
 #include "../TATNarrowPhase/TATSAT.h"
+#include "../TATNarrowPhase/TATRigidBodyCollideData.h"
 
 //default use pgs & warm start
 static TATransform GetWorldTransform(TATRigidBodyData* rb)
@@ -33,7 +34,7 @@ static TATVector3 GetVelocityInLocalPoint(TATRigidBodyData* rb, const TATVector3
 	return GetLinearVelocity(rb) + GetAngularVelocity(rb).Cross(rel_pos);
 }
 
-void TATPgsJacobiSolver::GetContactPoint(const TATSATCollideData& contact, TATContactPoint& out)
+void TATPgsJacobiSolver::GetContactPoint(const TATRigidBodyCollideData& contact, TATContactPoint& out)
 {
 	out.m_AppliedImpulse = 0.f;
 	out.m_AppliedImpulseLateral1 = 0.f;
@@ -58,8 +59,8 @@ void TATPgsJacobiSolver::GetContactPoint(const TATSATCollideData& contact, TATCo
 	out.m_LateralFrictionDir2 = TATVector3(0, 0, 0);// l2;
 	out.m_LateralFrictionInitialized = true;
 
-	out.m_PositionWorldOnA = contact.m_CollidePtA;
-	out.m_PositionWorldOnB = contact.m_CollidePtB;
+	out.m_PositionWorldOnA = contact.m_CollidePt0;
+	out.m_PositionWorldOnB = contact.m_CollidePt1;
 }
 
 void TATPgsJacobiSolver::ResolveSingleConstraintRowGeneric(TATSolverBody& body1, TATSolverBody& body2, const TATSolverConstraint& c)
@@ -232,7 +233,7 @@ float TATPgsJacobiSolver::RestitutionCurve(float rel_vel, float restitution)
 	return rest;
 }
 
-void TATPgsJacobiSolver::SolveContact(const TATSATCollideData& contact, TATRigidBodyData* bodies, TATInertiaData* inertias, TATContactSolverInfo& info)
+void TATPgsJacobiSolver::SolveContact(const TATRigidBodyCollideData& contact, TATRigidBodyData* bodies, TATInertiaData* inertias, TATContactSolverInfo& info)
 {
 	info.m_SplitImpulse = false;
 	TATVector3 vel;
@@ -241,11 +242,14 @@ void TATPgsJacobiSolver::SolveContact(const TATSATCollideData& contact, TATRigid
 	float relVel;
 	float relaxation;
 
-	int bodyIndex0 = contact.m_RbA->m_BodyIndex;
-	int bodyIndex1 = contact.m_RbB->m_BodyIndex;
+	TATRigidBody& rb0 = TATDynamicWorld::Instance()->m_RigidBodys[contact.m_RbIndex0];
+	TATRigidBody& rb1 = TATDynamicWorld::Instance()->m_RigidBodys[contact.m_RbIndex1];
 
-	int dataIndex0 = contact.m_RbA->m_DataIndex;
-	int dataIndex1 = contact.m_RbB->m_DataIndex;
+	int bodyIndex0 = rb0.m_BodyIndex;
+	int bodyIndex1 = rb1.m_BodyIndex;
+
+	int dataIndex0 = rb0.m_DataIndex;
+	int dataIndex1 = rb1.m_DataIndex;
 
 	TATSolverBody& bodyA = m_SolverBodyPool[bodyIndex0];
 	TATSolverBody& bodyB = m_SolverBodyPool[bodyIndex1];
