@@ -1,7 +1,7 @@
 #pragma once
 #include "TATRigidBodyCollideData.h"
 
-class TATRigidBodyCollideData :public TATCollideAlgoPrimitive
+class TATSphereCollideSphereAlgo :public TATCollideAlgoPrimitive
 {
 	bool ComputeCollision(TATRigidBody* rbSphere0, TATRigidBody* rbSphere1) override
 	{

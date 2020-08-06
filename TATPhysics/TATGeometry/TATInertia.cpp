@@ -24,15 +24,18 @@ TATMatrix3 TATInertiaComputer::ComputeInertia(TATCollideShapePrimitive* cShape)
 		break;
 	case CollideShapeType::CollidePlane:
 		cp = dynamic_cast<TATCollideShapePlane*>(cShape);
-		return TATMatrix3::GetIdentity();
+		return TATMatrix3::GetZero();
 	default:
 		break;
 	}
 
-	return TATMatrix3::GetIdentity();
+	return TATMatrix3::GetZero();
 }
 
 TATMatrix3 TATInertiaComputer::ConvexInertia(const TATPhyMeshData& meshData, const TATVector3& massct, float im)
 {
+	if (im == 0)
+		return TATMatrix3::GetZero();
+
 	return TATPhyMeshDataComputer::ComputeInertiaTensor(meshData.m_Vertices, massct, float(1.0) / im);
 }

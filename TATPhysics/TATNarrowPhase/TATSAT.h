@@ -245,7 +245,9 @@ public:
 		{
 			void* dataA;
 			void* dataB;
-			float pen = range1.Penetration(range2, dataA, dataB);
+			float pen;
+			if (!range1.Penetration(range2, dataA, dataB, pen))
+				return 0;
 			int ptA = (int)(dataA);
 			int ptB = (int)(dataB);
 
@@ -431,7 +433,9 @@ public:
 		{
 			void* dataA;
 			void* dataB;
-			float pen = range1.Penetration(range2, dataA, dataB);
+			float pen;
+			if (!range1.Penetration(range2, dataA, dataB, pen))
+				return 0;
 			int ptA = (int)(dataA);
 			int ptB = (int)(dataB);
 

@@ -63,9 +63,23 @@ void TATPgsJacobiSolver::GetContactPoint(const TATRigidBodyCollideData& contact,
 	out.m_PositionWorldOnB = contact.m_CollidePt1;
 }
 
+//Impulse(k+1) = Impulse(k) + J-1 * R;
+//R : J * Impulse(k) - J * v;
+//J-1 * R : J-1 * J * Impulse(k) - J-1 * J * V;
+//J-1 : m_jacDiagABInv £¨JM-1JT£©-1
+//sum : Impulse(k+1)
+//m_appliedImpulse : Impulse(k)
+//deltaImpulse : J-1 * R = -R ?
+//deltaVel1Dotn & deltaVel2Dotn : J * V;
+//-= deltaVel1Dotn * c.m_jacDiagABInv : - J-1 * J * V;
+//c.m_rhs - b3Scalar(c.m_appliedImpulse) * c.m_cfm; : J-1 * J * Impulse(k)
+//rhs = M * (b(pos) + b(vel)); M¡÷V
+//cfm : some threshold;
 void TATPgsJacobiSolver::ResolveSingleConstraintRowGeneric(TATSolverBody& body1, TATSolverBody& body2, const TATSolverConstraint& c)
 {
 	float deltaImpulse = c.m_Rhs - float(c.m_AppliedImpulse) * c.m_Cfm;
+
+	//J * V
 	const float deltaVel1Dotn = c.m_ContactNormal.Dot(body1.GetDeltaLinVel()) + c.m_RelPos1CrossNormal.Dot(body1.GetDeltaAngVel());
 	const float deltaVel2Dotn = -c.m_ContactNormal.Dot(body2.GetDeltaLinVel()) + c.m_RelPos2CrossNormal.Dot(body2.GetDeltaAngVel());
 
@@ -151,7 +165,7 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 	solverConstraint.m_RelPos2CrossNormal = -torqueAxis1;
 
 	float restitution = 0.f;
-	float penetration = -(cp.GetDistance() + infoGlobal.m_LinearSlop);
+	float penetration = cp.GetDistance() + infoGlobal.m_LinearSlop;
 
 	TATVector3 vel1, vel2;
 
@@ -196,7 +210,7 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 		erp = infoGlobal.m_Erp;
 	}
 
-	if (penetration > 0)
+	if (penetration < 0)
 	{
 		positionalError = 0;
 
@@ -272,7 +286,10 @@ void TATPgsJacobiSolver::SolveContact(const TATRigidBodyCollideData& contact, TA
 	SetupContactConstraint(bodies, inertias, constr, bodyIndex0, bodyIndex1,
 		cp, info, vel, relVel, relaxation, relPos1, resPos2);
 
-	ResolveSingleConstraintRowGeneric(bodyA, bodyB, constr);
+	for (int i = 0; i < m_IterateNum; ++i)
+	{
+		ResolveSingleConstraintRowGeneric(bodyA, bodyB, constr);
+	}
 
 	SolveFinish(bodies, inertias, info);
 }

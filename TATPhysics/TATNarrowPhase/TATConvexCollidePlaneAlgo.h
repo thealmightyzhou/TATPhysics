@@ -37,13 +37,13 @@ class TATConvexCollidePlaneAlgo:public TATCollideAlgoPrimitive
 		}
 
 		TATVector3 dir;
-		if ((plane->m_Origin - m_CollideData.m_CollidePt0).Dot(plane->m_Normal) < 0)
+		if ((m_CollideData.m_CollidePt0 - plane->m_Origin).Dot(plane->m_Normal) < 0)
 			dir = -plane->m_Normal;
 		else
 			dir = plane->m_Normal;
 
 		m_CollideData.m_Penetration = whichPoint == 0 ? dist0 : dist1;
-		m_CollideData.m_CollidePt1 = m_CollideData.m_CollidePt0 + dir * m_CollideData.m_Penetration;
+		m_CollideData.m_CollidePt1 = m_CollideData.m_CollidePt0 - dir * m_CollideData.m_Penetration;
 
 		m_CollideData.m_RbIndex0 = rbConvex->m_IndexInPool;
 		m_CollideData.m_RbIndex1 = rbPlane->m_IndexInPool;

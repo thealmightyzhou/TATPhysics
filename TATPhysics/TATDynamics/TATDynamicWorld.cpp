@@ -75,6 +75,7 @@ void TATDynamicWorld::StepSimulation(float dt)
 	//-----------------
 
 	TATContactSolverInfo info;
+	info.m_Damping = 0.98f;
 
 	for (int i = 0; i < (int)rbCollideDatas.size(); i++)
 	{
@@ -159,6 +160,9 @@ TATRigidBody* TATDynamicWorld::CreatePlane(const TATVector3& origin, const TATVe
 	rb->m_InvMass = 0;
 	body->m_InvMass = TATVector3::Zero();
 	rbdata->m_InvMass = 0;
+
+	in->m_InitInvInertia = rb->m_CollideShape->m_LocalInvInertiaTensor;
+	in->m_InvInertiaWorld = in->m_InitInvInertia;
 
 	return rb;
 }

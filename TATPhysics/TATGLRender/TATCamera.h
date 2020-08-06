@@ -58,6 +58,12 @@ public:
 		m_WindowHeight = h;
 	}
 
+	void SetPlane(float nearPlane, float farPlane)
+	{
+		m_NearPlane = nearPlane;
+		m_FarPlane = farPlane;
+	}
+
 	void SetEuler(float yaw, float pitch, float roll)
 	{
 		m_Yaw = yaw;

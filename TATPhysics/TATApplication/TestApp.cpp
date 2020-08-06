@@ -23,6 +23,7 @@ void TestApp::CreateScene()
 	m_MainCamera->SetPosition(TATVector3(20, 20, -100));
 	m_MainCamera->SetWindowSize(TATGLEntry::Instance()->m_WindowWidth, TATGLEntry::Instance()->m_WindowHeight);
 	m_MainCamera->SetDirection((TATVector3(0, 50, 10) - m_MainCamera->GetPosition()).Normalized());
+	m_MainCamera->SetPlane(0.01, 100000);
 
 	TATMesh* cube = TATResourceManager::Instance()->LoadMesh("cube.obj");
 	TATMesh* pyramid = TATResourceManager::Instance()->LoadMesh("pyramid.obj");
@@ -53,18 +54,18 @@ void TestApp::CreateScene()
 	node3->SetVisible(true);
 	node3->SetTransform(TATransform::GetIdentity());
 	
-	TATRigidBody* rb0 = TATDynamicWorld::Instance()->CreateConvex(cube, 1.0f);
+	TATRigidBody* rb0 = TATDynamicWorld::Instance()->CreateConvex(cube, 0.01f);
 	TATransform tr;
 	tr.SetOrigin(TATVector3(0, 50, 10));
-	TATDynamicWorld::Instance()->InitializeRb(rb0, tr, 1.0f, 0.8, 0.2, TATVector3(0, -9, 0));
+	TATDynamicWorld::Instance()->InitializeRb(rb0, tr, 2, 0.8, 0.2, TATVector3(0, -9, 0));
 
-	TATRigidBody* rb1 = TATDynamicWorld::Instance()->CreateConvex(pyramid, 1.0f);
+	TATRigidBody* rb1 = TATDynamicWorld::Instance()->CreateConvex(pyramid, 0.02f);
 	tr.SetOrigin(TATVector3(0, 20, 20));
-	TATDynamicWorld::Instance()->InitializeRb(rb1, tr, 2.0f, 0.8, 0.2, TATVector3(0, -4, 0));
+	TATDynamicWorld::Instance()->InitializeRb(rb1, tr, 2, 0.8, 0.2, TATVector3(0, -10, 0));
 
-	TATRigidBody* rb2 = TATDynamicWorld::Instance()->CreateConvex(cube, 1.0f);
+	TATRigidBody* rb2 = TATDynamicWorld::Instance()->CreateConvex(cube, 0.02f);
 	tr.SetOrigin(TATVector3(0, 80, 20));
-	TATDynamicWorld::Instance()->InitializeRb(rb2, tr, 2.0f, 0.8, 0.2, TATVector3(0, -15, 0));
+	TATDynamicWorld::Instance()->InitializeRb(rb2, tr, 2, 0.8, 0.2, TATVector3(0, -15, 0));
 
 	actor->SetRigidBody(rb0->m_IndexInPool);
 	actor1->SetRigidBody(rb1->m_IndexInPool);

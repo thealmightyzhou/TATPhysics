@@ -36,7 +36,7 @@ class TATPgsJacobiSolver
 public:
 	TATPgsJacobiSolver():m_SolverBodyPool(TAT_MAXRIGIDBODY_COUNT), m_SolverContactConstraintPool(TAT_MAXSOLVERCONSTRAINT_COUNT)
 	{
-
+		m_IterateNum = 4;
 	}
 
 	TATObjectPool<TATSolverBody> m_SolverBodyPool;
@@ -58,4 +58,11 @@ public:
 	void SolveContact(const TATRigidBodyCollideData& contact, TATRigidBodyData* bodies, TATInertiaData* inertias, TATContactSolverInfo& info);
 
 	void SolveFinish(TATRigidBodyData* bodies, TATInertiaData* inertias, const TATContactSolverInfo& info);
+
+	void SetIteNum(int num) 
+	{
+		m_IterateNum = num;
+	}
+
+	int m_IterateNum;
 };

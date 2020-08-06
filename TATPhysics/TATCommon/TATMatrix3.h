@@ -163,6 +163,17 @@ public:
 		return identityMatrix;
 	}
 
+	static const TATMatrix3& GetZero()
+	{
+		static const TATMatrix3
+			identityMatrix(
+				float(0.0), float(0.0), float(0.0),
+				float(0.0), float(0.0), float(0.0),
+				float(0.0), float(0.0), float(0.0));
+
+		return identityMatrix;
+	}
+
 	void GetRotation(TATQuaternion& q) const
 	{
 		float trace = Ele[0].X + Ele[1].Y + Ele[2].Z;

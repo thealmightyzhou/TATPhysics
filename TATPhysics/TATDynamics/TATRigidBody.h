@@ -91,7 +91,8 @@ public:
 	TATCollideShapePlane(const TATVector3& origin, const TATVector3& normal)
 		:TATCollideShapePrimitive(0), m_Origin(origin), m_Normal(normal)
 	{
-		m_LocalInertiaTensor = TATMatrix3::GetIdentity();
+		m_LocalInertiaTensor = TATMatrix3::GetZero();
+		m_LocalInvInertiaTensor = TATMatrix3::GetZero();
 		m_LocalMassCenter = m_Origin;
 		m_LocalAabb.SetOrigin(-TAT_MAXVECTOR3, TAT_MAXVECTOR3);
 		m_ShapeType = CollideShapeType::CollidePlane;

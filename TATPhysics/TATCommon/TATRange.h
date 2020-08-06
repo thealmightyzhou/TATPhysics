@@ -18,31 +18,36 @@ public:
 			return true;
 	}
 
-	float inline Penetration(const TATRange& other, void*& data0, void*& data1)
+	bool inline Penetration(const TATRange& other, void*& data0, void*& data1, float& dist)
 	{
-		if (other.m_MaxRange > m_MaxRange&& other.m_MinRange < m_MinRange)
+		if (other.m_MaxRange > m_MaxRange && other.m_MinRange < m_MinRange)
 		{
 			data0 = m_MinData;
 			data1 = m_MaxData;
-			return m_MaxRange - m_MinRange;
+			dist = m_MaxRange - m_MinRange;
+			return false;
 		}
-		else if (m_MaxRange > other.m_MaxRange&& m_MinRange < other.m_MinRange)
+		else if (m_MaxRange > other.m_MaxRange && m_MinRange < other.m_MinRange)
 		{
 			data0 = other.m_MinData;
 			data1 = other.m_MaxData;
-			return other.m_MaxRange - other.m_MinRange;
+			dist = other.m_MaxRange - other.m_MinRange;
+			return false;
 		}
 		else if (m_MaxRange < other.m_MinRange)
 		{
 			data0 = m_MaxData;
 			data1 = other.m_MinData;
-			return m_MaxRange - other.m_MinRange;
+			dist = m_MaxRange - other.m_MinRange;
+			return false;
+
 		}
 		else if (m_MinRange > other.m_MaxRange)
 		{
 			data0 = m_MinData;
 			data1 = other.m_MaxData;
-			return other.m_MaxRange - m_MinRange;
+			dist = other.m_MaxRange - m_MinRange;
+			return false;
 		}
 
 		float val1 = m_MaxRange - other.m_MinRange;
@@ -50,15 +55,17 @@ public:
 
 		if (val1 < val2)
 		{
-			data0 = other.m_MinData;
-			data1 = m_MaxData;
-			return val1;
+			data0 = m_MaxData;
+			data1 = other.m_MinData;
+			dist = val1;
+			return true;
 		}
 		else
 		{
 			data0 = m_MinData;
 			data1 = other.m_MaxData;
-			return val2;
+			dist = val2;
+			return true;
 		}
 
 	}
