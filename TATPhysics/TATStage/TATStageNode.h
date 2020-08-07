@@ -15,6 +15,7 @@ public:
 		m_ParentNode = 0;
 		m_Actor = 0;
 		m_Visible = true;
+		m_RelativeTransform.SetIdentity();
 	}
 
 	virtual ~TATStageNode();

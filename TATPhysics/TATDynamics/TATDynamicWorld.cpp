@@ -167,6 +167,25 @@ TATRigidBody* TATDynamicWorld::CreatePlane(const TATVector3& origin, const TATVe
 	return rb;
 }
 
+TATRigidBody* TATDynamicWorld::CreateSphere(const TATVector3& ct, float radius, float invMass)
+{
+	TATCollideShapeSphere* sphere = new TATCollideShapeSphere(ct, radius, invMass);
+
+	TATRigidBodyData* rbdata = m_RigidBodyDatas.FetchUnused();
+	TATInertiaData* in = m_InertiaDatas.FetchUnused();
+	TATRigidBody* rb = m_RigidBodys.FetchUnused();
+	rb->SetCollideShape(sphere);
+
+	TATSolverBody* body = m_ConstraintSolver->m_SolverBodyPool.FetchUnused();
+
+	body->m_OriginalBodyIndex = rb->m_IndexInPool;
+	rb->m_BodyIndex = body->m_IndexInPool;
+	rb->m_DataIndex = rbdata->m_IndexInPool;
+	rb->m_InertiaIndex = in->m_IndexInPool;
+
+	return rb;
+}
+
 void TATDynamicWorld::DestroyRigidBody(TATRigidBody* rb)
 {
 	if (rb == 0)

@@ -13,7 +13,7 @@ public:
 		assert(maxSize > 0);
 		m_Objects = new T[maxSize];
 		m_UsedMap = new bool[maxSize];
-		TAT_MEMSET(m_UsedMap, false);
+		TAT_MEMSET_NEW(m_UsedMap, maxSize, false);
 		m_NextUnused = 0;
 		m_UsedCount = 0;
 	}

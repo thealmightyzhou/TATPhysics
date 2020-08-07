@@ -51,6 +51,9 @@ typedef unsigned int UINT;
 
 #define	TAT_MEMSET(arr,val)	memset(arr,val,sizeof(arr));
 
+#define TAT_MEMSET_NEW(arr,size,val) memset(arr, val, sizeof(arr[0]) * size);
+
+
 #define TAT_MEMCPY(arr0,arr1) memcpy(arr0,arr1,sizeof(arr1));
 
 #define TAT_ARRAY_SIZE(arr) ((int)(sizeof(arr) / sizeof(arr[0])))

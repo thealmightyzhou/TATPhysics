@@ -6,6 +6,12 @@ class TATConvexCollidePlaneAlgo:public TATCollideAlgoPrimitive
 	//default can collide double direction on plane
 	bool ComputeCollision(TATRigidBody* rbConvex, TATRigidBody* rbPlane) override
 	{
+		CollideShapeType type0 = rbConvex->GetShapeType();
+		CollideShapeType type1 = rbPlane->GetShapeType();
+
+		if (type0 == CollideShapeType::CollidePlane && type1 == CollideShapeType::CollideConvex)
+			std::swap(rbConvex, rbPlane);
+
 		TATCollideShapeConvex* convex = dynamic_cast<TATCollideShapeConvex*>(rbConvex->m_CollideShape);
 		TATCollideShapePlane* plane = dynamic_cast<TATCollideShapePlane*>(rbPlane->m_CollideShape);
 		TATransform tr = rbConvex->GetWorldTransform();
