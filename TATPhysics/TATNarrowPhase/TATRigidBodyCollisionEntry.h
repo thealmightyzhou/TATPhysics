@@ -1,8 +1,10 @@
 #pragma once
 #include "TATConvexCollideConvexAlgo.h"
 #include "TATConvexCollidePlaneAlgo.h"
+#include "TATConvexCollideSphereAlgo.h"
 #include "TATSphereCollideSphereAlgo.h"
 #include "TATSphereCollidePlaneAlgo.h"
+
 #include "TATCCD.h"
 
 class TATRbCollision
@@ -37,6 +39,8 @@ public:
 			else if (mask & (1 << CollideShapeType::CollidePlane))
 				algo = new TATConvexCollidePlaneAlgo;
 
+			else if (mask & (1 << CollideShapeType::CollideSphere))
+				algo = new TATConvexCollideSphereAlgo;
 		}
 
 		else if (mask & (1 << CollideShapeType::CollideSphere))
@@ -45,6 +49,7 @@ public:
 
 			if (mask == 0)
 				algo = new TATSphereCollideSphereAlgo;
+
 			else if (mask & (1 << CollideShapeType::CollidePlane))
 				algo = new TATSphereCollidePlaneAlgo;
 
@@ -67,7 +72,6 @@ public:
 
 		}
 
-		delete algo;
 		return false;
 
 	}

@@ -146,14 +146,6 @@ public:
 	UINT			m_HashMask;
 };
 
-//struct TATPhyEdgeComparer
-//{
-//	bool operator()(const TATPhyEdge& e1, const TATPhyEdge& e2) const
-//	{
-//		return !(e1 == e2);
-//	}
-//};
-
 struct TATPhyEdgeHasher
 {
 	size_t operator()(const TATPhyEdge& e) const

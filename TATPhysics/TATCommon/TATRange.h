@@ -99,6 +99,30 @@ public:
 		}
 	}
 
+	float Penetration(const TATRange& other)
+	{
+		if (other.m_MaxRange > m_MaxRange && other.m_MinRange < m_MinRange)
+		{
+			return m_MaxRange - m_MinRange;
+		}
+		if (m_MaxRange > other.m_MaxRange && m_MinRange < other.m_MinRange)
+		{
+			return other.m_MaxRange - other.m_MinRange;
+		}
+
+		float val1 = m_MaxRange - other.m_MinRange;
+		float val2 = other.m_MaxRange - m_MinRange;
+
+		if (val1 < val2)
+		{
+			return val1;
+		}
+		else
+		{
+			return val2;
+		}
+	}
+
 	void SetUserData(void* minData, void* maxData)
 	{
 		m_MinData = minData;

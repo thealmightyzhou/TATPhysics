@@ -7,7 +7,7 @@ struct TATRigidBodyCollideData;
 
 struct TATContactPoint
 {
-	TATVector3 m_NormalWorldOnA;
+	TATVector3 m_NormalWorldB2A;
 	float m_AppliedImpulse;
 	float m_CombinedRestitution;
 

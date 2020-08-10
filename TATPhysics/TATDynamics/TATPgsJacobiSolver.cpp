@@ -53,7 +53,7 @@ void TATPgsJacobiSolver::GetContactPoint(const TATRigidBodyCollideData& contact,
 	TATVector3 l1, l2;
 	//b3PlaneSpace1(normalOnB, l1, l2);
 
-	out.m_NormalWorldOnA = normalOnA;
+	out.m_NormalWorldB2A = normalOnA;
 
 	out.m_LateralFrictionDir1 = TATVector3(0, 0, 0);// l1;
 	out.m_LateralFrictionDir2 = TATVector3(0, 0, 0);// l2;
@@ -103,8 +103,8 @@ void TATPgsJacobiSolver::ResolveSingleConstraintRowGeneric(TATSolverBody& body1,
 		c.m_AppliedImpulse = sum;
 	}
 
-	body1.ApplyImpulse(-c.m_ContactNormal * body1.GetInvMass(), c.m_AngularComponentA, deltaImpulse);
-	body2.ApplyImpulse(c.m_ContactNormal * body2.GetInvMass(), c.m_AngularComponentB, deltaImpulse);
+	body1.ApplyImpulse(c.m_ContactNormal * body1.GetInvMass(), c.m_AngularComponentA, deltaImpulse);
+	body2.ApplyImpulse(-c.m_ContactNormal * body2.GetInvMass(), c.m_AngularComponentB, deltaImpulse);
 }
 
 void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATInertiaData* inertias, TATSolverConstraint& solverConstraint,
@@ -128,14 +128,14 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 	TATRigidBodyData* rbData0 = &bodies[bodyA.m_OriginalBodyIndex];
 	TATRigidBodyData* rbData1 = &bodies[bodyB.m_OriginalBodyIndex];
 
-	rel_pos1 = pos1 - bodyA.m_MassCenter;
+	rel_pos1 = pos1 - bodyA.m_MassCenter;//
 	rel_pos2 = pos2 - bodyB.m_MassCenter;
 
 	relaxation = 1.f;
 
-	TATVector3 torqueAxis0 = rel_pos1.Cross(cp.m_NormalWorldOnA);
+	TATVector3 torqueAxis0 = rel_pos1.Cross(cp.m_NormalWorldB2A);
 	solverConstraint.m_AngularComponentA = rbData0 ? TATDynamicWorld::Instance()->m_InertiaDatas[rb0.m_InertiaIndex].m_InvInertiaWorld * torqueAxis0 : TATVector3::Zero();
-	TATVector3 torqueAxis1 = rel_pos2.Cross(cp.m_NormalWorldOnA);
+	TATVector3 torqueAxis1 = rel_pos2.Cross(cp.m_NormalWorldB2A);
 	solverConstraint.m_AngularComponentB = rbData1 ? TATDynamicWorld::Instance()->m_InertiaDatas[rb1.m_InertiaIndex].m_InvInertiaWorld * -torqueAxis1 : TATVector3::Zero();
 
 	float scaledDenom;
@@ -146,12 +146,12 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 	if (rbData0)
 	{
 		vec = (solverConstraint.m_AngularComponentA).Cross(rel_pos1);
-		denom0 = rbData0->m_InvMass + cp.m_NormalWorldOnA.Dot(vec);
+		denom0 = rbData0->m_InvMass + cp.m_NormalWorldB2A.Dot(vec);
 	}
 	if (rbData1)
 	{
 		vec = (-solverConstraint.m_AngularComponentB).Cross(rel_pos2);
-		denom1 = rbData1->m_InvMass + cp.m_NormalWorldOnA.Dot(vec);
+		denom1 = rbData1->m_InvMass + cp.m_NormalWorldB2A.Dot(vec);
 	}
 
 	float denom;
@@ -160,12 +160,12 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 
 	solverConstraint.m_JacDiagABInv = denom;
 
-	solverConstraint.m_ContactNormal = cp.m_NormalWorldOnA;
+	solverConstraint.m_ContactNormal = cp.m_NormalWorldB2A;
 	solverConstraint.m_RelPos1CrossNormal = torqueAxis0;
 	solverConstraint.m_RelPos2CrossNormal = -torqueAxis1;
 
 	float restitution = 0.f;
-	float penetration = cp.GetDistance() + infoGlobal.m_LinearSlop;
+	float penetration = cp.GetDistance() - infoGlobal.m_LinearSlop;
 
 	TATVector3 vel1, vel2;
 
@@ -173,7 +173,7 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 	vel2 = rbData1 ? GetVelocityInLocalPoint(rbData1, rel_pos2) : TATVector3::Zero();
 
 	vel = vel1 - vel2;
-	relVel = cp.m_NormalWorldOnA.Dot(vel);
+	relVel = cp.m_NormalWorldB2A.Dot(vel);
 
 	solverConstraint.m_Friction = cp.m_CombinedFriction;
 
@@ -185,15 +185,10 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 
 
 	solverConstraint.m_AppliedImpulse = cp.m_AppliedImpulse * infoGlobal.m_WarmstartingFactor;
-	//if (rbData0)
-	//	bodyA.ApplyImpulse(solverConstraint.m_ContactNormal * bodyA.GetInvMass(), solverConstraint.m_AngularComponentA, solverConstraint.m_AppliedImpulse);
-	//if (rbData1)
-	//	bodyB.ApplyImpulse(solverConstraint.m_ContactNormal * bodyB.GetInvMass(), -solverConstraint.m_AngularComponentB, -(float)solverConstraint.m_AppliedImpulse);
-
 	if (rbData0)
-		bodyA.ApplyImpulse(solverConstraint.m_ContactNormal * bodyA.GetInvMass(), -solverConstraint.m_AngularComponentA, -solverConstraint.m_AppliedImpulse);
+		bodyA.ApplyImpulse(solverConstraint.m_ContactNormal * bodyA.GetInvMass(), solverConstraint.m_AngularComponentA, solverConstraint.m_AppliedImpulse);
 	if (rbData1)
-		bodyB.ApplyImpulse(solverConstraint.m_ContactNormal * bodyB.GetInvMass(), solverConstraint.m_AngularComponentB, solverConstraint.m_AppliedImpulse);
+		bodyB.ApplyImpulse(solverConstraint.m_ContactNormal * bodyB.GetInvMass(), -solverConstraint.m_AngularComponentB, -(float)solverConstraint.m_AppliedImpulse);
 
 	solverConstraint.m_AppliedPushImpulse = 0.f;
 
@@ -202,7 +197,7 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 	float rel_vel = vel1Dotn + vel2Dotn;
 
 	float positionalError = 0.f;
-	float velocityError = restitution + rel_vel;  // * damping;
+	float velocityError = restitution - rel_vel;  // * damping; //!!
 
 	float erp = infoGlobal.m_Erp2;
 	if (!infoGlobal.m_SplitImpulse || (penetration > infoGlobal.m_SplitImpulsePenetrationThreshold))
@@ -214,11 +209,12 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 	{
 		positionalError = 0;
 
-		velocityError -= penetration / infoGlobal.m_TimeStep;
+		//if no contact penetration will <0 and reduce the velocityError
+		velocityError += penetration / infoGlobal.m_TimeStep; //!!
 	}
 	else
 	{
-		positionalError = -penetration * erp / infoGlobal.m_TimeStep;
+		positionalError = penetration * erp / infoGlobal.m_TimeStep;
 	}
 
 	float penetrationImpulse = positionalError * scaledDenom;  //solverConstraint.m_jacDiagABInv;
@@ -236,6 +232,7 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 		solverConstraint.m_Rhs = velocityImpulse;
 		solverConstraint.m_RhsPenetration = penetrationImpulse;
 	}
+
 	solverConstraint.m_Cfm = 0.f;
 	solverConstraint.m_LowerLimit = 0;
 	solverConstraint.m_UpperLimit = TAT_MAX2;

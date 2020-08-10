@@ -57,7 +57,7 @@ struct TATContactSolverInfo
 		m_Tau = float(0.6);
 		m_Damping = float(1.0);
 		m_Friction = float(0.3);
-		m_TimeStep = float(1.f / 60.f);
+		m_TimeStep = float(1.f / 200.f);
 		m_Restitution = float(0.);
 		m_MaxErrorReduction = float(20.);
 		m_NumIterations = 10;

@@ -33,7 +33,7 @@ public:
 		m_RbB = 0;
 	}
 
-	//always point from A to B
+	//always point from B to A
 	TATVector3 m_CollideNormal;
 	TATVector3 m_CollidePtA;
 	TATVector3 m_CollidePtB;
@@ -75,8 +75,8 @@ public:
 		cd.m_RbA = rb0;
 		cd.m_RbB = rb1;
 
-		TATVector3 dir = tr1 * rb1->m_CollideShape->m_LocalMassCenter -
-						 tr0 * rb0->m_CollideShape->m_LocalMassCenter;
+		TATVector3 dir = tr0 * rb1->m_CollideShape->m_LocalMassCenter -
+						 tr1 * rb0->m_CollideShape->m_LocalMassCenter;
 
 		TATCollideShapeConvex* convex0 = dynamic_cast<TATCollideShapeConvex*>(rb0->m_CollideShape);
 		TATCollideShapeConvex* convex1 = dynamic_cast<TATCollideShapeConvex*>(rb1->m_CollideShape);
@@ -298,12 +298,12 @@ public:
 	{
 		if (cd.m_ResFlag == 0)
 		{
-			cd.m_CollidePtA = cd.m_TrB * cd.m_ResVertexA->GetPosition();
+			cd.m_CollidePtA = cd.m_TrA * cd.m_ResVertexA->GetPosition();
 			cd.m_CollidePtB = cd.m_CollidePtA + cd.m_CollideNormal * cd.m_Penetration;
 		}
 		else if (cd.m_ResFlag == 1)
 		{
-			cd.m_CollidePtB = cd.m_TrA * cd.m_ResVertexB->GetPosition();
+			cd.m_CollidePtB = cd.m_TrB * cd.m_ResVertexB->GetPosition();
 			cd.m_CollidePtA = cd.m_CollidePtB - cd.m_CollideNormal * cd.m_Penetration;
 		}
 		else if (cd.m_ResFlag == 2)
@@ -328,8 +328,8 @@ public:
 		cd.m_TrA = tr0;
 		cd.m_TrB = tr1;
 
-		TATVector3 dir = tr1 * convex0->m_LocalMassCenter -
-						 tr0 * convex0->m_LocalMassCenter;
+		TATVector3 dir = tr0 * convex0->m_LocalMassCenter -
+						 tr1 * convex0->m_LocalMassCenter;
 
 		std::vector<TATPhyFace>& faces0 = convex0->m_CollideMeshData.m_Faces;
 		std::vector<TATPhyFace>& faces1 = convex1->m_CollideMeshData.m_Faces;

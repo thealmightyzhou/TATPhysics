@@ -13,7 +13,7 @@ public:
 	float m_Penetration;
 	TATVector3 m_CollidePt0;
 	TATVector3 m_CollidePt1;
-	TATVector3 m_CollideNormal; //rb0 -> rb1
+	TATVector3 m_CollideNormal; //rb1 -> rb0
 
 };
 

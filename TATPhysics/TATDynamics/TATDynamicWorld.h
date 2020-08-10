@@ -38,7 +38,7 @@ public:
 
 	TATRigidBody* CreateSphere(const TATVector3& ct, float radius, float invMass);
 
-	void InitializeRb(TATRigidBody* rb, const TATransform& tr, float invMass, float restituitionCoeff, float frictionCoeff, const TATVector3& g);
+	void InitRigidBody(TATRigidBody* rb, const TATransform& tr, float invMass, float restituitionCoeff, float frictionCoeff, const TATVector3& g);
 
 	void SyncRigidBodyData(TATRigidBody* rb);
 };

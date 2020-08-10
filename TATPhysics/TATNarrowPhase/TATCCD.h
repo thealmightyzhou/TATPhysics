@@ -51,7 +51,7 @@ public:
 
 		TATSATCollideData cd;
 		float dist = TATSATDist::ConvexDistance(csA, csB, fromA, fromB, cd) + allowedPenetration;
-		n = cd.m_CollideNormal;
+		n = cd.m_CollideNormal; //B2A
 		float projectedLinearVelocity = relLinVel.Dot(n);
 
 		if (projectedLinearVelocity + maxAngularProjectedVelocity <= TAT_EPSILON)

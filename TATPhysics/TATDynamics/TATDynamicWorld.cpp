@@ -197,7 +197,7 @@ void TATDynamicWorld::DestroyRigidBody(TATRigidBody* rb)
 		m_ConstraintSolver->m_SolverBodyPool.ReturnUsed(rb->m_BodyIndex);
 }
 
-void TATDynamicWorld::InitializeRb(TATRigidBody* rb, const TATransform& tr, float invMass, float restituitionCoeff, float frictionCoeff, const TATVector3& g)
+void TATDynamicWorld::InitRigidBody(TATRigidBody* rb, const TATransform& tr, float invMass, float restituitionCoeff, float frictionCoeff, const TATVector3& g)
 {
 	rb->SetWorldTransform(tr);
 	rb->m_InvMass = invMass;
@@ -228,6 +228,6 @@ void TATDynamicWorld::SyncRigidBodyData(TATRigidBody* rb)
 	rb->m_WorldTransform.SetOrigin(m_RigidBodyDatas[rb->m_DataIndex].m_Pos);
 	rb->m_WorldTransform.SetRotation(m_RigidBodyDatas[rb->m_DataIndex].m_Quat);
 
-	m_InertiaDatas[rb->m_InertiaIndex].m_InvInertiaWorld = m_InertiaDatas[rb->m_InertiaIndex].m_InitInvInertia * rb->m_WorldTransform.GetBasis();
+	m_InertiaDatas[rb->m_InertiaIndex].m_InvInertiaWorld = rb->m_WorldTransform.GetBasis() * m_InertiaDatas[rb->m_InertiaIndex].m_InitInvInertia;
 
 }

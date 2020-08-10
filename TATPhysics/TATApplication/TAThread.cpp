@@ -43,8 +43,6 @@ void TATPhysicThread::PhysicLoop()
 
 			TATDynamicWorld::Instance()->StepSimulation(timeStep);
 
-			//TODO lock , fill the render buffer and mark as dirty
-
 			for (int i = 0; i < (int)m_PhysicListeners.size(); ++i)
 			{
 				m_PhysicListeners[i]->SimulationEnd(timeStep);
