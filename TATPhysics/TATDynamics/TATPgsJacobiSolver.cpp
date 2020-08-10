@@ -77,6 +77,8 @@ void TATPgsJacobiSolver::GetContactPoint(const TATRigidBodyCollideData& contact,
 //cfm : some threshold;
 void TATPgsJacobiSolver::ResolveSingleConstraintRowGeneric(TATSolverBody& body1, TATSolverBody& body2, const TATSolverConstraint& c)
 {
+	//整个过程可能是对Rhs进行拟合 使总冲量达到rhs
+	//rhs 是 误差量 (velocityImpulse + positionImpulse) * (JM-1JT)-1 总冲量
 	float deltaImpulse = c.m_Rhs - float(c.m_AppliedImpulse) * c.m_Cfm;
 
 	//J * V
@@ -84,8 +86,9 @@ void TATPgsJacobiSolver::ResolveSingleConstraintRowGeneric(TATSolverBody& body1,
 	const float deltaVel2Dotn = -c.m_ContactNormal.Dot(body2.GetDeltaLinVel()) + c.m_RelPos2CrossNormal.Dot(body2.GetDeltaAngVel());
 
 	//	const float delta_rel_vel	=	deltaVel1Dotn-deltaVel2Dotn;
-	deltaImpulse -= deltaVel1Dotn * c.m_JacDiagABInv;
-	deltaImpulse -= deltaVel2Dotn * c.m_JacDiagABInv;
+	//deltaImpulse可能是个残差向量
+	deltaImpulse -= deltaVel1Dotn * c.m_JacDiagABInv; //△mv
+	deltaImpulse -= deltaVel2Dotn * c.m_JacDiagABInv; //△mv
 
 	const float sum = float(c.m_AppliedImpulse) + deltaImpulse;
 	if (sum < c.m_LowerLimit)
@@ -118,6 +121,9 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 
 	TATSolverBody& bodyA = m_SolverBodyPool[solverBodyIdA];
 	TATSolverBody& bodyB = m_SolverBodyPool[solverBodyIdB];
+
+	bodyA.m_DeltaLinVel.SetZero();
+	bodyB.m_DeltaAngVel.SetZero();
 
 	TATRigidBody& rb0 = TATDynamicWorld::Instance()->m_RigidBodys[bodyA.m_OriginalBodyIndex];
 	TATRigidBody& rb1 = TATDynamicWorld::Instance()->m_RigidBodys[bodyB.m_OriginalBodyIndex];
@@ -214,7 +220,7 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 	}
 	else
 	{
-		positionalError = penetration * erp / infoGlobal.m_TimeStep;
+		positionalError = penetration * erp / infoGlobal.m_TimeStep; //kcor * error
 	}
 
 	float penetrationImpulse = positionalError * scaledDenom;  //solverConstraint.m_jacDiagABInv;
