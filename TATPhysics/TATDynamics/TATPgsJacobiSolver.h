@@ -43,7 +43,7 @@ public:
 	
 	TATObjectPool<TATSolverConstraint> m_SolverContactConstraintPool;
 
-	void ResolveSingleConstraintRowGeneric(TATSolverBody& bodyA, TATSolverBody& bodyB, const TATSolverConstraint& contactConstraint);
+	void ResolveSingleConstraintRowGeneric(TATSolverBody* bodyA, TATSolverBody* bodyB, const TATSolverConstraint& contactConstraint);
 
 	void SetupContactConstraint(TATRigidBodyData* bodies, TATInertiaData* inertias, TATSolverConstraint& solverConstraint,
 		int solverBodyIdA, int solverBodyIdB,
@@ -58,6 +58,8 @@ public:
 	void SolveContact(const TATRigidBodyCollideData& contact, TATRigidBodyData* bodies, TATInertiaData* inertias, TATContactSolverInfo& info);
 
 	void SolveFinish(TATRigidBodyData* bodies, TATInertiaData* inertias, const TATContactSolverInfo& info);
+
+	void InitSolverBody(int bodyIndex, const TATRigidBodyData& data);
 
 	void SetIteNum(int num) 
 	{

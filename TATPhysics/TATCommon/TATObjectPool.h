@@ -103,6 +103,18 @@ public:
 		return;
 	}
 
+	void Clear()
+	{
+		for (int i = 0; i < m_UsedObjects.size(); ++i)
+		{
+			m_UsedObjects[i]->Clear();
+		}
+		m_UsedObjects.clear();
+		m_UsedCount = 0;
+		TAT_MEMSET_NEW(m_UsedMap, m_MaxSize, false);
+		m_NextUnused = 0;
+	}
+
 	const std::vector<T*>& FetchAllUsed()
 	{
 		return m_UsedObjects;

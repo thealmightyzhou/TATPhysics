@@ -9,7 +9,7 @@ void TATransformUtil::IntegrateTransform(TATRigidBodyData* body, float timeStep,
 		{
 			TATVector3 axis;
 
-			body->m_AngVel *= angularDamping;
+			body->m_AngVel *= (1 - angularDamping * timeStep);
 
 			TATVector3 angvel = body->m_AngVel;
 			float fAngle = angvel.Length();

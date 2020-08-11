@@ -24,14 +24,14 @@ public:
 
 	void SetOriginExtend(const TATVector3& center, const TATVector3& extend)
 	{
-		m_Min = center - extend;
-		m_Max = center + extend;
+		m_Min = m_OriginMin = center - extend;
+		m_Max = m_OriginMax = center + extend;
 	}
 
 	void SetOriginSphere(const TATVector3& center, float r)
 	{
-		m_Min = center - r * TATVector3::One();
-		m_Max = center + r * TATVector3::One();
+		m_Min = m_OriginMin = center - r * TATVector3::One();
+		m_Max = m_OriginMax = center + r * TATVector3::One();
 	}
 
 	void GetWorldBoundingSphere(TATVector3& center, float& radius)

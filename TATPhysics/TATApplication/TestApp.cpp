@@ -20,7 +20,7 @@ void TestApp::CreateScene()
 {
 	__super::CreateScene();
 
-	m_MainCamera->SetPosition(TATVector3(20, 20, -100));
+	m_MainCamera->SetPosition(TATVector3(20, 20, -300));
 	m_MainCamera->SetWindowSize(TATGLEntry::Instance()->m_WindowWidth, TATGLEntry::Instance()->m_WindowHeight);
 	m_MainCamera->SetDirection((TATVector3(0, 50, 10) - m_MainCamera->GetPosition()).Normalized());
 	m_MainCamera->SetPlane(0.01, 100000);
@@ -33,16 +33,34 @@ void TestApp::CreateScene()
 
 	TATMaterial* mat = TATResourceManager::Instance()->LoadMaterial("testMat.tmaterial");
 
-	//TATActor* actor = new TATActor(cube);
-	//actor->SetMaterial(mat);
-	//TATStageNode* node = m_RootNode->CreateChild("cube1");
-	//node->MountActor(actor);
-	//TATRigidBody* rb0 = TATDynamicWorld::Instance()->CreateConvex(cube, 0.01f);
-	//TATransform tr;
-	//tr.SetOrigin(TATVector3(0, 50, 10));
-	//TATDynamicWorld::Instance()->InitRigidBody(rb0, tr, 0.1f, 0.8, 0.2, TATVector3(0, -9, 0));
-	//actor->SetRigidBody(rb0->m_IndexInPool);
+	TATransform tr;
 
+	//int row = 0;
+	//int col = 0;
+	//while (row < 11)
+	//{
+	//	int x = col * 60;
+	//	int y = row * 60;
+
+	//	tr.SetOrigin(TATVector3(x, y, 10));
+
+	//	TATActor* actor = new TATActor(sphere);
+	//	actor->SetMaterial(mat);
+	//	TATStageNode* node = m_RootNode->CreateChild(TString("sphere") + TString::ConvertInt(row) + TString::ConvertInt(col));
+	//	node->MountActor(actor);
+
+	//	TATRigidBody* rb = TATDynamicWorld::Instance()->CreateSphere(TATVector3(x, y, 10), 30, 0.1f);
+
+	//	TATDynamicWorld::Instance()->InitRigidBody(rb, tr, 0.1f, 0.8, 0.2, TATVector3(0, -100, 0));
+	//	actor->SetRigidBody(rb->m_IndexInPool);
+
+	//	col++;
+	//	if (col > 2)
+	//	{
+	//		col = 0;
+	//		row++;
+	//	}
+	//}
 
 	//TATActor* actor1 = new TATActor(pyramid);
 	//actor1->SetMaterial(mat);
@@ -53,15 +71,23 @@ void TestApp::CreateScene()
 	//TATDynamicWorld::Instance()->InitRigidBody(rb1, tr, 0.1f, 0.8, 0.2, TATVector3(0, -10, 0));
 	//actor1->SetRigidBody(rb1->m_IndexInPool);
 
+	TATActor* actor = new TATActor(cube);
+	actor->SetMaterial(mat);
+	TATStageNode* node = m_RootNode->CreateChild("cube1");
+	node->MountActor(actor);
+	TATRigidBody* rb0 = TATDynamicWorld::Instance()->CreateConvex(cube, 0.01f);
+	tr.SetOrigin(TATVector3(0, 50, 10));
+	TATDynamicWorld::Instance()->InitRigidBody(rb0, tr, 0.1f, 0.8, 0.2, TATVector3(0, -50, 0));
+	actor->SetRigidBody(rb0->m_IndexInPool);
 
-	//TATActor* actor2 = new TATActor(cube);
-	//actor2->SetMaterial(mat);
-	//TATStageNode* node3 = m_RootNode->CreateChild("cube3");
-	//node3->MountActor(actor2);
-	//TATRigidBody* rb2 = TATDynamicWorld::Instance()->CreateConvex(cube, 1.0f);
-	//tr.SetOrigin(TATVector3(0, 80, 20));
-	//TATDynamicWorld::Instance()->InitRigidBody(rb2, tr, 0.1f, 0.8, 0.2, TATVector3(0, -15, 0));
-	//actor2->SetRigidBody(rb2->m_IndexInPool);
+	TATActor* actor2 = new TATActor(cube);
+	actor2->SetMaterial(mat);
+	TATStageNode* node3 = m_RootNode->CreateChild("cube2");
+	node3->MountActor(actor2);
+	TATRigidBody* rb2 = TATDynamicWorld::Instance()->CreateConvex(cube, 1.0f);
+	tr.SetOrigin(TATVector3(0, 80, 10));
+	TATDynamicWorld::Instance()->InitRigidBody(rb2, tr, 0.1f, 0.8, 0.2, TATVector3(0, -50, 0));
+	actor2->SetRigidBody(rb2->m_IndexInPool);
 
 	TATActor* sphereActor = new TATActor(sphere);
 	sphereActor->SetMaterial(mat);

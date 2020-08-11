@@ -73,6 +73,11 @@ public:
 		TATBVNode* head = new TATBVNode(TAT_MAXVECTOR3, -TAT_MAXVECTOR3);
 		head->SetIsLeaf(false);
 		m_BVTree.push_back(head);
+
+		TATBVNode* root = new TATBVNode(TAT_MAXVECTOR3, -TAT_MAXVECTOR3);
+		root->SetIsLeaf(false);
+		m_BVTree.push_back(root);
+
 		m_NodeCount = 0;
 		m_CollideWithTree = false;
 	}
@@ -100,6 +105,11 @@ public:
 		TATBVNode* head = new TATBVNode(TAT_MAXVECTOR3, -TAT_MAXVECTOR3);
 		head->SetIsLeaf(false);
 		m_BVTree.push_back(head);
+
+		TATBVNode* root = new TATBVNode(TAT_MAXVECTOR3, -TAT_MAXVECTOR3);
+		root->SetIsLeaf(false);
+		m_BVTree.push_back(root);
+
 		m_NodeCount = 0;
 		m_OverlapSet.clear();
 	}
