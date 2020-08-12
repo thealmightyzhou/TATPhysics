@@ -30,6 +30,9 @@ void TATPhysicThread::PhysicLoop()
 
 	TATimer timer;
 
+	int fps = 0;
+	float timeCollector = 0;
+
 	while (true)
 	{
 		timer.Begin();
@@ -48,12 +51,22 @@ void TATPhysicThread::PhysicLoop()
 				m_PhysicListeners[i]->SimulationEnd(timeStep);
 			}
 
-			TATErrorReporter::Instance()->ReportErr("physic one step:" + TString::ConvertFloat(timeStep));
+			fps++;
+			//TATErrorReporter::Instance()->ReportErr("physic one step: " + TString::ConvertFloat(timeStep));
 		}
 
 		timer.End();
 
 		dt = timer.DeltaTime(timeStep);
+
+		timeCollector += dt;
+
+		if (timeCollector > 1.0f)
+		{
+			TATErrorReporter::Instance()->ReportErr("step count: " + TString::ConvertInt(fps));
+			timeCollector = 0;
+			fps = 0;
+		}
 	}
 }
 
@@ -79,10 +92,14 @@ void TATRenderThread::RenderLoop()
 	if(!m_Window)
 		m_Window = TATGLEntry::Instance()->GetWindow();
 
+	TATimer timer;
+
 	float dt = float(1) / 60;
 	while (!glfwWindowShouldClose(m_Window))
 	{
 		m_RenderStateDirty = true;
+
+		timer.Begin();
 
 		if (m_RenderStateDirty)
 		{
@@ -107,6 +124,11 @@ void TATRenderThread::RenderLoop()
 			}
 
 		}
+
+		timer.End();
+		dt = timer.DeltaTime(TAT_MAX);
+
+		//TATErrorReporter::Instance()->ReportErr("renderStep: " + TString::ConvertFloat(dt));
 	}
 }
 

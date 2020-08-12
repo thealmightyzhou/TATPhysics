@@ -27,7 +27,7 @@ TATBVNode* TATBvh::InsertAabbNode(const TATVector3& aabbMin, const TATVector3& a
 
 void TATBvh::FinishBuild()
 {
-	for (int i = m_BVTree.size() / 2; i > 0; i--)
+	for (int i = (m_BVTree.size() - 1) / 2; i > 0; i--)
 	{
 		int lsonId = 2 * i;
 		int rsonId = 2 * i + 1;

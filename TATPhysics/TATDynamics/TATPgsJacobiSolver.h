@@ -1,6 +1,7 @@
 #pragma once
 #include "TATSolverConstraint.h"
 #include "TATRigidBodyData.h"
+#include "TATRigidBody.h"
 #include <vector>
 
 struct TATRigidBodyCollideData;
@@ -59,7 +60,7 @@ public:
 
 	void SolveFinish(TATRigidBodyData* bodies, TATInertiaData* inertias, const TATContactSolverInfo& info);
 
-	void InitSolverBody(int bodyIndex, const TATRigidBodyData& data);
+	void InitSolverBody(int bodyIndex, const TATRigidBodyData& data, const TATRigidBody& rb);
 
 	void SetIteNum(int num) 
 	{

@@ -36,9 +36,8 @@ public:
 
 	TATBVNode* Merge(TATBVNode* other)
 	{
-		m_AabbMin.SetMin(other->m_AabbMin);
-		m_AabbMax.SetMax(other->m_AabbMax);
-		return new TATBVNode(m_AabbMin, m_AabbMax);
+		return new TATBVNode(TATVector3::MakeMin(m_AabbMin, other->m_AabbMin),
+							 TATVector3::MakeMax(m_AabbMax, other->m_AabbMax));
 	}
 
 	inline void SetAabb(const TATVector3& aabbMin,const TATVector3& aabbMax)

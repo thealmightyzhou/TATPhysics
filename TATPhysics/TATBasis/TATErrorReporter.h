@@ -11,7 +11,7 @@ public:
 
 	void ReportErr(const TString& msg)
 	{
-		std::cout << std::endl << msg.m_Str << std::endl;
+		std::cout << msg.m_Str << std::endl;
 	}
 
 	void ReportFileMissed(const TString& fileName)

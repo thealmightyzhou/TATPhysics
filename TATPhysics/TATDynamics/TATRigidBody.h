@@ -150,7 +150,7 @@ public:
 		m_CollideShape = cs;
 	}
 
-	TATVector3 GetMassCenter()
+	TATVector3 GetMassCenter() const
 	{
 		return  m_WorldTransform * m_CollideShape->m_LocalMassCenter;
 	}

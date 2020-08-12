@@ -229,6 +229,14 @@ public:
 		}
 	};
 
+	inline TATMatrix3 Scaled(const TATVector3& v) const
+	{
+		return TATMatrix3(
+			Ele[0].X * v.X, Ele[0].Y * v.Y, Ele[0].Z * v.Z,
+			Ele[1].X * v.X, Ele[1].Y * v.Y, Ele[1].Z * v.Z,
+			Ele[2].X * v.X, Ele[2].Y * v.Y, Ele[2].Z * v.Z);
+	}
+
 	inline TATMatrix3 Transpose() const
 	{
 		return TATMatrix3(Ele[0].X, Ele[1].X, Ele[2].X,
@@ -271,6 +279,11 @@ public:
 		m[9] = float(Ele[1].Z);
 		m[10] = float(Ele[2].Z);
 		m[11] = float(0.0);
+	}
+
+	TATVector3 GetDiagonal() const
+	{
+		return TATVector3(Ele[0].X, Ele[1].Y, Ele[2].Z);
 	}
 };
 
