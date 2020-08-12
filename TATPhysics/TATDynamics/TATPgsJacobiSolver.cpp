@@ -47,16 +47,10 @@ void TATPgsJacobiSolver::GetContactPoint(const TATRigidBodyCollideData& contact,
 	out.m_ContactMotion1 = 0.f;
 	out.m_ContactMotion2 = 0.f;
 	out.m_Distance = contact.m_Penetration;  //??0.01f
-	TATVector3 normalOnA = contact.m_CollideNormal;
-	normalOnA.SafeNormalize();  //is this needed?
 
-	TATVector3 l1, l2;
-	//b3PlaneSpace1(normalOnB, l1, l2);
+	out.m_NormalWorldB2A = contact.m_CollideNormal.Normalized();
 
-	out.m_NormalWorldB2A = normalOnA;
-
-	out.m_LateralFrictionDir1 = TATVector3(0, 0, 0);// l1;
-	out.m_LateralFrictionDir2 = TATVector3(0, 0, 0);// l2;
+	out.m_NormalWorldB2A.PlaneSpace(out.m_LateralFrictionDir1, out.m_LateralFrictionDir2);
 	out.m_LateralFrictionInitialized = true;
 
 	out.m_PositionWorldOnA = contact.m_CollidePt0;

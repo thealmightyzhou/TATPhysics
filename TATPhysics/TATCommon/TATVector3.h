@@ -278,6 +278,38 @@ public:
 	{
 		return glm::vec3(X, Y, Z);
 	}
+
+	void PlaneSpace(TATVector3& l1, TATVector3& l2)
+	{
+		this->SafeNormalize();
+
+		if (fabs(m_Datas[2]) > TAT_SQRTl2)
+		{
+			// choose p in y-z plane
+			float a = m_Datas[1] * m_Datas[1] + m_Datas[2] * m_Datas[2];
+			float k = TAT_RECIP_SQRT(a);
+			l1.X = 0;
+			l1.Y = -m_Datas[2] * k;
+			l1.Z = m_Datas[1] * k;
+			// set q = n x p
+			l2.X = a * k;
+			l2.Y = -m_Datas[0] * l1[2];
+			l2.Z = m_Datas[0] * l1[1];
+		}
+		else
+		{
+			// choose p in x-y plane
+			float a = m_Datas[0] * m_Datas[0] + m_Datas[1] * m_Datas[1];
+			float k = TAT_RECIP_SQRT(a);
+			l1.X = -m_Datas[1] * k;
+			l1.Y = m_Datas[0] * k;
+			l1.Z = 0;
+			// set q = n x p
+			l2.X = -m_Datas[2] * l1[1];
+			l2.Y = m_Datas[2] * l1[0];
+			l2.Z = a * k;
+		}
+	}
 };
 
 inline TATVector3 operator*(const float& s, const TATVector3& v)

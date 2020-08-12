@@ -27,6 +27,10 @@ typedef unsigned int UINT;
 #define TAT_PI (TAT_2PI * float(0.5))
 #define TAT_HALF_PI (TAT_2PI * float(0.25))
 
+#define TAT_SQRTl2 float(0.7071067811865475244008443621048490)
+
+#define TAT_RECIP_SQRT(x) ((float)(float(1.0) / sqrt(float(x))))
+
 #define TAT_RENDERMODE_TRIANGLES GL_TRIANGLES
 #define TAT_RENDERMODE_POINTS GL_POINTS
 #define TAT_RENDERMODE_LINES GL_LINES
