@@ -57,7 +57,7 @@ void TATPhysicThread::PhysicLoop()
 
 		timer.End();
 
-		dt = timer.DeltaTime(timeStep);
+		dt = timer.DeltaTime(TAT_MAX);
 
 		timeCollector += dt;
 

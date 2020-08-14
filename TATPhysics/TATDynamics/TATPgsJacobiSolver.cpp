@@ -39,7 +39,7 @@ void TATPgsJacobiSolver::GetContactPoint(const TATRigidBodyCollideData& contact,
 	out.m_AppliedImpulse = 0.f;
 	out.m_AppliedImpulseLateral1 = 0.f;
 	out.m_AppliedImpulseLateral2 = 0.f;
-	out.m_CombinedFriction = 0.0f; //TODO
+	out.m_CombinedFriction = contact.GetFrictionCoeff();
 	out.m_CombinedRestitution = 0.0f; //TODO
 	out.m_CombinedRollingFriction = 0.f;
 	out.m_ContactCFM1 = 0.f;
@@ -178,7 +178,7 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATRigidBodyData* bodies, TATIne
 	vel = vel1 - vel2;
 	relVel = cp.m_NormalWorldB2A.Dot(vel);
 
-	solverConstraint->m_Friction = cp.m_CombinedFriction;
+	solverConstraint->m_Friction = cp.m_CombinedFriction;	
 
 	restitution = RestitutionCurve(relVel, cp.m_CombinedRestitution);//CHECK
 	if (restitution <= float(0.))
@@ -301,12 +301,19 @@ void TATPgsJacobiSolver::SolveContact(const TATRigidBodyCollideData& contact, TA
 	DecomposeContact(vel, relVel, cp.m_NormalWorldB2A, relPos1, relPos2, bodyA, bodyB, &bodies[rb0.m_DataIndex], &bodies[rb1.m_DataIndex],
 		&inertias[rb0.m_DataIndex], &inertias[rb1.m_DataIndex], fricConstr0, fricConstr1, relaxation, info, cp);
 
+	float totalImpulse;
+
 	for (int i = 0; i < m_IterateNum; ++i)
 	{
 		ResolveSingleConstraintRowGeneric(bodyA, bodyB, constr);
 
+		totalImpulse = constr->m_AppliedImpulse;
+		fricConstr0->m_LowerLimit = -(fricConstr0->m_Friction * totalImpulse);
+		fricConstr0->m_UpperLimit = fricConstr0->m_Friction * totalImpulse;
 		ResolveSingleConstraintRowGeneric(bodyA, bodyB, fricConstr0);
 
+		fricConstr1->m_LowerLimit = -(fricConstr1->m_Friction * totalImpulse);
+		fricConstr1->m_UpperLimit = fricConstr1->m_Friction * totalImpulse;
 		ResolveSingleConstraintRowGeneric(bodyA, bodyB, fricConstr1);
 	}
 
@@ -370,18 +377,18 @@ void TATPgsJacobiSolver::DecomposeContact(
 		cp.m_LateralFrictionDir1 = frictionDir0;
 		cp.m_LateralFrictionDir2 = frictionDir1;
 
-		SetupFrictionConstraint(rbData0, rbData1, in0, in1, bdA, bdB, constr0, frictionDir0, rel_pos0, rel_pos1, relaxation);
+		SetupFrictionConstraint(rbData0, rbData1, in0, in1, bdA, bdB, constr0, cp, frictionDir0, rel_pos0, rel_pos1, relaxation);
 
-		SetupFrictionConstraint(rbData0, rbData1, in0, in1, bdA, bdB, constr1, frictionDir1, rel_pos0, rel_pos1, relaxation);
+		SetupFrictionConstraint(rbData0, rbData1, in0, in1, bdA, bdB, constr1, cp, frictionDir1, rel_pos0, rel_pos1, relaxation);
 	}
 
 	else
 	{
 		normal.PlaneSpace(frictionDir0, frictionDir1);
 
-		SetupFrictionConstraint(rbData0, rbData1, in0, in1, bdA, bdB, constr0, frictionDir0, rel_pos0, rel_pos1, relaxation);
+		SetupFrictionConstraint(rbData0, rbData1, in0, in1, bdA, bdB, constr0, cp, frictionDir0, rel_pos0, rel_pos1, relaxation);
 
-		SetupFrictionConstraint(rbData0, rbData1, in0, in1, bdA, bdB, constr1, frictionDir1, rel_pos0, rel_pos1, relaxation);
+		SetupFrictionConstraint(rbData0, rbData1, in0, in1, bdA, bdB, constr1, cp, frictionDir1, rel_pos0, rel_pos1, relaxation);
 	}
 
 	{
@@ -404,7 +411,7 @@ void TATPgsJacobiSolver::DecomposeContact(
 
 void TATPgsJacobiSolver::SetupFrictionConstraint(TATRigidBodyData* rbData0, TATRigidBodyData* rbData1,
 	TATInertiaData* inertia0, TATInertiaData* inertia1, TATSolverBody* bd0, TATSolverBody* bd1,
-	TATSolverConstraint* constr,
+	TATSolverConstraint* constr, TATContactPoint& cp,
 	const TATVector3& normal,
 	const TATVector3& rel_pos0, const TATVector3& rel_pos1, float relaxation, float desiredVel)
 {
@@ -413,6 +420,7 @@ void TATPgsJacobiSolver::SetupFrictionConstraint(TATRigidBodyData* rbData0, TATR
 	constr->m_SolverBodyId2 = bd1->m_IndexInPool;
 	constr->m_AppliedImpulse = 0;
 	constr->m_AppliedPushImpulse = 0;
+	constr->m_Friction = cp.m_CombinedFriction;
 
 	TATVector3 ftorqueAxis1 = rel_pos0.Cross(constr->m_ContactNormal);
 	constr->m_RelPos1CrossNormal = ftorqueAxis1;
@@ -448,8 +456,8 @@ void TATPgsJacobiSolver::SetupFrictionConstraint(TATRigidBodyData* rbData0, TATR
 
 	{
 		float rel_vel;
-		float vel1Dotn = constr->m_ContactNormal.Dot(rbData0 ? bd0->m_LinVel : TATVector3::Zero() + constr->m_RelPos1CrossNormal.Dot(rbData0 ? bd0->m_AngVel : TATVector3::Zero()));
-		float vel2Dotn = -constr->m_ContactNormal.Dot(rbData1 ? bd1->m_LinVel : TATVector3::Zero() + constr->m_RelPos2CrossNormal.Dot(rbData1 ? bd1->m_AngVel : TATVector3::Zero()));
+		float vel1Dotn = constr->m_ContactNormal.Dot(rbData0 ? bd0->m_LinVel : TATVector3::Zero()) + constr->m_RelPos1CrossNormal.Dot(rbData0 ? bd0->m_AngVel : TATVector3::Zero());
+		float vel2Dotn = -constr->m_ContactNormal.Dot(rbData1 ? bd1->m_LinVel : TATVector3::Zero()) + constr->m_RelPos2CrossNormal.Dot(rbData1 ? bd1->m_AngVel : TATVector3::Zero());
 
 		rel_vel = vel1Dotn + vel2Dotn;
 

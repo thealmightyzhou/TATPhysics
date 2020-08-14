@@ -77,8 +77,8 @@ public:
 
 	void SetupFrictionConstraint(TATRigidBodyData* rbData0, TATRigidBodyData* rbData1,
 		TATInertiaData* inertia0, TATInertiaData* inertia1, TATSolverBody* bd0, TATSolverBody* bd1,
-		TATSolverConstraint* constr,
-		const TATVector3& normal, 
+		TATSolverConstraint* constr, TATContactPoint& cp,
+		const TATVector3& normal,
 		const TATVector3& rel_pos0, const TATVector3& rel_pos1, float relaxation, float desiredVel = .0f);
 
 	void SetIteNum(int num) 

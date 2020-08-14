@@ -18,6 +18,7 @@ public:
 			m_CollideData.m_Penetration = satdata.m_Penetration;
 			m_CollideData.m_RbIndex0 = rb0->m_IndexInPool;
 			m_CollideData.m_RbIndex1 = rb1->m_IndexInPool;
+			m_CollideData.SetFrictionCoeff(0.7);
 		}
 
 		return collide;

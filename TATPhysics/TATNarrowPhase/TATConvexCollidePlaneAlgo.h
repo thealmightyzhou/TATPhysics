@@ -54,5 +54,6 @@ class TATConvexCollidePlaneAlgo:public TATCollideAlgoPrimitive
 		m_CollideData.m_RbIndex0 = rbConvex->m_IndexInPool;
 		m_CollideData.m_RbIndex1 = rbPlane->m_IndexInPool;
 		m_CollideData.m_CollideNormal = dir;
+		m_CollideData.SetFrictionCoeff(0.7);
 	}
 };

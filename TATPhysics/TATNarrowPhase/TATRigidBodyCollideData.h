@@ -14,7 +14,19 @@ public:
 	TATVector3 m_CollidePt0;
 	TATVector3 m_CollidePt1;
 	TATVector3 m_CollideNormal; //rb1 -> rb0
+	float m_FrictionCoefficent;
+	float m_RestitutionCoefficent;
+	float m_RollingFrictionCoefficent;
 
+	void SetFrictionCoeff(float f) //0 - 1
+	{
+		m_FrictionCoefficent = (unsigned short)(f * 0xffff);
+	}
+
+	float GetFrictionCoeff() const
+	{
+		return ((float)m_FrictionCoefficent / (float)0xffff);
+	}
 };
 
 class TATCollideAlgoPrimitive
