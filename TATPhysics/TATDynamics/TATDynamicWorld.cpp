@@ -7,6 +7,7 @@
 #include "../TATApplication/TAThread.h"
 #include "../TATNarrowPhase/TATRigidBodyCollisionEntry.h"
 
+
 class TATRigidBodyOverlapCallBack :public TATBvhCollideCallBack
 {
 public:
@@ -75,7 +76,7 @@ void TATDynamicWorld::StepSimulation(float dt)
 	//-----------------
 
 	TATContactSolverInfo info;
-	info.m_Damping = 0.2f;
+	info.m_Damping = 0.98f;
 
 	for (int i = 0; i < (int)rbCollideDatas.size(); i++)
 	{

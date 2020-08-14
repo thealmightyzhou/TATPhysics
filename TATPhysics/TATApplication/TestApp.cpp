@@ -39,7 +39,7 @@ void TestApp::CreateScene()
 	int col = 0;
 	while (row < 11)
 	{
-		int x = col * 60;
+		int x = col * 35;
 		int y = row * 60;
 
 		tr.SetOrigin(TATVector3(x, y, 10));

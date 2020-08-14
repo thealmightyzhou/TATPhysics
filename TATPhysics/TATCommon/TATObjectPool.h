@@ -65,22 +65,23 @@ public:
 	void ReturnUsed(T*& obj)
 	{
 		typename std::vector<T*>::iterator it = m_UsedObjects.begin();
-		for (it; it != m_UsedObjects.end(); it++)
+
+		while (it != m_UsedObjects.end())
 		{
-			if (*it == obj)
-				m_UsedObjects.erase(it);
+			if((*it) == obj)
+				it = m_UsedObjects.erase(it);
+			else
+				it++;
 		}
 
-		for (int i = 0; i < m_MaxSize; i++)
+		int index = obj->m_IndexInPool;
+		if (&m_Objects[index] == obj)
 		{
-			if (&m_Objects[i] == obj)
-			{
-				m_NextUnused = i;
-				m_UsedMap[i] = false;
-				m_UsedCount--;
-				obj = 0;
-				return;
-			}
+			m_NextUnused = index;
+			m_UsedMap[index] = false;
+			m_UsedCount--;
+			obj = 0;
+			return;
 		}
 
 		delete obj;

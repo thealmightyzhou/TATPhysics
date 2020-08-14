@@ -279,10 +279,8 @@ public:
 		return glm::vec3(X, Y, Z);
 	}
 
-	void PlaneSpace(TATVector3& l1, TATVector3& l2)
+	void PlaneSpace(TATVector3& l1, TATVector3& l2) const
 	{
-		this->SafeNormalize();
-
 		if (fabs(m_Datas[2]) > TAT_SQRTl2)
 		{
 			// choose p in y-z plane

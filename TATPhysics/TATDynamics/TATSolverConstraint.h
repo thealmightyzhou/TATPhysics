@@ -4,6 +4,8 @@
 class TATSolverConstraint
 {
 public:
+	TAT_POOL_OBJECT(TATSolverConstraint)
+
 	TATVector3		m_RelPos1CrossNormal;
 	TATVector3		m_RelPos2CrossNormal;
 	TATVector3		m_ContactNormal;
