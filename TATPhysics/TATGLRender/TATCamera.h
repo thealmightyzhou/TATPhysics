@@ -25,7 +25,6 @@ public:
 
 	TATCamera(const TString& name):TATObject("camera_" + name)
 	{
-		Initialize();
 		Update();
 	}
 
@@ -33,6 +32,7 @@ public:
 
 	void Initialize()
 	{
+		__super::Initialize();
 		m_Freeze = false;
 		m_Yaw = 0.0f;
 		m_Pitch = 0.0f;

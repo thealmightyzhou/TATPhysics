@@ -18,21 +18,6 @@ TATVector3 TString::ToVector3()
 	return res;
 }
 
-TString TString::operator+(const TString& str) const
-{
-	return TString(m_Str + str.m_Str);
-}
-
-TString TString::operator+(const std::string& str) const
-{
-	return TString(m_Str + str);
-}
-
-TString TString::operator+(const char* str) const
-{
-	return TString(m_Str + str);
-}
-
 TString operator+(const char* str0, const TString& str1)
 {
 	return TString(str0 + str1.m_Str);

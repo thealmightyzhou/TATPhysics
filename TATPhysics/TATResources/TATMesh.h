@@ -2,6 +2,7 @@
 #include "../TATCommon/TATVector3.h"
 #include "TATResourcePrimitive.h"
 #include "TATObjLoader.h"
+#include "TATtModelLoader.h"
 #include "../TATBasis/TString.h"
 
 struct TATMeshVertex
@@ -59,9 +60,9 @@ public:
 		{
 			m_Loader = new TATObjLoader(name);
 		}
-		else if (strs[1] == "mms")
+		else if (strs[1] == "tmodel")
 		{
-			//TODO
+			m_Loader = new TATtModelLoader(name);
 		}
 
 		if (!m_Loader)
@@ -70,18 +71,28 @@ public:
 		const TATModelBuffer& buffer = m_Loader->m_Buffer;
 		m_ModelElementMask = m_Loader->m_ModelElementMask;
 		
-		m_VertexCount = buffer.vertexBuffer.size();
+		//count the renderable vertices
+		std::vector<int> rendVertices;
+		for (int i = 0; i < buffer.vertexBuffer.size(); ++i)
+		{
+			if (buffer.vertexBuffer[i].m_IsRendVert)
+			{
+				rendVertices.push_back(i);
+			}
+		}
+
+		m_VertexCount = rendVertices.size();
 		m_MeshVertices = new TATMeshVertex[m_VertexCount];
 		for (int i = 0; i < m_VertexCount; ++i)
 		{
 			for (int c = 0; c < 3; c++)
 			{
-				m_MeshVertices[i].m_Position[c] = buffer.vertexBuffer[i].m_Position[c];
-				m_MeshVertices[i].m_Normal[c] = buffer.vertexBuffer[i].m_Normal[c];
+				m_MeshVertices[i].m_Position[c] = buffer.vertexBuffer[rendVertices[i]].m_Position[c];
+				m_MeshVertices[i].m_Normal[c] = buffer.vertexBuffer[rendVertices[i]].m_Normal[c];
 			}
 
-			m_MeshVertices[i].m_TexCoordinate[0][0] = buffer.vertexBuffer[i].m_TexCoordinates[0][0];
-			m_MeshVertices[i].m_TexCoordinate[0][1] = buffer.vertexBuffer[i].m_TexCoordinates[0][1];
+			m_MeshVertices[i].m_TexCoordinate[0][0] = buffer.vertexBuffer[rendVertices[i]].m_TexCoordinates[0][0];
+			m_MeshVertices[i].m_TexCoordinate[0][1] = buffer.vertexBuffer[rendVertices[i]].m_TexCoordinates[0][1];
 		}
 
 		m_FaceCount = buffer.faceBuffer.size();
@@ -95,7 +106,6 @@ public:
 				m_MeshFaces[i].m_Vertices[2] = buffer.faceBuffer[i].v3;
 			}
 		}
-
 	}
 
 	void Clear()

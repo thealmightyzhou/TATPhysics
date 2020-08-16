@@ -162,3 +162,52 @@ struct TATPhyEdgeHasher
 		return seed;
 	}
 };
+
+
+struct TATPhyTetra
+{
+public:
+	TATPhyTetra()
+	{
+		Init();
+	}
+
+	TATPhyTetra(TATPhyVertex* v0, TATPhyVertex* v1, TATPhyVertex* v2, TATPhyVertex* v3)
+	{
+		Init();
+		m_Vertices[0] = v0;
+		m_Vertices[1] = v1;
+		m_Vertices[2] = v2;
+		m_Vertices[3] = v3;
+	}
+
+	TATPhyTetra(UINT v0, UINT v1, UINT v2,UINT v3)
+	{
+		Init();
+		m_VertexIndices[0] = v0;
+		m_VertexIndices[1] = v1;
+		m_VertexIndices[2] = v2;
+		m_VertexIndices[3] = v3;
+	}
+
+	void Init()
+	{
+		TAT_MEMSET(m_VertexIndices, 0);
+		TAT_MEMSET(m_EdgeIndices, 0);
+		TAT_MEMSET(m_Vertices, 0);
+		TAT_MEMSET(m_Edges, 0);
+	}
+
+	bool operator==(const TATPhyTetra& f)
+	{
+		bool res;
+		TAT_ARRAYCONTAIN(m_VertexIndices, f.m_VertexIndices, 4, 4, res);
+		return res;
+	}
+
+	UINT			m_VertexIndices[4];
+	UINT			m_EdgeIndices[6];
+	TATPhyVertex*	m_Vertices[4];
+	TATPhyEdge*		m_Edges[6];
+
+};

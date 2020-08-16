@@ -73,13 +73,13 @@ TATShader* TATResourceManager::LoadDefaultShader(const TString& vs, const TStrin
 
 TATMesh* TATResourceManager::LoadMesh(const TString& name)
 {
-	TATMesh* mesh = new TATMesh(name.FetchInnerName());
 	TString filePath = TATPaths::PathOfModel(TAT_APPNAME, name);
 	if (!TATFileStream::FileExists(filePath))
 	{
 		TATErrorReporter::Instance()->ReportFileMissed("mesh_" + name);
 		return 0;
 	}
+	TATMesh* mesh = new TATMesh(name.FetchInnerName());
 	mesh->Load(filePath);
 	return mesh;
 }

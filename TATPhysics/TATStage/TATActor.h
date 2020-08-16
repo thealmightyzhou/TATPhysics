@@ -8,8 +8,9 @@ class TATCamera;
 class TATLight;
 class TATMesh;
 class TATMaterial;
+class TATickable;
 
-//base object to show on stage also can relative with rigidbody by m_RigidBodyId
+//base object to show on stage
 class TATActor :public TATObject
 {
 public:
@@ -19,13 +20,23 @@ public:
 
 	virtual ~TATActor();
 
+	void Initialize();
+
 	virtual void FillRenderUnit();
 
 	void SetMaterial(TATMaterial* m);
 
-	virtual void Update(float dt);
+	virtual bool Update(float dt);
 
-	void SetRigidBody(int index);
+	//notify the actor to reupload vertex datas
+	void MarkRenderStateDirty();
+
+	void AttachTickable(TATickable* x)
+	{
+		m_TickableObjects.push_back(x);
+	}
+
+	void SetUseTransform(bool flag);
 
 	TATRenderUnit* m_RenderUnit;
 
@@ -39,6 +50,8 @@ public:
 
 	TATMaterial* m_Material;
 
-	int m_RigidBodyId;
+	std::vector<TATickable*> m_TickableObjects;
+
+	bool m_RenderStateDirty;
 
 };

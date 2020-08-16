@@ -1,0 +1,8 @@
+1.build a model in 3dsmax 
+2.export as .STL file with ASCII
+3.modify the extend .STL to .stl
+4.in netgen.exe chose load Geometry
+5.Generate Mesh and Export as Neutral Format (named .ttet file)
+6.the exported file will contain point list,tet list and triangle list
+==================================
+Mesh Options:Mesh Size:STL mesh-size:STL - chart distance to adjust complexity

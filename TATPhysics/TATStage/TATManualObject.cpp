@@ -6,13 +6,12 @@ TATManualObject::TATManualObject()
 {
 	m_RenderEleMask.Clear();
 	m_RenderMode = TAT_RENDERMODE_LINES;
-	m_ReadyToRender = false;
 }
 
 void TATManualObject::FillRenderUnit()
 {
 	//upload static data once is enough
-	if (!m_ReadyToRender)
+	if (!m_RenderStateDirty)
 		return;
 
 	m_RenderUnit->Clear();
@@ -74,4 +73,5 @@ void TATManualObject::FillRenderUnit()
 	m_RenderUnit->GenerateRenderBuffer();
 
 	m_RenderUnit->m_ReadyToRender = true;
+	m_RenderStateDirty = false;
 }

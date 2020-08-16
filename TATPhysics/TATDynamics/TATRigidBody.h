@@ -3,6 +3,9 @@
 #include "../TATCommon/TATransform.h"
 #include "../TATCommon/TATAabb.h"
 #include "../TATCommon/TATObjectPool.h"
+#include "../TATBasis/TATickable.h"
+
+class TATActor;
 
 enum CollideShapeType
 {
@@ -102,22 +105,21 @@ public:
 	TATVector3 m_Normal;
 };
 
-class TATRigidBody
+class TATRigidBody : public TATickable
 {
 public:
-	TATRigidBody(TATCollideShapePrimitive* cs) :m_CollideShape(cs)
+	TATRigidBody(const TString& name,TATCollideShapePrimitive* cs) :m_CollideShape(cs),TATickable(name + TString::ConvertInt(GetObjectIndex()))
 	{
 		SetWorldTransform(TATransform::GetIdentity());
 	}
 
-	TATRigidBody(TATCollideShapePrimitive* cs, const TATransform& tr) :m_CollideShape(cs), m_WorldTransform(tr)
+	TATRigidBody(const TString& name,TATCollideShapePrimitive* cs, const TATransform& tr) :m_CollideShape(cs), m_WorldTransform(tr),
+		TATickable(name + TString::ConvertInt(GetObjectIndex()))
 	{
 
 	}
 
-	TAT_POOL_OBJECT(TATRigidBody);
-
-	TAT_REGISTER_ATTRIBUTE(TATransform, WorldTransform);
+	virtual bool Update(TATActor* actor, float dt);
 
 	CollideShapeType GetShapeType() 
 	{ 
@@ -154,6 +156,10 @@ public:
 	{
 		return  m_WorldTransform * m_CollideShape->m_LocalMassCenter;
 	}
+
+	TAT_POOL_OBJECT(TATRigidBody);
+
+	TAT_REGISTER_ATTRIBUTE(TATransform, WorldTransform);
 
 	TATCollideShapePrimitive* m_CollideShape;
 

@@ -10,11 +10,17 @@ class TATLinePainter : public TATManualObject,public TATRenderListener
 public:
 	TATLinePainter()
 	{
+
+	}
+
+	void Initialize()
+	{
+		__super::Initialize();
 		TATStageNode* node = TAT_ROOTNODE->CreateChild(TString("linePainter") + TString::ConvertInt(GetObjectIndex()));
 		node->MountActor(this);
 		node->SetVisible(true);
-		m_RenderMode = TAT_RENDERMODE_LINES;
 		m_RenderEleMask.Clear();
+		m_RenderMode = TAT_RENDERMODE_LINES;
 		m_RenderUnit->m_UseTransform = false;
 		m_Material = TATResourceManager::Instance()->LoadDefaultMaterial("lineDrawer.tmaterial");
 	}
@@ -27,7 +33,8 @@ public:
 		m_RenderVertices.push_back(TATRenderVertex(y, color));
 
 		ComputeOrder();
-		m_ReadyToRender = true;
+		m_RenderUnit->m_ReadyToRender = true;
+		MarkRenderStateDirty();
 	}
 
 	void ComputeOrder()

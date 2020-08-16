@@ -17,6 +17,8 @@ public:
 	//for none param construct to avoid confict
 	static int m_ObjectIndex;
 
+	void Initialize();
+
 	int GetObjectIndex()
 	{
 		return m_ObjectIndex++;

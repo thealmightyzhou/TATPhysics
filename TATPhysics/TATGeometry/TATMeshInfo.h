@@ -9,6 +9,8 @@ struct TATPhyMeshData
 	std::vector<TATPhyVertex>	m_Vertices;
 	std::vector<TATPhyFace>		m_Faces;
 	std::vector<TATPhyEdge>		m_Edges;
+	std::vector<TATPhyTetra>	m_Tetras;
+
 	TATVector3					m_MassCentre;
 	TATAabb						m_LocalAabb;
 };

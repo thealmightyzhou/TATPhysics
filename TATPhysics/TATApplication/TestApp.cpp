@@ -8,6 +8,7 @@
 #include "../TATResources/TATMaterial.h"
 #include "../TATResources/TATexture.h"
 #include "../TATStage/TATLinePainter.h"
+#include "../TATPositionBasedDynamics/TATPBDBody.h"
 
 void TestApp::Initialize()
 {
@@ -30,8 +31,15 @@ void TestApp::CreateScene()
 	TATMesh* pyramid = TATResourceManager::Instance()->LoadMesh("pyramid.obj");
 	TATMesh* plane = TATResourceManager::Instance()->LoadMesh("plane.obj");
 	TATMesh* sphere = TATResourceManager::Instance()->LoadMesh("sphere.obj");
+	TATMesh* tet_halfSphere = TATResourceManager::Instance()->LoadMesh("halfSphere.tmodel");
+	cube->Initialize();
+	pyramid->Initialize();
+	plane->Initialize();
+	sphere->Initialize();
+	tet_halfSphere->Initialize();
 
 	TATMaterial* mat = TATResourceManager::Instance()->LoadMaterial("testMat.tmaterial");
+	mat->Initialize();
 
 	TATransform tr;
 
@@ -45,14 +53,17 @@ void TestApp::CreateScene()
 		tr.SetOrigin(TATVector3(x, y, 10));
 
 		TATActor* actor = new TATActor(cube);
+		actor->Initialize();
 		actor->SetMaterial(mat);
 		TATStageNode* node = m_RootNode->CreateChild(TString("cube") + TString::ConvertInt(row) + TString::ConvertInt(col));
 		node->MountActor(actor);
 
 		TATRigidBody* rb = TATDynamicWorld::Instance()->CreateConvex(cube, 0.1f);
+		rb->Initialize();
 
 		TATDynamicWorld::Instance()->InitRigidBody(rb, tr, 0.1f, 0.8, 0.2, TATVector3(0, -100, 0));
-		actor->SetRigidBody(rb->m_IndexInPool);
+		actor->AttachTickable(rb);
+		actor->SetUseTransform(true);
 
 		col++;
 		if (col > 5)
@@ -107,35 +118,39 @@ void TestApp::CreateScene()
 
 
 	TATActor* planeActor = new TATActor(plane);
+	planeActor->Initialize();
 	planeActor->SetMaterial(mat);
 	TATStageNode* planeNode = m_RootNode->CreateChild("plane");
 	planeNode->MountActor(planeActor);
 	TATDynamicWorld::Instance()->CreatePlane(TATVector3(0, -300, 0), TATVector3(0, 1, 0));
 
 	TATActor* planeActor1 = new TATActor(plane);
+	planeActor1->Initialize();
 	planeActor1->SetMaterial(mat);
 	TATStageNode* planeNode1 = m_RootNode->CreateChild("plane1");
 	planeNode1->MountActor(planeActor1);
 	TATDynamicWorld::Instance()->CreatePlane(TATVector3(500, -300, 0), TATVector3(-1, 0, 0));
 
 	TATActor* planeActor2 = new TATActor(plane);
+	planeActor2->Initialize();
 	planeActor2->SetMaterial(mat);
 	TATStageNode* planeNode2 = m_RootNode->CreateChild("plane2");
 	planeNode2->MountActor(planeActor2);
 	TATDynamicWorld::Instance()->CreatePlane(TATVector3(-200, -300, 0), TATVector3(1, 0, 0));
 
 	TATActor* planeActor3 = new TATActor(plane);
+	planeActor3->Initialize();
 	planeActor3->SetMaterial(mat);
 	TATStageNode* planeNode3 = m_RootNode->CreateChild("plane3");
 	planeNode3->MountActor(planeActor3);
 	TATDynamicWorld::Instance()->CreatePlane(TATVector3(0, -300, 200), TATVector3(0, 0, -1));
 
 	TATActor* planeActor4 = new TATActor(plane);
+	planeActor4->Initialize();
 	planeActor4->SetMaterial(mat);
 	TATStageNode* planeNode4 = m_RootNode->CreateChild("plane4");
 	planeNode4->MountActor(planeActor4);
 	TATDynamicWorld::Instance()->CreatePlane(TATVector3(0, -300, -200), TATVector3(0, 0, 1));
-
 }
 
 void TestApp::Run()

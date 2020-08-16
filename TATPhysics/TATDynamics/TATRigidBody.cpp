@@ -1,5 +1,7 @@
 #include "TATRigidBody.h"
 #include "../TATGeometry/TATInertia.h"
+#include "../TATStage/TATActor.h"
+#include "../TATGLRender/TATRenderUnit.h"
 
 TATCollideShapeSphere::TATCollideShapeSphere(const TATVector3& center, float radius, float invMass)
 	:m_Center(center), m_Radius(radius), TATCollideShapePrimitive(invMass)
@@ -37,7 +39,9 @@ TATCollideShapeConvex::TATCollideShapeConvex(const TATPhyMeshData& meshData,floa
 	TATPhyMeshDataComputer::CompleteMeshData(m_CollideMeshData.m_Vertices, m_CollideMeshData.m_Faces, m_CollideMeshData.m_Edges);
 }
 
-TATRigidBody::TATRigidBody()
+//========================
+
+TATRigidBody::TATRigidBody() :TATickable("RigidBody" + TString::ConvertInt(GetObjectIndex()))
 {
 	m_CollideShape = 0;
 	Clear();
@@ -54,4 +58,13 @@ void TATRigidBody::Clear()
 	m_InertiaIndex = -1;
 	m_InvMass = 0.0f;
 	m_WorldTransform.SetIdentity();
+}
+
+bool TATRigidBody::Update(TATActor* actor, float dt)
+{
+	actor->m_WorldTransform = m_WorldTransform;
+	if (actor->m_RenderUnit->m_UseTransform)
+		actor->m_RenderUnit->m_Transform = m_WorldTransform;
+
+	return true;
 }

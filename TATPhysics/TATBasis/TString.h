@@ -73,11 +73,20 @@ public:
 		return strs[0];
 	}
 
-	TString operator+(const TString& str) const;
+	TString operator+(const TString& str) const
+	{
+		return TString(m_Str + str.m_Str);
+	}
 
-	TString operator+(const std::string& str) const;
+	TString operator+(const std::string& str) const
+	{
+		return TString(m_Str + str);
+	}
 
-	TString operator+(const char* str) const;
+	TString operator+(const char* str) const
+	{
+		return TString(m_Str + str);
+	}
 
 	inline bool operator<(const TString& str) const
 	{

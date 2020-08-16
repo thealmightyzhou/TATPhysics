@@ -158,6 +158,8 @@ protected:
 struct TATFaceBuffer
 {
 public:
+	TATFaceBuffer()
+	{}
 	TATFaceBuffer(int vv1, int vv2, int vv3) :v1(vv1), v2(vv2), v3(vv3)
 	{}
 	TATFaceBuffer(int vv1, int vv2, int vv3, int nn1, int nn2, int nn3) :v1(vv1), v2(vv2), v3(vv3), n1(nn1), n2(nn2), n3(nn3)
@@ -172,6 +174,14 @@ public:
 struct TATVertexBuffer
 {
 public:
+	TATVertexBuffer() 
+	{
+		m_Data = 0;
+		TAT_MEMSET(m_Position, 0);
+		TAT_MEMSET(m_Normal, 0);
+		TAT_MEMSET(m_Tangent, 0);
+	}
+
 	TATVertexBuffer(float x, float y, float z)
 	{
 		m_Position[0] = x;
@@ -179,7 +189,9 @@ public:
 		m_Position[2] = z;
 		m_CurrentTex = 0;
 		m_TexCount = 0;
+		m_Data = 0;
 	}
+
 	TATVertexBuffer(float x, float y, float z, float nx, float ny, float nz)
 	{
 		m_Position[0] = x;
@@ -190,14 +202,17 @@ public:
 		m_Normal[2] = nz;
 		m_CurrentTex = 0;
 		m_TexCount = 0;
+		m_Data = 0;
 	}
 
 	float m_Position[3];
 	float m_TexCoordinates[MAX_TEXCOORDINATE_COUNT][2];
 	float m_Normal[3];
+	float m_Tangent[3];
 	int m_TexCount;
 	int m_CurrentTex;
-	bool isRendVert;
+	bool m_IsRendVert;
+	void* m_Data;
 };
 
 struct TATNormalBuffer 
@@ -228,6 +243,8 @@ public:
 struct TATetraBuffer
 {
 public:
+	TATetraBuffer() {}
+
 	TATetraBuffer(int vv1, int vv2, int vv3, int vv4) :v1(vv1), v2(vv2), v3(vv3), v4(vv4)
 	{}
 	int v1, v2, v3, v4;

@@ -21,7 +21,7 @@ public:
 	TATVector3(const float& x, const float& y, const float& z) :X(x), Y(y), Z(z)
 	{}
 
-	TATVector3(float* bf)
+	TATVector3(const float* bf)
 	{
 		m_Datas[0] = bf[0];
 		m_Datas[1] = bf[1];

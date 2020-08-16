@@ -25,6 +25,5 @@ public:
 	std::vector<int> m_RenderOrder;
 
 	TATModelElementMask m_RenderEleMask;
-	bool m_ReadyToRender;
 	int m_RenderMode;
 };

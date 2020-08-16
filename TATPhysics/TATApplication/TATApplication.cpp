@@ -35,8 +35,10 @@ void TATApplication::Initialize()
 	m_PhysicThread->AddListener(this);
 
 	m_MainCamera = new TATCamera("main");
+	m_MainCamera->Initialize();
 
 	m_MainLight = new TATLight("main");
+	m_MainLight->Initialize();
 }
 
 TATRenderThread* TATApplicationEntry::GetRenderThread()

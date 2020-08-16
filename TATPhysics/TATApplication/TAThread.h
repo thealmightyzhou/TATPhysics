@@ -76,6 +76,7 @@ public:
 	virtual void Run()
 	{
 		m_LinePainter = new TATLinePainter();
+		m_LinePainter->Initialize();
 
 		RenderLoop();
 	}

@@ -21,4 +21,9 @@ public:
 
 		return seed;
 	}
+
+	static int HashThree(int x, int y, int z)
+	{
+		return HashTwo(x + y + z, x * y * z);
+	}
 };

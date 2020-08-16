@@ -38,7 +38,7 @@ public:
 				float y = splitResult[2].ToFloat();
 				float z = splitResult[3].ToFloat();
 				TATVertexBuffer vb(x, y, z);
-				vb.isRendVert = true;
+				vb.m_IsRendVert = true;
 				buffer.vertexBuffer.push_back(vb);
 			}
 			else if (splitResult[0] == "vn")

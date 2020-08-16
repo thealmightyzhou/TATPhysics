@@ -8,25 +8,16 @@
 #include "../TATResources/TATMesh.h"
 #include "../TATResources/TATMaterial.h"
 #include "../TATDynamics/TATDynamicWorld.h"
+#include "../TATBasis/TATickable.h"
 
 TATActor::TATActor() : TATObject("actor_manual_" + TString::Make(GetObjectIndex()))
 {
 	m_RenderMesh = 0;
-	m_RenderUnit = TAT_RENDER_THREAD->m_RenderUnitPool.FetchUnused();
-	m_RigidBodyId = -1;
-	m_WorldTransform = TATransform::GetIdentity();
-	m_RenderCamera = TATWorld::Instance()->GetCamera("main");
-	m_RenderLight = TATWorld::Instance()->GetLight("main");
 }
 
 TATActor::TATActor(TATMesh* ptr) :TATObject("actor_" + ptr->GetSubName() + TString::Make(GetObjectIndex()))
 {
 	m_RenderMesh = ptr;
-	m_RenderCamera = TATWorld::Instance()->GetCamera("main");
-	m_RenderLight = TATWorld::Instance()->GetLight("main");
-	m_RenderUnit = TAT_RENDER_THREAD->m_RenderUnitPool.FetchUnused();
-	m_RigidBodyId = -1;
-	m_WorldTransform = TATransform::GetIdentity();
 }
 
 TATActor::~TATActor()
@@ -36,19 +27,36 @@ TATActor::~TATActor()
 	m_RenderLight = 0;
 	TAT_RENDER_THREAD->m_RenderUnitPool.ReturnUsed(m_RenderUnit);
 	m_RenderUnit = 0;
-	m_RigidBodyId = -1;
+}
+
+void TATActor::Initialize()
+{
+	__super::Initialize();
+	m_RenderCamera = TATWorld::Instance()->GetCamera("main");
+	m_RenderLight = TATWorld::Instance()->GetLight("main");
+	m_RenderUnit = TAT_RENDER_THREAD->m_RenderUnitPool.FetchUnused();
+	m_WorldTransform = TATransform::GetIdentity();
+	m_RenderStateDirty = true;
+}
+
+void TATActor::SetUseTransform(bool flag)
+{
+	m_RenderUnit->m_UseTransform = flag;
 }
 
 void TATActor::FillRenderUnit()
 {
-	if (!m_RenderMesh || m_RenderUnit->m_ReadyToRender)
+	if (!m_RenderMesh || !m_RenderStateDirty)
 		return;
 
 	m_RenderUnit->m_RenderEleMask = m_RenderMesh->m_ModelElementMask;
 
 	m_RenderCamera->GetViewMatrix(m_RenderUnit->m_MatrixView);
 	m_RenderCamera->GetProjectionMatrix(m_RenderUnit->m_MatrixProj);
-	m_WorldTransform.GetOpenGLMatrix(m_RenderUnit->m_MatrixModel);
+	if (m_RenderUnit->m_UseTransform)
+		m_WorldTransform.GetOpenGLMatrix(m_RenderUnit->m_MatrixModel);
+	else
+		TATransform::GetIdentity().GetOpenGLMatrix(m_RenderUnit->m_MatrixModel);
 
 	m_RenderUnit->m_VertexCount = m_RenderMesh->m_VertexCount;
 
@@ -102,6 +110,8 @@ void TATActor::FillRenderUnit()
 	m_RenderUnit->GenerateRenderBuffer();
 
 	m_RenderUnit->m_ReadyToRender = true;
+
+	m_RenderStateDirty = false;
 }
 
 void TATActor::SetMaterial(TATMaterial* m)
@@ -113,23 +123,19 @@ void TATActor::SetMaterial(TATMaterial* m)
 	m_RenderLight = m->m_Light;
 }
 
-void TATActor::SetRigidBody(int index)
+bool TATActor::Update(float dt)
 {
-	m_RigidBodyId = index;
-	if (m_RenderUnit)
-		m_RenderUnit->m_UseTransform = true;
+	for (int i = 0; i < m_TickableObjects.size(); ++i)
+	{
+		m_TickableObjects[i]->Update(this, dt);
+	}
+
+	return true;
 }
 
-void TATActor::Update(float dt)
+void TATActor::MarkRenderStateDirty()
 {
-	if (m_RigidBodyId >= 0)
-	{
-		const TATRigidBody& rb = TATDynamicWorld::Instance()->m_RigidBodys[m_RigidBodyId];
-		m_WorldTransform = rb.GetWorldTransform();
-		
-		if (m_RenderUnit->m_UseTransform)
-		{
-			m_RenderUnit->m_Transform = m_WorldTransform;
-		}
-	}
+	m_RenderStateDirty = true;
+	if (m_RenderUnit)
+		m_RenderUnit->m_StaticDataUploaded = false;
 }
