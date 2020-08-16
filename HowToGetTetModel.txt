@@ -1,8 +1,16 @@
 1.build a model in 3dsmax 
 2.export as .STL file with ASCII
 3.modify the extend .STL to .stl
-4.in netgen.exe chose load Geometry
-5.Generate Mesh and Export as Neutral Format (named .ttet file)
-6.the exported file will contain point list,tet list and triangle list
+4.in netgen.exe choose load Geometry (netgen need python3.5)
+5.Generate Mesh and Export as Neutral Format (renamed .ttet file)
+6.the exported file will contain point list,tet list and triangle list but not yet over now
+7.put the .obj file and .ttet file together into ToolSet/NetGenAdapter the pre name must be same
+8.build project NetGenAdapter modify the exe output directory in ToolSet/NetGenAdapter
+9.run NetGenAdapter.exe that some .tmodel file will appear which is actually used by program
+10.put the .tmodel file in resource directory then can be used in program
 ==================================
-Mesh Options:Mesh Size:STL mesh-size:STL - chart distance to adjust complexity
+netgen:
+Mesh Options:
+	Mesh Size:
+		STL mesh-size:
+			STL - chart distance -> adjust complexity
