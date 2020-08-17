@@ -159,6 +159,7 @@ void TATPBDBody::StepSimulation(float dt)
 	//v <- v + dt * im * f
 	//damp v
 	//pi <- xi + dt * v
+
 	//collision xi->pi
 
 	//constraint solve

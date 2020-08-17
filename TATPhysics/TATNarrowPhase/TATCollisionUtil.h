@@ -3,7 +3,7 @@
 #include "../TATCommon/TATCore.h"
 #include "../TATGeometry/TATGeometryComputer.h"
 
-#define COLLIDE_EPS 0.2f
+#define COLLIDE_EPS 0.02f
 
 class TATCollisionUtil
 {
@@ -13,16 +13,14 @@ public:
 		TATVector3 pt, const TATVector3& vp,
 		TATVector3 face[3], TATVector3 vf[3],
 		float& t, float iterateNum, float margin
-		)
+	)
 	{
 		int iteNum = 0;
 		TATVector3 normal = ((face[1] - face[0]).Cross(face[2] - face[0])).SafeNormalize();
-		TATVector3 l0 = face[1] - face[0];
-		TATVector3 l1 = face[2] - face[0];
 		float dist = (pt - face[0]).Dot(normal) - margin;
 		//temp only allowed positive collision
-		if (dist < 0)
-			return false;
+		//if (dist < 0)
+		//	return false;
 		float vel[3];
 		vel[0] = vf[0].Dot(normal);
 		vel[1] = vf[1].Dot(normal);
@@ -57,8 +55,9 @@ public:
 			vel[1] = vf[1].Dot(normal);
 			vel[2] = vf[2].Dot(normal);
 			dist = (pt - vf[0]).Dot(normal) - margin;
-			if (dist < 0)
-				return false;
+
+			//if (dist < 0)
+			//	return false;
 
 			if (dist > 0)
 				rel_vel = vel[_MaxOfArray<float>(vel, 3)] - vp.Dot(normal);
