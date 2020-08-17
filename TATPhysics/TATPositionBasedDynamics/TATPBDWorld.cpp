@@ -53,15 +53,6 @@ void TATPBDWorld::StepSimulation(float dt)
 		it = m_Constraints.begin();
 		while (it != m_Constraints.end())
 		{
-			TATPBDVertexDistConstraint* constr = dynamic_cast<TATPBDVertexDistConstraint*>(it->second);
-			if (constr)
-			{
-				if (constr->m_Vertex0->m_Index == 0 || constr->m_Vertex1->m_Index == 0)
-				{
-					int stop = 1;
-				}
-			}
-
 			it->second->SolveConstraint();
 			it++;
 		}
@@ -70,7 +61,36 @@ void TATPBDWorld::StepSimulation(float dt)
 	ite = m_PhyBodys.begin();
 	while (ite != m_PhyBodys.end())
 	{
+		ite->second->UpdateAabb();
+		ite++;
+	}
+
+	ProcessCollision();
+
+	ite = m_PhyBodys.begin();
+	while (ite != m_PhyBodys.end())
+	{
 		ite->second->Integrate(dt);
 		ite++;
 	}
+}
+
+void TATPBDWorld::ProcessCollision()
+{
+	for (int i = 0; i < m_SoftRigidCollisions.size(); ++i)
+	{
+		m_SoftRigidCollisions[i]->GenerateCollision();
+	}
+
+	for (int i = 0; i < m_SoftRigidCollideDatas.size(); ++i)
+	{
+		ProjectCollision(m_SoftRigidCollideDatas[i]);
+	}
+
+	m_SoftRigidCollideDatas.clear();
+}
+
+void TATPBDWorld::ProjectCollision(const TATSoftRigidCollideData& data)
+{
+	data.m_Particle->m_PredictPos = data.m_SoftPt;
 }

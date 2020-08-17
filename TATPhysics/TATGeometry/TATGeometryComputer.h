@@ -42,7 +42,7 @@ public:
 		TATVector3 ab = b - a;
 		TATVector3 ac = c - a;
 
-		TATVector3 p = ClosetPtOnPlane(pt, ab.Cross(ac).Normalized(), a);
+		TATVector3 p = ClosetPtOnPlane(pt, a, ab.Cross(ac).Normalized());
 
 		TATVector3 ap = p - a;
 		float d1 = ab.Dot(ap);
@@ -88,6 +88,14 @@ public:
 		float w = vc * denom;
 
 		return a + ab * v + ac * w;
+	}
+
+	static float PtTriDist(const TATVector3& pt, const TATVector3& a, const TATVector3& b, const TATVector3& c)
+	{
+		float weight[3];
+		TATVector3 ptOnTri = ClosetPtOnTri(pt, a, b, c, weight);
+		return pt.Distance(ptOnTri);
+
 	}
 
 	static TATVector3 ClosetPtOnSegment(const TATVector3& p, const TATVector3& e0, const TATVector3& e1)

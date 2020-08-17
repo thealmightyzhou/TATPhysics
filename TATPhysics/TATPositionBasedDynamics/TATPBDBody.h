@@ -2,6 +2,7 @@
 #include "../TATGeometry/TATMeshInfo.h"
 #include "../TATResources/TATModelLoader.h"
 #include "../TATBasis/TATickable.h"
+#include "../TATBroadPhase/TATBvh.h"
 
 class TATActor;
 class TATPBDConstraint;
@@ -101,6 +102,16 @@ public:
 
 	virtual void DampVelocity(TATPBDParticle& particle, float dt);
 
+	void UpdateAabb();
+
+	void SetGravity(const TATVector3& g)
+	{
+		for (int i = 0; i < m_Particles.size(); i++)
+		{
+			m_Particles[i].AddConstantForce(g);
+		}
+	}
+
 	void SetDamping(float lin, float ang)
 	{
 		m_LinearDamp = lin;
@@ -118,4 +129,6 @@ public:
 	float m_LinearDamp;
 
 	float m_AngularDamp;
+
+	TATBvh m_ParticleBVH;
 };

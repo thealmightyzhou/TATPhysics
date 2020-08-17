@@ -152,8 +152,6 @@ void TATPBDBody::StepSimulation(float dt)
 		DampVelocity(particle, dt);
 
 		particle.m_PredictPos = particle.Position() + dt * particle.m_Velocity;
-
-
 	}
 
 	//generate collision
@@ -186,4 +184,19 @@ void TATPBDBody::Integrate(float dt)
 		
 		//friction and restitution adjust velocity
 	}
+}
+
+void TATPBDBody::UpdateAabb()
+{
+	m_ParticleBVH.Clear();
+	for (int i = 0; i < m_Particles.size(); ++i)
+	{
+		TATPBDParticle& particle = m_Particles[i];
+		TATAabb bound;
+		bound.SetOrigin(particle.Position(), particle.m_PredictPos);
+		TATBVNode* node = m_ParticleBVH.InsertAabbNode(bound.m_OriginMin - TATVector3::One() * 0.1f,
+			bound.m_OriginMax + TATVector3::One() * 0.1f);
+		node->m_Data = &m_Particles[i];
+	}
+	m_ParticleBVH.FinishBuild();
 }

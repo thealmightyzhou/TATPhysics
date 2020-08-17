@@ -16,10 +16,15 @@ public:
 	TATAabb(const TATVector3& min, const TATVector3& max) :m_OriginMin(min), m_OriginMax(max), m_Min(min), m_Max(max)
 	{}
 
+	//will auto compute aabb min max
 	void SetOrigin(const TATVector3& min, const TATVector3& max)
 	{
-		m_Min = m_OriginMin = min;
-		m_Max = m_OriginMax = max;
+		TATVector3 mi = min;
+		mi.SetMin(max);
+		TATVector3 mx = max;
+		mx.SetMax(min);
+		m_Min = m_OriginMin = mi;
+		m_Max = m_OriginMax = mx;
 	}
 
 	void SetOriginExtend(const TATVector3& center, const TATVector3& extend)

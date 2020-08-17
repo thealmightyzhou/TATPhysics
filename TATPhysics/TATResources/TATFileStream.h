@@ -57,14 +57,19 @@ public:
 	//extend: "obj","stl" or other extend name
 	static void FetchAllFilesBelow(const TString& path,const TString& extend, vector<TString>& files)
 	{
-		WIN32_FIND_DATAA wfd;
+		WIN32_FIND_DATA wfd;
+
 		CString sPath = (TString("*.") + extend).ToChar();
 		HANDLE hFile = FindFirstFile(sPath.GetBuffer(), &wfd);
 		if (INVALID_HANDLE_VALUE == hFile)
 			return;
 		do
 		{
-			files.push_back(std::string((LPCTSTR)wfd.cFileName));
+			int psize = WideCharToMultiByte(CP_OEMCP, 0, wfd.cFileName, wcslen(wfd.cFileName), NULL, 0, NULL, NULL);
+			char* pCStrKey = new char[psize + 1];
+			WideCharToMultiByte(CP_OEMCP, 0, wfd.cFileName, wcslen(wfd.cFileName), pCStrKey, psize, NULL, NULL);
+			pCStrKey[psize] = '\0';
+			files.push_back(std::string(pCStrKey));
 		} while (FindNextFile(hFile, &wfd));
 
 	}
