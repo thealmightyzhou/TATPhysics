@@ -2,6 +2,8 @@
 #include "../TATGeometry/TATInertia.h"
 #include "../TATStage/TATActor.h"
 #include "../TATGLRender/TATRenderUnit.h"
+#include "TATDynamicWorld.h"
+#include "../TATCommon/TATObjectPool.h"
 
 TATCollideShapeSphere::TATCollideShapeSphere(const TATVector3& center, float radius, float invMass)
 	:m_Center(center), m_Radius(radius), TATCollideShapePrimitive(invMass)
@@ -67,4 +69,20 @@ bool TATRigidBody::Update(TATActor* actor, float dt)
 		actor->m_RenderUnit->m_Transform = m_WorldTransform;
 
 	return true;
+}
+
+//@location in wcs
+TATVector3 TATRigidBody::GetVelocityAtWCS(const TATVector3& location) const
+{
+	TATRigidBodyData& data = TATDynamicWorld::Instance()->m_RigidBodyDatas[m_DataIndex];
+
+	TATVector3 r = location - GetMassCenter();
+
+	return data.m_LinVel + data.m_AngVel.Cross(r);
+}
+
+//@location in lcs
+TATVector3 TATRigidBody::GetVelocityAtLCS(const TATVector3& location) const
+{
+	return GetVelocityAtWCS(m_WorldTransform * location);
 }

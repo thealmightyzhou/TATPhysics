@@ -1,6 +1,9 @@
 #include "TATPBDWorld.h"
 #include "TATPBDConstraint.h"
 #include "TATPBDBody.h"
+#include "../TATDynamics/TATDynamicWorld.h"
+#include "../TATNarrowPhase/TATSoftRigidCollisionEntry.h"
+#include "../TATBroadPhase/TATBvhCollideCallBack.h"
 
 bool TATPBDWorld::AddBody(const TString& name, TATPBDBody* body)
 {
@@ -57,14 +60,20 @@ void TATPBDWorld::StepSimulation(float dt)
 		}
 	}
 
+	m_PhyBodyBVH.Clear();
 	ite = m_PhyBodys.begin();
+	TATVector3 min, max;
 	while (ite != m_PhyBodys.end())
 	{
 		ite->second->UpdateAabb();
+		ite->second->m_ParticleBVH.GetBound(min, max);
+		TATBVNode* node = m_PhyBodyBVH.InsertAabbNode(min, max);
+		node->m_Data = (void*)(ite->second);
 		ite++;
 	}
+	m_PhyBodyBVH.FinishBuild();
 
-	ProcessCollision();
+	ProcessCollision(dt);
 
 	ite = m_PhyBodys.begin();
 	while (ite != m_PhyBodys.end())
@@ -74,12 +83,33 @@ void TATPBDWorld::StepSimulation(float dt)
 	}
 }
 
-void TATPBDWorld::ProcessCollision()
+class TATSoftRigidCollisionProcessor:public TATBvhCollideCallBack
 {
-	for (int i = 0; i < m_SoftRigidCollisions.size(); ++i)
+public:
+	TATSoftRigidCollisionProcessor(std::vector<TATSoftRigidCollideData>& collidedatas, float dt) :
+		m_CollideDatas(collidedatas), m_DeltaTime(dt)
+	{}
+
+	virtual void NodeOverlapped(TATBVNode* node1, TATBVNode* node2)
 	{
-		m_SoftRigidCollisions[i]->GenerateCollision();
+		TATPBDBody* soft = (TATPBDBody*)node1->m_Data;
+		TATRigidBody* rigid = (TATRigidBody*)(node2->m_Data);
+
+		std::vector<TATSoftRigidCollideData> datas;
+		if (TATSoftRigidCollisionEntry::ProcessSoftRigidCollision(soft, rigid, m_DeltaTime, datas))
+		{
+			m_CollideDatas.insert(m_CollideDatas.end(), datas.begin(), datas.end());
+		}
 	}
+
+	std::vector<TATSoftRigidCollideData>& m_CollideDatas;
+	float m_DeltaTime;
+};
+
+void TATPBDWorld::ProcessCollision(float dt)
+{
+	TATSoftRigidCollisionProcessor cb(m_SoftRigidCollideDatas, dt);
+	TATDynamicWorld::Instance()->m_RigidBodyBVTree.CollideWithBVTree(&m_PhyBodyBVH, &cb); //TODO refactory
 
 	for (int i = 0; i < m_SoftRigidCollideDatas.size(); ++i)
 	{
@@ -92,4 +122,7 @@ void TATPBDWorld::ProcessCollision()
 void TATPBDWorld::ProjectCollision(const TATSoftRigidCollideData& data)
 {
 	data.m_Particle->m_PredictPos = data.m_SoftPt;
+
+	//TODO solve collision of rigidbody
+	//AddImpulse() ...
 }

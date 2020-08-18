@@ -150,9 +150,12 @@ public:
 class TATVoronoiUtil
 {
 public:
-	static bool PtInFaceVor()
+	static bool PtInFaceVor(const TATVector3& p, const TATVector3& p0, const TATVector3& p1, const TATVector3& p2)
 	{
-		//TODO
+		bool isInTri = TATGeometryUtil::IsPtInTri(p, p0, p1, p2);
+		bool isInPostive = (p-p0).Dot((p1 - p0).Cross(p2 - p0)) > 0;
+		if (isInTri && isInPostive)
+			return true;
 		return false;
 	}
 };

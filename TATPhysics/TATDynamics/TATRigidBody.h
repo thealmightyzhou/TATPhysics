@@ -157,6 +157,10 @@ public:
 		return  m_WorldTransform * m_CollideShape->m_LocalMassCenter;
 	}
 
+	TATVector3 GetVelocityAtWCS(const TATVector3& location) const;
+
+	TATVector3 GetVelocityAtLCS(const TATVector3& location) const;
+
 	TAT_POOL_OBJECT(TATRigidBody);
 
 	TAT_REGISTER_ATTRIBUTE(TATransform, WorldTransform);

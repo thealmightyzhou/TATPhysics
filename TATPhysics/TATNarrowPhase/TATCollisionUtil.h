@@ -12,24 +12,24 @@ public:
 	(
 		TATVector3 pt, const TATVector3& vp,
 		TATVector3 face[3], TATVector3 vf[3],
-		float& t, float iterateNum, float margin
+		float& t, int iterateNum, float margin
 	)
 	{
+		TATVector3 originPos = pt;
+
 		int iteNum = 0;
 		TATVector3 normal = ((face[1] - face[0]).Cross(face[2] - face[0])).SafeNormalize();
 		float dist = (pt - face[0]).Dot(normal) - margin;
-		//temp only allowed positive collision
-		//if (dist < 0)
-		//	return false;
+
+		if (dist < 0)
+			return false;
+
 		float vel[3];
 		vel[0] = vf[0].Dot(normal);
 		vel[1] = vf[1].Dot(normal);
 		vel[2] = vf[2].Dot(normal);
-		float rel_vel;
-		if (dist > 0)
-			rel_vel = vel[_MaxOfArray<float>(vel, 3)] - vp.Dot(normal);
-		else
-			rel_vel = vel[_MinOfArray<float>(vel, 3)] - vp.Dot(normal);
+
+		float rel_vel = vel[_MaxOfArray<float>(vel, 3)] - vp.Dot(normal);
 
 		float time = dist / rel_vel;
 		if (1.0 < time || time < 0.0)
@@ -44,9 +44,9 @@ public:
 			face[2] += vf[2] * dt;
 
 			float dis = TATGeometryUtil::PtTriDist(pt, face[0], face[1], face[2]);
-			if (dis < (margin + COLLIDE_EPS))
+			if (dis < (margin + COLLIDE_EPS) && TATVoronoiUtil::PtInFaceVor(pt, face[0], face[1], face[2]))
 			{
-				t = dt;
+				t = time;
 				return true;
 			}
 
@@ -54,18 +54,18 @@ public:
 			vel[0] = vf[0].Dot(normal);
 			vel[1] = vf[1].Dot(normal);
 			vel[2] = vf[2].Dot(normal);
-			dist = (pt - vf[0]).Dot(normal) - margin;
 
-			//if (dist < 0)
-			//	return false;
+			dist = (pt - face[0]).Dot(normal) - margin;
 
-			if (dist > 0)
-				rel_vel = vel[_MaxOfArray<float>(vel, 3)] - vp.Dot(normal);
-			else
-				rel_vel = vel[_MinOfArray<float>(vel, 3)] - vp.Dot(normal);
+			if (dist < -COLLIDE_EPS)
+				return false;
 
-			dt += dist / rel_vel;
-			if (1.0 < dt || dt < 0.0)
+			rel_vel = vel[_MaxOfArray<float>(vel, 3)] - vp.Dot(normal);
+
+			dt = dist / rel_vel;
+			time += dt;
+
+			if (1.0 + TAT_EPSILON < time || time < -TAT_EPSILON)
 				return false;
 
 			iteNum++;
