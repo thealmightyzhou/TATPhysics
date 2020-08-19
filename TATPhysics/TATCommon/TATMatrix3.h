@@ -114,6 +114,24 @@ public:
 			Row(2).Dot(m.Col(0)), Row(2).Dot(m.Col(1)), Row(2).Dot(m.Col(2)));
 	}
 
+	inline TATMatrix3 operator-(const TATMatrix3& m) const
+	{
+		TATMatrix3 mat;
+		mat.Ele[0] = Ele[0] - m.Ele[0];
+		mat.Ele[1] = Ele[1] - m.Ele[1];
+		mat.Ele[2] = Ele[2] - m.Ele[2];
+		return mat;
+	}
+
+	inline TATMatrix3 operator+(const TATMatrix3& m) const
+	{
+		TATMatrix3 mat;
+		mat.Ele[0] = Ele[0] + m.Ele[0];
+		mat.Ele[1] = Ele[1] + m.Ele[1];
+		mat.Ele[2] = Ele[2] + m.Ele[2];
+		return mat;
+	}
+
 	inline TATVector3 operator*(const TATVector3& v) const
 	{
 		return TATVector3(Ele[0].Dot(v), Ele[1].Dot(v), Ele[2].Dot(v));
@@ -132,8 +150,8 @@ public:
 		assert(det != float(0.0));
 		float s = float(1.0) / det;
 		return TATMatrix3(co.X * s, CoFactor(0, 2, 2, 1) * s, CoFactor(0, 1, 1, 2) * s,
-						  co.Y * s, CoFactor(0, 0, 2, 2) * s, CoFactor(0, 2, 1, 0) * s,
-						  co.Z * s, CoFactor(0, 1, 2, 0) * s, CoFactor(0, 0, 1, 1) * s);
+			co.Y * s, CoFactor(0, 0, 2, 2) * s, CoFactor(0, 2, 1, 0) * s,
+			co.Z * s, CoFactor(0, 1, 2, 0) * s, CoFactor(0, 0, 1, 1) * s);
 	}
 
 	void SetRotation(const TATQuaternion& q)
@@ -285,6 +303,13 @@ public:
 	{
 		return TATVector3(Ele[0].X, Ele[1].Y, Ele[2].Z);
 	}
+
+	static TATMatrix3 Diagonal(float x)
+	{
+		return TATMatrix3(x, 0, 0,
+			0, x, 0,
+			0, 0, x);
+	}
 };
 
 inline TATVector3 operator*(const TATVector3& v, const TATMatrix3& m)
@@ -293,5 +318,5 @@ inline TATVector3 operator*(const TATVector3& v, const TATMatrix3& m)
 		m.Ele[0].X * v.X + m.Ele[1].X * v.Y + m.Ele[2].X * v.Z,
 		m.Ele[0].Y * v.X + m.Ele[1].Y * v.Y + m.Ele[2].Y * v.Z,
 		m.Ele[0].Z * v.X + m.Ele[1].Z * v.Y + m.Ele[2].Z * v.Z
-	);
+		);
 }

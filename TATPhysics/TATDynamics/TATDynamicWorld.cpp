@@ -109,6 +109,15 @@ void TATDynamicWorld::StepSimulation(float dt)
 	}
 }
 
+void TATDynamicWorld::ExtraIntegrate(TATRigidBody* rb, float dt)
+{
+	TATRigidBodyData* data = &m_RigidBodyDatas[rb->m_DataIndex];
+
+	TATransformUtil::IntegrateTransform(data, dt, 0.98f);
+
+	SyncRigidBodyData(rb);
+}
+
 TATRigidBody* TATDynamicWorld::CreateConvex(TATMesh* mesh, float invMass)
 {
 	TATPhyMeshData data;

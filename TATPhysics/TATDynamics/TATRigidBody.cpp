@@ -48,6 +48,10 @@ TATRigidBody::TATRigidBody() :TATickable("RigidBody" + TString::ConvertInt(GetOb
 	m_CollideShape = 0;
 	Clear();
 	m_IndexInPool = -1;
+	m_FrictionCoefficient = 0.9;
+	m_ContactHardness = 1;
+	m_LinFactor.SetValue(1, 1, 1);
+	m_AngFactor.SetValue(1, 1, 1);
 }
 
 void TATRigidBody::Clear()
@@ -85,4 +89,13 @@ TATVector3 TATRigidBody::GetVelocityAtWCS(const TATVector3& location) const
 TATVector3 TATRigidBody::GetVelocityAtLCS(const TATVector3& location) const
 {
 	return GetVelocityAtWCS(m_WorldTransform * location);
+}
+
+void TATRigidBody::ApplyImpulse(const TATVector3& impulse, const TATVector3& r)
+{
+	TATRigidBodyData& data = TATDynamicWorld::Instance()->m_RigidBodyDatas[m_DataIndex];
+	data.m_LinVel += impulse * m_LinFactor * m_InvMass;
+
+	TATVector3 torque = r.Cross(impulse * m_LinFactor);
+	data.m_AngVel += TATDynamicWorld::Instance()->m_InertiaDatas[m_InertiaIndex].m_InvInertiaWorld * torque * m_AngFactor;
 }

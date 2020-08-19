@@ -6,11 +6,13 @@
 
 class TATActor;
 class TATPBDConstraint;
+class TATPBDBody;
 
 struct TATPBDParticle
 {
 public:
-	TATPBDParticle(float invMass, TATPhyVertex& vertex) :m_InvMass(invMass), m_PhyVertex(vertex)
+	TATPBDParticle(float invMass, TATPhyVertex& vertex, TATPBDBody* body) :
+		m_InvMass(invMass), m_PhyVertex(vertex), m_HostBody(body)
 	{
 		m_Velocity.SetZero();
 		m_ExternalForce.SetZero();
@@ -24,6 +26,7 @@ public:
 	TATVector3 m_ConstantForce;
 	TATVector3 m_PredictPos;
 	TATPhyVertex& m_PhyVertex;
+	TATPBDBody* m_HostBody;
 	int m_Index;
 
 	TATVector3& Position()
@@ -81,7 +84,7 @@ public:
 		m_Particles.reserve(m_PhyBody.m_Vertices.size());
 		for (int i = 0; i < m_PhyBody.m_Vertices.size(); i++)
 		{
-			m_Particles.push_back(TATPBDParticle(invMassPerNode, m_PhyBody.m_Vertices[i]));
+			m_Particles.push_back(TATPBDParticle(invMassPerNode, m_PhyBody.m_Vertices[i], this));
 			m_Particles[i].m_Index = i;
 		}
 	}
@@ -131,4 +134,6 @@ public:
 	float m_AngularDamp;
 
 	TATBvh m_ParticleBVH;
+
+	float m_FrictionCoeffcient;
 };

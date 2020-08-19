@@ -34,7 +34,7 @@ public:
 
 	virtual void ProcessCollision(float dt);
 
-	void ProjectCollision(const TATSoftRigidCollideData& data);
+	void ProjectRSCollision(const TATSoftRigidCollideData& data, float dt);
 
 	void AddSoftRigidCollideData(const TATSoftRigidCollideData& data)
 	{

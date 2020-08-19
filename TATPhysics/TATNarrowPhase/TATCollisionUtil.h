@@ -3,7 +3,7 @@
 #include "../TATCommon/TATCore.h"
 #include "../TATGeometry/TATGeometryComputer.h"
 
-#define COLLIDE_EPS 0.02f
+#define COLLIDE_EPS 0.04f
 
 class TATCollisionUtil
 {
@@ -57,7 +57,7 @@ public:
 
 			dist = (pt - face[0]).Dot(normal) - margin;
 
-			if (dist < -COLLIDE_EPS)
+			if (dist < -TAT_EPSILON2)
 				return false;
 
 			rel_vel = vel[_MaxOfArray<float>(vel, 3)] - vp.Dot(normal);
@@ -72,5 +72,23 @@ public:
 		}
 
 		return false;
+	}
+
+	static TATMatrix3 MassMatrix(float im, const TATMatrix3& iwi, const TATVector3& r)
+	{
+		TATMatrix3 rx;
+		r.GetSkewSymmetricMatrix(&rx.Ele[0], &rx.Ele[1], &rx.Ele[2]);
+		return (TATMatrix3::Diagonal(im) - rx * iwi * rx);
+	}
+
+	static TATMatrix3 ImpulseMatrix(float dt, float ima, float imb, const TATMatrix3& iwi, const TATVector3& r)
+	{
+		return (TATMatrix3::Diagonal(1.0f / dt) * (TATMatrix3::Diagonal(ima) + MassMatrix(imb, iwi, r)).Inverse());
+	}
+
+	static TATMatrix3 ImpulseMatrix(float ima, const TATMatrix3& iia, const TATVector3& ra,
+									float imb, const TATMatrix3& iib, const TATVector3& rb)
+	{
+		(MassMatrix(ima, iia, ra) + MassMatrix(imb, iib, rb)).Inverse();
 	}
 };

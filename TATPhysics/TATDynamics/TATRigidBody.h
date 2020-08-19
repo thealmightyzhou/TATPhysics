@@ -111,12 +111,20 @@ public:
 	TATRigidBody(const TString& name,TATCollideShapePrimitive* cs) :m_CollideShape(cs),TATickable(name + TString::ConvertInt(GetObjectIndex()))
 	{
 		SetWorldTransform(TATransform::GetIdentity());
+
+		m_FrictionCoefficient = 0.9;
+		m_ContactHardness = 1;
+		m_LinFactor.SetValue(1, 1, 1);
+		m_AngFactor.SetValue(1, 1, 1);
 	}
 
 	TATRigidBody(const TString& name,TATCollideShapePrimitive* cs, const TATransform& tr) :m_CollideShape(cs), m_WorldTransform(tr),
 		TATickable(name + TString::ConvertInt(GetObjectIndex()))
 	{
-
+		m_FrictionCoefficient = 0.9;
+		m_ContactHardness = 1;
+		m_LinFactor.SetValue(1, 1, 1);
+		m_AngFactor.SetValue(1, 1, 1);
 	}
 
 	virtual bool Update(TATActor* actor, float dt);
@@ -161,6 +169,8 @@ public:
 
 	TATVector3 GetVelocityAtLCS(const TATVector3& location) const;
 
+	void ApplyImpulse(const TATVector3& impulse, const TATVector3& r);
+
 	TAT_POOL_OBJECT(TATRigidBody);
 
 	TAT_REGISTER_ATTRIBUTE(TATransform, WorldTransform);
@@ -168,11 +178,19 @@ public:
 	TATCollideShapePrimitive* m_CollideShape;
 
 	float m_InvMass;
+
+	float m_FrictionCoefficient;
+
+	float m_ContactHardness;
 	
 	int m_BodyIndex;
 
 	int m_DataIndex;
 
 	int m_InertiaIndex;
+
+	TATVector3 m_LinFactor;
+
+	TATVector3 m_AngFactor;
 };
 

@@ -113,16 +113,50 @@ void TATPBDWorld::ProcessCollision(float dt)
 
 	for (int i = 0; i < m_SoftRigidCollideDatas.size(); ++i)
 	{
-		ProjectCollision(m_SoftRigidCollideDatas[i]);
+		ProjectRSCollision(m_SoftRigidCollideDatas[i], dt);
 	}
 
 	m_SoftRigidCollideDatas.clear();
 }
 
-void TATPBDWorld::ProjectCollision(const TATSoftRigidCollideData& data)
+void TATPBDWorld::ProjectRSCollision(const TATSoftRigidCollideData& data, float dt)
 {
-	data.m_Particle->m_PredictPos = data.m_SoftPt;
+	TATPBDParticle* particle = data.m_Particle;
+	TATRigidBody* rigid = data.m_Rigid;
+	const TATMatrix3& iwi = TATDynamicWorld::Instance()->m_InertiaDatas[rigid->m_InertiaIndex].m_InvInertiaWorld;
+	//TATVector3 r = data.m_RigidPt - rigid->GetMassCenter();
+	TATVector3 r = data.m_SoftPt - rigid->GetMassCenter();
 
-	//TODO solve collision of rigidbody
-	//AddImpulse() ...
+	TATMatrix3 impulseMatrix = TATCollisionUtil::ImpulseMatrix
+	(
+		dt,
+		data.m_Particle->m_InvMass,
+		rigid->m_InvMass,
+		iwi, 
+		r
+	);
+
+	//TATVector3 va = rigid->GetVelocityAtWCS(data.m_RigidPt) * dt;
+	TATVector3 va = rigid->GetVelocityAtWCS(data.m_SoftPt) * dt;
+	TATVector3 vb = particle->m_PredictPos - particle->Position();
+	const TATVector3 rel_vel = vb - va;
+	const float rel_vel_normal = rel_vel.Dot(data.m_CollideNormal);
+	const TATVector3 rel_frict_vel = rel_vel - rel_vel_normal * data.m_CollideNormal;
+	float frict = particle->m_HostBody->m_FrictionCoeffcient * rigid->m_FrictionCoefficient;
+	float fricCoeff = rel_frict_vel.Length() < rel_vel_normal * particle->m_HostBody->m_FrictionCoeffcient ? 0 : 1 - frict;
+
+	float kst = 1.0f;
+
+	const TATVector3 impulse = impulseMatrix *
+		(rel_vel - rel_frict_vel * fricCoeff - data.m_Penetration * rigid->m_ContactHardness * data.m_CollideNormal) * kst;
+
+	particle->m_PredictPos -= impulse * particle->m_InvMass * dt;
+	//particle->m_Velocity -= impulse * particle->m_InvMass;
+
+	rigid->ApplyImpulse(impulse, r);
+
+	//TATDynamicWorld::Instance()->ExtraIntegrate(rigid, dt);
+	particle->m_PredictPos = data.m_SoftPt + data.m_CollideNormal * 0.04;
+	particle->m_Velocity -= impulse * particle->m_InvMass;
+
 }

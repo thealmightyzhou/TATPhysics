@@ -8,6 +8,8 @@
 TATPBDBody::TATPBDBody(const TString& name, const TATModelBuffer& buffer, float invMassPerNode) :TATickable(name)
 {
 	Build(buffer, invMassPerNode);
+
+	m_FrictionCoeffcient = 0.9;
 }
 
 void TATPBDBody::Initialize()

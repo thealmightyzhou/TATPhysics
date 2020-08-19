@@ -47,10 +47,22 @@ void SoftBodyTestApp::CreateScene()
 	node3->MountActor(cubeActor);
 	TATRigidBody* cubeRb = TATDynamicWorld::Instance()->CreateConvex(cube, 1.0f);
 	TATransform tr;
-	tr.SetOrigin(TATVector3(0, -100, 10));
-	tr.SetRotation(TATQuaternion(0, 0.8, 0.6, 0));
-	TATDynamicWorld::Instance()->InitRigidBody(cubeRb, tr, 0.1f, 0.8, 0.2, TATVector3(0, 0, 0));
+	tr.SetOrigin(TATVector3(0, -200, 10));
+	//tr.SetRotation(TATQuaternion(0, 0.8, 0.6, 0));
+	TATDynamicWorld::Instance()->InitRigidBody(cubeRb, tr, 0.1f, 0.8, 0.2, TATVector3(0, -10, 0));
 	cubeActor->AttachTickable(cubeRb);
+
+	TATActor* cubeActor1 = new TATActor(cube);
+	cubeActor1->Initialize();
+	cubeActor1->SetMaterial(mat);
+	cubeActor1->SetUseTransform(true);
+	TATStageNode* node4 = m_RootNode->CreateChild("cube1");
+	node4->MountActor(cubeActor1);
+	TATRigidBody* cubeRb1 = TATDynamicWorld::Instance()->CreateConvex(cube, 1.0f);
+	tr.SetOrigin(TATVector3(0, 100, 10));
+	//tr.SetRotation(TATQuaternion(0, 0.8, 0.6, 0));
+	TATDynamicWorld::Instance()->InitRigidBody(cubeRb1, tr, 1.0, 0.8, 0.2, TATVector3(0, -10, 0));
+	cubeActor1->AttachTickable(cubeRb1);
 
 	TATActor* planeActor = new TATActor(plane);
 	planeActor->Initialize();
@@ -67,9 +79,9 @@ void SoftBodyTestApp::CreateScene()
 	TATPBDBody* softBody0 = new TATPBDBody("softHalfSphere", tet_halfSphere->m_Loader->m_Buffer, 1.0f);
 	softBody0->Initialize();
 	softBody0->AddPositionConstraint(0.1, 0.1);
-	softBody0->AddVolumeConstraint(0.9, 0.9);
+	softBody0->AddVolumeConstraint(0.2, 0.2);
 	softBody0->SetDamping(0.8, 0.8);
-	softBody0->SetGravity(TATVector3(0, -100, 0));
+	softBody0->SetGravity(TATVector3(0, -50, 0));
 	softActor0->AttachTickable(softBody0);
 
 }

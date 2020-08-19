@@ -12,6 +12,7 @@ struct ConvexFacePack
 {
 	int m_FaceIndex;
 	TATVector3 m_Pos[3];
+	TATVector3 m_PredictPos[3];
 	TATVector3 m_Vel[3];
 };
 
@@ -32,23 +33,33 @@ public:
 		TATVector3 vel = particle->m_PredictPos - particle->Position();
 
 		float t;
-		float margin = 1;
+		float margin = 0.2;
 
 		if (TATCollisionUtil::PtCollideFaceContinous(particle->Position(), vel, facePack->m_Pos, facePack->m_Vel, t, 10, margin))
 		{
-			TATVector3 p = particle->Position() + vel * t;
 			TATVector3 norm = ((facePack->m_Pos[1] - facePack->m_Pos[0]).Cross(facePack->m_Pos[2] - facePack->m_Pos[0])).Normalized();
+
+			TATVector3 p = particle->Position() + vel * t;
 
 			float dist = (p - facePack->m_Pos[0]).Dot(norm);
 
 			float pen = margin + COLLIDE_EPS - (p - facePack->m_Pos[0]).Dot(norm);
+
+			float pen1 = margin + COLLIDE_EPS - (particle->m_PredictPos - facePack->m_Pos[0]).Dot(norm);
+
+			float pen2 = (vel * (1 - t)).Dot(norm);
+
+			TATVector3 normal = ((facePack->m_PredictPos[1] - facePack->m_PredictPos[0]).
+				Cross(facePack->m_PredictPos[2] - facePack->m_PredictPos[0])).Normalized();
+			float pen3 = margin + COLLIDE_EPS - (particle->m_PredictPos - facePack->m_PredictPos[0]).Dot(normal);
+
 
 			TATSoftRigidCollideData data;
 			data.m_CollideNormal = norm;
 			data.m_Particle = particle;
 			data.m_Rigid = m_Rigid;
 
-			data.m_Penetration = pen;
+			data.m_Penetration = pen3;
 			data.m_RigidPt = p - norm * dist;
 			data.m_SoftPt = p + norm * COLLIDE_EPS;
 
@@ -111,6 +122,9 @@ public:
 
 			facePack[i].m_FaceIndex = i;
 			facePack[i].m_Pos[0] = pos0; facePack[i].m_Pos[1] = pos1; facePack[i].m_Pos[2] = pos2;
+			facePack[i].m_PredictPos[0] = predict0;
+			facePack[i].m_PredictPos[1] = predict1;
+			facePack[i].m_PredictPos[2] = predict2;
 			facePack[i].m_Vel[0] = predict0 - facePack[i].m_Pos[0];
 			facePack[i].m_Vel[1] = predict1 - facePack[i].m_Pos[1];
 			facePack[i].m_Vel[2] = predict2 - facePack[i].m_Pos[2];

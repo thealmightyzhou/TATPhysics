@@ -222,7 +222,7 @@ public:
 	}
 
 	//return cross matrix
-	inline void GetSkewSymmetricMatrix(TATVector3* v0, TATVector3* v1, TATVector3* v2)
+	inline void GetSkewSymmetricMatrix(TATVector3* v0, TATVector3* v1, TATVector3* v2) const
 	{
 		v0->SetValue(0, -Z, Y);
 		v1->SetValue(Z, 0, -X);
