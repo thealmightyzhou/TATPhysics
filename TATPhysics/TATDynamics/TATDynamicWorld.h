@@ -42,6 +42,4 @@ public:
 	void InitRigidBody(TATRigidBody* rb, const TATransform& tr, float invMass, float restituitionCoeff, float frictionCoeff, const TATVector3& g);
 
 	void SyncRigidBodyData(TATRigidBody* rb);
-
-	void ExtraIntegrate(TATRigidBody* rb, float dt);
 };

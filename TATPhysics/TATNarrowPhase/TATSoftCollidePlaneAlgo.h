@@ -43,7 +43,7 @@ public:
 		float t;
 		float margin = 0.2;
 
-		if (TATCollisionUtil::PtCollideFaceContinous(particle->Position(), vel, points, faceVel, t, 10, margin))
+		if (TATCollisionUtil::CalcTimeOfImpact(particle->Position(), vel, points, faceVel, t, 10, margin))
 		{
 			TATVector3 p = particle->Position() + vel * t;
 			//plane face is static

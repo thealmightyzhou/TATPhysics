@@ -99,3 +99,13 @@ void TATRigidBody::ApplyImpulse(const TATVector3& impulse, const TATVector3& r)
 	TATVector3 torque = r.Cross(impulse * m_LinFactor);
 	data.m_AngVel += TATDynamicWorld::Instance()->m_InertiaDatas[m_InertiaIndex].m_InvInertiaWorld * torque * m_AngFactor;
 }
+
+TATVector3 TATRigidBody::GetLinearVelocity() const
+{
+	return TATDynamicWorld::Instance()->m_RigidBodyDatas[m_DataIndex].m_LinVel;
+}
+
+TATVector3 TATRigidBody::GetAngularVelocity() const
+{
+	return TATDynamicWorld::Instance()->m_RigidBodyDatas[m_DataIndex].m_AngVel;
+}

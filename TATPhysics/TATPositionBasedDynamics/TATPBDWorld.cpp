@@ -124,8 +124,8 @@ void TATPBDWorld::ProjectRSCollision(const TATSoftRigidCollideData& data, float 
 	TATPBDParticle* particle = data.m_Particle;
 	TATRigidBody* rigid = data.m_Rigid;
 	const TATMatrix3& iwi = TATDynamicWorld::Instance()->m_InertiaDatas[rigid->m_InertiaIndex].m_InvInertiaWorld;
-	//TATVector3 r = data.m_RigidPt - rigid->GetMassCenter();
-	TATVector3 r = data.m_SoftPt - rigid->GetMassCenter();
+	TATVector3 r = data.m_RigidPt - rigid->GetMassCenter();
+	//TATVector3 r = data.m_SoftPt - rigid->GetMassCenter();
 
 	TATMatrix3 impulseMatrix = TATCollisionUtil::ImpulseMatrix
 	(
@@ -136,11 +136,14 @@ void TATPBDWorld::ProjectRSCollision(const TATSoftRigidCollideData& data, float 
 		r
 	);
 
-	//TATVector3 va = rigid->GetVelocityAtWCS(data.m_RigidPt) * dt;
-	TATVector3 va = rigid->GetVelocityAtWCS(data.m_SoftPt) * dt;
+	TATVector3 va = rigid->GetVelocityAtWCS(data.m_RigidPt) * dt;
+	//TATVector3 va = rigid->GetVelocityAtWCS(data.m_SoftPt) * dt;
 	TATVector3 vb = particle->m_PredictPos - particle->Position();
 	const TATVector3 rel_vel = vb - va;
 	const float rel_vel_normal = rel_vel.Dot(data.m_CollideNormal);
+	if (rel_vel_normal > 0)
+		return;
+
 	const TATVector3 rel_frict_vel = rel_vel - rel_vel_normal * data.m_CollideNormal;
 	float frict = particle->m_HostBody->m_FrictionCoeffcient * rigid->m_FrictionCoefficient;
 	float fricCoeff = rel_frict_vel.Length() < rel_vel_normal * particle->m_HostBody->m_FrictionCoeffcient ? 0 : 1 - frict;
@@ -150,13 +153,16 @@ void TATPBDWorld::ProjectRSCollision(const TATSoftRigidCollideData& data, float 
 	const TATVector3 impulse = impulseMatrix *
 		(rel_vel - rel_frict_vel * fricCoeff - data.m_Penetration * rigid->m_ContactHardness * data.m_CollideNormal) * kst;
 
+	particle->m_PredictPos = data.m_SoftPt;
 	particle->m_PredictPos -= impulse * particle->m_InvMass * dt;
 	//particle->m_Velocity -= impulse * particle->m_InvMass;
 
+	TATransform predictTr;
+	TATransformUtil::IntegrateTransform(rigid->GetWorldTransform(), rigid->GetLinearVelocity(), rigid->GetAngularVelocity(), data.m_HitFraction * dt, predictTr);
+	rigid->SetWorldTransform(predictTr);
+
 	rigid->ApplyImpulse(impulse, r);
 
-	//TATDynamicWorld::Instance()->ExtraIntegrate(rigid, dt);
-	particle->m_PredictPos = data.m_SoftPt + data.m_CollideNormal * 0.04;
-	particle->m_Velocity -= impulse * particle->m_InvMass;
+	//particle->m_Velocity -= impulse * particle->m_InvMass;
 
 }

@@ -19,8 +19,8 @@ struct ConvexFacePack
 class SoftConvexFaceOverlapCallBack :public TATBvhCollideCallBack
 {
 public:
-	SoftConvexFaceOverlapCallBack(TATRigidBody* rb, std::vector<TATSoftRigidCollideData>& collideDatas) :
-		m_Rigid(rb),m_CollideDatas(collideDatas)
+	SoftConvexFaceOverlapCallBack(TATRigidBody* rb, std::vector<TATSoftRigidCollideData>& collideDatas,float dt) :
+		m_Rigid(rb),m_CollideDatas(collideDatas), m_DeltaTime(dt)
 	{
 
 	}
@@ -34,8 +34,61 @@ public:
 
 		float t;
 		float margin = 0.2;
+		float collideRadius = 0.02f;
 
-		if (TATCollisionUtil::PtCollideFaceContinous(particle->Position(), vel, facePack->m_Pos, facePack->m_Vel, t, 10, margin))
+		if (TATCollisionUtil::CalcTimeOfImpact
+		(
+			particle->Position(),
+			particle->m_PredictPos - particle->Position(),
+			m_Rigid,
+			m_Rigid->GetLinearVelocity(),
+			m_Rigid->GetAngularVelocity(),
+			facePack->m_FaceIndex,
+			m_DeltaTime,
+			margin,
+			collideRadius,
+			64,
+			t
+		))
+		{
+			float time = t * m_DeltaTime;
+			TATransform predictTr;
+			TATransformUtil::IntegrateTransform
+			(
+				m_Rigid->GetWorldTransform(),
+				m_Rigid->GetLinearVelocity(),
+				m_Rigid->GetAngularVelocity(),
+				time,
+				predictTr
+			);
+			TATCollideShapeConvex* convex = m_Rigid->m_CollideShape->Cast<TATCollideShapeConvex>();
+			const TATPhyFace& face = convex->m_CollideMeshData.m_Faces[facePack->m_FaceIndex];
+			TATVector3 points[3]
+			{
+				predictTr * convex->m_CollideMeshData.m_Vertices[face.m_VertexIndices[0]].m_Position,
+				predictTr * convex->m_CollideMeshData.m_Vertices[face.m_VertexIndices[1]].m_Position,
+				predictTr * convex->m_CollideMeshData.m_Vertices[face.m_VertexIndices[2]].m_Position
+			};
+			TATVector3 norm = (points[1] - points[0]).Cross(points[2] - points[0]).Normalized();
+			TATVector3 p = (particle->m_PredictPos - particle->Position()) * t + particle->Position();
+			float dist = (p - points[0]).Dot(norm) - margin;
+
+			float pen = collideRadius - dist;
+
+			TATSoftRigidCollideData data;
+			data.m_Soft = particle->m_HostBody;
+			data.m_Rigid = m_Rigid;
+			data.m_Particle = particle;
+			data.m_CollideNormal = norm;
+			data.m_Penetration = pen;
+			data.m_RigidPt = p - norm * (dist + margin);
+			data.m_SoftPt = p;
+			data.m_HitFraction = t;
+
+			m_CollideDatas.push_back(data);
+		}
+
+		/*if (TATCollisionUtil::CalcTimeOfImpact(particle->Position(), vel, facePack->m_Pos, facePack->m_Vel, t, 10, margin))
 		{
 			TATVector3 norm = ((facePack->m_Pos[1] - facePack->m_Pos[0]).Cross(facePack->m_Pos[2] - facePack->m_Pos[0])).Normalized();
 
@@ -53,7 +106,6 @@ public:
 				Cross(facePack->m_PredictPos[2] - facePack->m_PredictPos[0])).Normalized();
 			float pen3 = margin + COLLIDE_EPS - (particle->m_PredictPos - facePack->m_PredictPos[0]).Dot(normal);
 
-
 			TATSoftRigidCollideData data;
 			data.m_CollideNormal = norm;
 			data.m_Particle = particle;
@@ -64,11 +116,12 @@ public:
 			data.m_SoftPt = p + norm * COLLIDE_EPS;
 
 			m_CollideDatas.push_back(data);
-		}
+		}*/
 	}
 
 	TATRigidBody* m_Rigid;
 	std::vector<TATSoftRigidCollideData>& m_CollideDatas;
+	float m_DeltaTime;
 };
 
 class TATSoftCollideConvexAlgo : public TATSoftRigidCollisionAlgoPrimitive
@@ -134,7 +187,7 @@ public:
 
 		faceTree.FinishBuild();
 
-		SoftConvexFaceOverlapCallBack cb(rb,m_CollisionDatas);
+		SoftConvexFaceOverlapCallBack cb(rb, m_CollisionDatas, dt);
 		faceTree.CollideWithBVTree(&soft->m_ParticleBVH, &cb);
 
 		if (m_CollisionDatas.size() > 0)

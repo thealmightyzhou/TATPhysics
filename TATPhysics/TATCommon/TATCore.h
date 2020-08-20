@@ -176,3 +176,15 @@ inline int _MinOfArray(T* arr, int size)
 
 	return index;
 }
+
+template<class T>
+inline T _Min(T x, T y)
+{
+	return x < y ? x : y;
+}
+
+template<class T>
+inline T _Max(T x, T y)
+{
+	return y < x ? x : y;
+}

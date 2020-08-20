@@ -38,6 +38,12 @@ public:
 		return centerLocal.Length() + radius;
 	}
 
+	template<typename T>
+	T* Cast()
+	{
+		return dynamic_cast<T*>(this);
+	}
+
 	TAT_REGISTER_ATTRIBUTE_GET(CollideShapeType, ShapeType);
 
 	float m_InvMass;
@@ -169,11 +175,17 @@ public:
 
 	TATVector3 GetVelocityAtLCS(const TATVector3& location) const;
 
+	TATVector3 GetLinearVelocity() const;
+
+	TATVector3 GetAngularVelocity() const;
+
 	void ApplyImpulse(const TATVector3& impulse, const TATVector3& r);
 
 	TAT_POOL_OBJECT(TATRigidBody);
 
 	TAT_REGISTER_ATTRIBUTE(TATransform, WorldTransform);
+
+	TATransform m_PreWorldTransform;
 
 	TATCollideShapePrimitive* m_CollideShape;
 

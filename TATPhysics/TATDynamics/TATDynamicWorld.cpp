@@ -1,6 +1,5 @@
 #include "TATDynamicWorld.h"
 #include "../TATNarrowPhase/TATSAT.h"
-#include "../TATNarrowPhase/TATCCD.h"
 #include "TATPgsJacobiSolver.h"
 #include "../TATBroadPhase/TATBvhCollideCallBack.h"
 #include "../TATApplication/TATApplication.h"
@@ -45,6 +44,7 @@ void TATDynamicWorld::StepSimulation(float dt)
 	for (int i = 0; i < (int)rigidbodys.size(); i++)
 	{
 		TATRigidBody* rb = rigidbodys[i];
+		rb->m_PreWorldTransform = rb->m_WorldTransform;
 		rb->UpdateWorldAabb();
 		rb->GetWorldAabb(aabbMin, aabbMax);
 
@@ -107,15 +107,6 @@ void TATDynamicWorld::StepSimulation(float dt)
 	{
 		SyncRigidBodyData(rbs[i]);
 	}
-}
-
-void TATDynamicWorld::ExtraIntegrate(TATRigidBody* rb, float dt)
-{
-	TATRigidBodyData* data = &m_RigidBodyDatas[rb->m_DataIndex];
-
-	TATransformUtil::IntegrateTransform(data, dt, 0.98f);
-
-	SyncRigidBodyData(rb);
 }
 
 TATRigidBody* TATDynamicWorld::CreateConvex(TATMesh* mesh, float invMass)

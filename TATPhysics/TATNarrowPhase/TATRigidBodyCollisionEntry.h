@@ -5,8 +5,6 @@
 #include "TATSphereCollideSphereAlgo.h"
 #include "TATSphereCollidePlaneAlgo.h"
 
-#include "TATCCD.h"
-
 class TATRbCollision
 {
 public:
