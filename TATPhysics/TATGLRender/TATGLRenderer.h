@@ -90,11 +90,32 @@ public:
 			TATransform::GetIdentity().GetOpenGLMatrix(mat);
 		shader->SetMat4("model", mat);
 
-		shader->SetVec3("lightPos", material->m_Light->GetPosition());
+		shader->SetVec3("Ulight_position", material->m_Light->GetPosition());
 
-		shader->SetVec3("viewPos", material->m_Camera->GetPosition());
+		shader->SetVec3("Uview_pos", material->m_Camera->GetPosition());
 
-		shader->SetVec3("lightColor", material->m_LightColor);
+		shader->SetVec3("Ulight_color", material->m_LightColor);
+
+		shader->SetInt("Ulight_type", material->m_LightType);
+
+		shader->SetFloat("Uambient", material->m_LightAmbient);
+
+		shader->SetFloat("Udiffuse", material->m_LightDiffuse);
+
+		shader->SetFloat("Uspecular_intensity", material->m_LightSpecularIntensity);
+
+		shader->SetFloat("Uspecular_power", material->m_LightSpecularPower);
+
+		shader->SetVec3("Ulight_direction", material->m_LightDiffuse);
+
+		shader->SetVec3("Ulight_position", material->m_LightPosition);
+
+		shader->SetFloat("Upl_constant", material->m_PointLightConstant);
+
+		shader->SetFloat("Upl_linear", material->m_PointLightLinear);
+
+		shader->SetFloat("Upl_exp", material->m_PointLightExp);
+
 	}
 
 	virtual void Draw(TATRenderUnit* unit)

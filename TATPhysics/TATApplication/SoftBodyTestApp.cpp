@@ -22,6 +22,10 @@ void SoftBodyTestApp::CreateScene()
 {
 	__super::CreateScene();
 
+	TATPointLight* point_light = new TATPointLight("point_light0");
+	point_light->SetPosition(TATVector3(0, 0, 0));
+	point_light->Initialize();
+
 	m_MainCamera->SetPosition(TATVector3(20, 20, -300));
 	m_MainCamera->SetWindowSize(TATGLEntry::Instance()->m_WindowWidth, TATGLEntry::Instance()->m_WindowHeight);
 	m_MainCamera->SetDirection((TATVector3(0, 50, 10) - m_MainCamera->GetPosition()).Normalized());
@@ -38,10 +42,12 @@ void SoftBodyTestApp::CreateScene()
 
 	TATMaterial* mat = TATResourceManager::Instance()->LoadMaterial("testMat.tmaterial");
 	mat->Initialize();
+	TATMaterial* mat1 = TATResourceManager::Instance()->LoadMaterial("LightTemplate.tmaterial");
+	mat1->Initialize();
 
 	TATActor* cubeActor = new TATActor(cube);
 	cubeActor->Initialize();
-	cubeActor->SetMaterial(mat);
+	cubeActor->SetMaterial(mat1);
 	cubeActor->SetUseTransform(true);
 	TATStageNode* node3 = m_RootNode->CreateChild("cube");
 	node3->MountActor(cubeActor);

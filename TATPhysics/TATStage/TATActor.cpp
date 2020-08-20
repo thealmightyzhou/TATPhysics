@@ -118,7 +118,6 @@ void TATActor::SetMaterial(TATMaterial* m)
 {
 	m_Material = m;
 	m_RenderUnit->SetMaterial(m);
-
 	m_RenderCamera = m->m_Camera;
 	m_RenderLight = m->m_Light;
 }

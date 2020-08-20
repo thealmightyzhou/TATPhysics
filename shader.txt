@@ -13,3 +13,20 @@ dot(vec3,vec3)
 max(float,float)
 reflect(vec3,vec3)
 pow(float,int)
+
+----------------------------------------
+uniforms:
+
+uniform int Ulight_type;
+uniform vec3 Uview_pos;
+uniform vec3 Ulight_color;
+uniform float Uambient;
+uniform float Udiffuse;
+uniform float Uspecular_intensity;
+uniform float Uspecular_power;
+uniform vec3 Ulight_direction;
+uniform vec3 Ulight_position;
+uniform float Upl_constant;
+uniform float Upl_linear;
+uniform float Upl_exp;
+uniform sampler2D Utex0;

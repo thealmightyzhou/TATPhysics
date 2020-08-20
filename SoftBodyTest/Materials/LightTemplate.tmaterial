@@ -1,0 +1,5 @@
+VertexShader:lights.vs
+FragmentShader:lights.fs
+LightName:point_light0
+CameraName:main
+TextureUnit0:xiaoxin.jpg

@@ -22,18 +22,20 @@ public:
 	{
 		m_Color = TATVector3::One();
 		m_Position = TATVector3::Zero();
-		m_Ambient = TATVector3::Zero();
-		m_Diffuse = TATVector3::Zero();
-		m_Specular = TATVector3::Zero();
+		m_Ambient = 0.5;
+		m_Diffuse = 0.5;
+		m_SpecularPower = 32;
+		m_SpecularIntensity = 0.5f;
 	}
 
 	virtual ~TATLight() {}
 
 	TAT_REGISTER_ATTRIBUTE(TATVector3, Position);
 	TAT_REGISTER_ATTRIBUTE(TATVector3, Color);
-	TAT_REGISTER_ATTRIBUTE(TATVector3, Ambient);
-	TAT_REGISTER_ATTRIBUTE(TATVector3, Diffuse);
-	TAT_REGISTER_ATTRIBUTE(TATVector3, Specular);
+	TAT_REGISTER_ATTRIBUTE(float, Ambient);
+	TAT_REGISTER_ATTRIBUTE(float, Diffuse);
+	TAT_REGISTER_ATTRIBUTE(float, SpecularPower);
+	TAT_REGISTER_ATTRIBUTE(float, SpecularIntensity);
 	TAT_REGISTER_ATTRIBUTE_GET(LIGHTTYPE, Type);
 };
 
@@ -65,7 +67,15 @@ public:
 	TATPointLight(const TString& name):TATLight(name)
 	{
 		m_Type = POINT_LIGHT;
+		m_Constant = 1.0f;
+		m_Linear = 1.0f;
+		m_Exp = 0.5f;
 	}
+
+	TAT_REGISTER_ATTRIBUTE(TATVector3, Position);
+	TAT_REGISTER_ATTRIBUTE(float, Constant);
+	TAT_REGISTER_ATTRIBUTE(float, Linear);
+	TAT_REGISTER_ATTRIBUTE(float, Exp);
 };
 
 #endif//THEALMIGHTY_LIGHT

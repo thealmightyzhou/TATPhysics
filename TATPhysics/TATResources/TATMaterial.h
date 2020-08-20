@@ -6,6 +6,8 @@
 #include <iostream>
 #include <map>
 
+#define TAT_REGISTER_MATERIAL_ITEM(x) m_MaterialSetting[x] = "";
+
 class TATShader;
 class TATLight;
 class TATCamera;
@@ -36,13 +38,17 @@ public:
 		m_MaterialSetting["LightColor"] = "";
 		m_MaterialSetting["LightAmbient"] = "";
 		m_MaterialSetting["LightDiffuse"] = "";
-		m_MaterialSetting["LightSpecular"] = "";
+		m_MaterialSetting["LightSpecularIntensity"] = "";
+		m_MaterialSetting["LightSpecularPower"] = "";
 		m_MaterialSetting["CameraName"] = "main";
 		m_MaterialSetting["TextureUnit0"] = "";
 		m_MaterialSetting["TextureUnit1"] = "";
 		m_MaterialSetting["TextureUnit2"] = "";
 		m_MaterialSetting["TextureUnit3"] = "";
 		m_MaterialSetting["TextureUnit4"] = "";
+		TAT_REGISTER_MATERIAL_ITEM("PointLightConstant")
+		TAT_REGISTER_MATERIAL_ITEM("PointLightLinear")
+		TAT_REGISTER_MATERIAL_ITEM("PointLightExp")
 	}
 
 	void GetShaderPaths(TString& vs, TString& fs, TString& gs)
@@ -57,12 +63,20 @@ public:
 
 	virtual void Load(const TString& name);
 
+	TATVector3 m_LightDirection;
+	TATVector3 m_LightPosition;
+
 	//hold the parameter that can be set from outter .tmaterial file
 	//=======================
 	TATVector3 m_LightColor;
-	TATVector3 m_LightAmbient;
-	TATVector3 m_LightDiffuse;
-	TATVector3 m_LightSpecular;
+
+	float m_LightAmbient;
+	float m_LightDiffuse;
+	float m_LightSpecularPower;
+	float m_LightSpecularIntensity;
+	float m_PointLightConstant;
+	float m_PointLightLinear;
+	float m_PointLightExp;
 
 	TATShader* m_Shader;
 	TATLight* m_Light;
@@ -74,5 +88,7 @@ public:
 	std::vector<TATRenderUnit*> m_RenderUnits; //TODO batch
 
 	std::map<TString, TString> m_MaterialSetting;
+
+	int m_LightType;
 
 };

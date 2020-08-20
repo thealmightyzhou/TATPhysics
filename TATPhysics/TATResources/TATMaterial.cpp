@@ -35,19 +35,42 @@ void TATMaterial::Load(const TString& path)
 
 	if (m_Light)
 	{
+		if (m_Light->GetType() == LIGHTTYPE::DIRECTIONAL_LIGHT)
+			m_LightDirection = m_Light->Cast<TATDirectionLight>()->GetDirection();
+		else if (m_Light->GetType() == LIGHTTYPE::POINT_LIGHT)
+		{
+			TATPointLight* pl = m_Light->Cast<TATPointLight>();
+			m_PointLightConstant = pl->GetConstant();
+			m_PointLightLinear = pl->GetLinear();
+			m_PointLightExp = pl->GetExp();
+		}
+
 		m_LightColor = m_Light->GetColor();
 		m_LightAmbient = m_Light->GetAmbient();
 		m_LightDiffuse = m_Light->GetDiffuse();
-		m_LightSpecular = m_Light->GetSpecular();
+		m_LightSpecularIntensity = m_Light->GetSpecularIntensity();
+		m_LightSpecularPower = m_Light->GetSpecularPower();
+		m_LightType = m_Light->GetType();
+		m_LightPosition = m_Light->GetPosition();
+
 	}
+
 	if (m_MaterialSetting["LightColor"] != "")
 		m_LightColor = m_MaterialSetting["LightColor"].ToVector3();
 	if (m_MaterialSetting["LightAmbient"] != "")
-		m_LightAmbient = m_MaterialSetting["LightAmbient"].ToVector3();
+		m_LightAmbient = m_MaterialSetting["LightAmbient"].ToFloat();
 	if (m_MaterialSetting["LightDiffuse"] != "")
-		m_LightDiffuse = m_MaterialSetting["LightDiffuse"].ToVector3();
-	if (m_MaterialSetting["LightSpecular"] != "")
-		m_LightSpecular = m_MaterialSetting["LightSpecular"].ToVector3();
+		m_LightDiffuse = m_MaterialSetting["LightDiffuse"].ToFloat();
+	if (m_MaterialSetting["LightSpecularIntensity"] != "")
+		m_LightSpecularIntensity = m_MaterialSetting["LightSpecularIntensity"].ToFloat();
+	if (m_MaterialSetting["LightSpecularPower"] != "")
+		m_LightSpecularPower = m_MaterialSetting["LightSpecularPower"].ToFloat();
+	if (m_MaterialSetting["PointLightConstant"] != "")
+		m_PointLightConstant = m_MaterialSetting["PointLightConstant"].ToFloat();
+	if (m_MaterialSetting["PointLightLinear"] != "")
+		m_PointLightLinear = m_MaterialSetting["PointLightLinear"].ToFloat();
+	if (m_MaterialSetting["PointLightExp"] != "")
+		m_PointLightExp = m_MaterialSetting["PointLightExp"].ToFloat();
 
 	if (m_MaterialSetting["CameraName"] != "")
 	{
