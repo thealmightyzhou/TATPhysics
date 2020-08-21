@@ -1,27 +1,6 @@
 #version 330 core
 out vec4 frag_color;
 
-uniform int Ulight_type;
-uniform vec3 Uview_pos;
-uniform vec3 Ulight_color;
-uniform float Uambient;
-uniform float Udiffuse;
-uniform float Uspecular_intensity;
-uniform float Uspecular_power;
-uniform vec3 Ulight_direction;
-uniform vec3 Ulight_position;
-uniform float Upl_constant;
-uniform float Upl_linear;
-uniform float Upl_exp;
-uniform sampler2D Utex0;
-
-in struct TransData
-{
-	vec3 normal;
-	vec3 fragPos;
-	vec2 texcoord;
-}
-
 struct BaseLight
 {
 	vec3 m_Color;
@@ -43,6 +22,30 @@ struct PointLight
 	float m_Linear;
 	float m_Exp;
 }
+
+uniform int _pl_num;
+uniform PointLight _point_light;
+uniform DirectionalLight _dir_light;
+
+uniform int Ulight_type;
+uniform vec3 Uview_pos;
+uniform vec3 Ulight_color;
+uniform float Uambient;
+uniform float Udiffuse;
+uniform float Uspecular_intensity;
+uniform float Uspecular_power;
+uniform vec3 Ulight_direction;
+uniform vec3 Ulight_position;
+uniform float Upl_constant;
+uniform float Upl_linear;
+uniform float Upl_exp;
+uniform sampler2D Utex0;
+
+in vec3 onormal;
+in vec3 ofragPos;
+in vec2 otexcoord;
+
+
 
 vec4 CalcLightInternal(BaseLight light,vec3 dir,vec3 normal)
 {

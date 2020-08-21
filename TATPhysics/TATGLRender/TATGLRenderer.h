@@ -51,6 +51,7 @@ public:
 
 		static UINT GLTextureSeman[5]{ 0x84C0 ,0x84C1 ,0x84C2 ,0x84C3 ,0x84C4 };
 
+		//set sampler2d
 		if (unit->m_RenderEleMask.IsUseTexCoordinate())
 		{
 			unit->m_Material->m_Shader->Use();

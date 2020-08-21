@@ -209,8 +209,7 @@ public:
 		const TATVector3 velocity[3]{
 			predicts[0] - vertices[0],
 			predicts[1] - vertices[1],
-			predicts[2] - vertices[2]
-		};
+			predicts[2] - vertices[2]};
 
 		TATVector3 normal = (vertices[1] - vertices[0]).Cross(vertices[2] - vertices[0]).Normalized();
 

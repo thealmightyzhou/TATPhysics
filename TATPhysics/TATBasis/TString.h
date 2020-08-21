@@ -246,6 +246,43 @@ public:
 		return m_Str == "";
 	}
 
+	bool Contains(const TString& str) const
+	{
+		if (m_Str.length() < str.m_Str.length())
+			return;
+
+		const char* del = str.m_Str.c_str();
+		const char* target = m_Str.c_str();
+
+		int preTail = -1;
+		int head = 0;
+		int tail = str.m_Str.length() - 1;
+		int size = str.m_Str.length();
+		bool flag = false;
+		while (tail < m_Str.length())
+		{
+			if (target[head] == del[0])
+			{
+				flag = true;
+				for (int i = 0; i < size; i++)
+				{
+					if (target[head + i] != del[i])
+						flag = false;
+				}
+
+				if (flag)
+				{
+					return true;
+				}
+			}
+
+			head++;
+			tail++;
+		}
+
+		return false;
+	}
+
 	std::string m_Str;
 };
 
