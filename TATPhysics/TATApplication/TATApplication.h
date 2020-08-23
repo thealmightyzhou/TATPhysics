@@ -53,8 +53,6 @@ public:
 	TATStageNode* m_RootNode;
 
 	TATCamera* m_MainCamera;
-
-	TATLight* m_MainLight;
 };
 
 class TATApplicationEntry

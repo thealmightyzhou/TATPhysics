@@ -93,6 +93,9 @@ TATVector3 TATRigidBody::GetVelocityAtLCS(const TATVector3& location) const
 
 void TATRigidBody::ApplyImpulse(const TATVector3& impulse, const TATVector3& r)
 {
+	if (m_InvMass = 0)
+		return;
+
 	TATRigidBodyData& data = TATDynamicWorld::Instance()->m_RigidBodyDatas[m_DataIndex];
 	data.m_LinVel += impulse * m_LinFactor * m_InvMass;
 
@@ -108,4 +111,12 @@ TATVector3 TATRigidBody::GetLinearVelocity() const
 TATVector3 TATRigidBody::GetAngularVelocity() const
 {
 	return TATDynamicWorld::Instance()->m_RigidBodyDatas[m_DataIndex].m_AngVel;
+}
+
+
+void TATRigidBody::UpdataInverseInertiaWorld() const
+{
+	TATMatrix3 m(m_WorldTransform.GetRotation());
+	TATDynamicWorld::Instance()->m_InertiaDatas[m_InertiaIndex].m_InvInertiaWorld =
+		m.Scaled(TATDynamicWorld::Instance()->m_InertiaDatas[m_InertiaIndex].m_InitInvInertia.GetDiagonal()) * m.Transpose();
 }

@@ -121,6 +121,11 @@ public:
 	{
 		glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 	}
+
+	void SetFloat(const TString& name, float value) const
+	{
+		SetFloat(name.m_Str, value);
+	}
 	// ------------------------------------------------------------------------
 	void SetVec2(const std::string &name, const glm::vec2 &value) const
 	{
@@ -134,6 +139,11 @@ public:
 	void SetVec3(const std::string &name, const glm::vec3 &value) const
 	{
 		glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
+	}
+
+	void SetVec3(const TString& name, const TATVector3& v) const
+	{
+		SetVec3(name.m_Str, v);
 	}
 
 	void SetVec3(const std::string& name, const TATVector3& value) const

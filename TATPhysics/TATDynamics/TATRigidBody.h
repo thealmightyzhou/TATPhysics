@@ -179,6 +179,8 @@ public:
 
 	TATVector3 GetAngularVelocity() const;
 
+	void UpdataInverseInertiaWorld() const;
+
 	void ApplyImpulse(const TATVector3& impulse, const TATVector3& r);
 
 	TAT_POOL_OBJECT(TATRigidBody);

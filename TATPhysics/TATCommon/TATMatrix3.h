@@ -310,6 +310,11 @@ public:
 			0, x, 0,
 			0, 0, x);
 	}
+
+	void SetZero()
+	{
+		SetValue(0, 0, 0, 0, 0, 0, 0, 0, 0);
+	}
 };
 
 inline TATVector3 operator*(const TATVector3& v, const TATMatrix3& m)

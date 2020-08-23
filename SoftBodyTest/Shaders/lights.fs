@@ -1,55 +1,41 @@
 #version 330 core
 out vec4 frag_color;
 
-struct BaseLight
-{
-	vec3 m_Color;
-	float m_Ambient;
-	float m_Diffuse;
-}
-
 struct DirectionalLight
 {
-	BaseLight m_Base;
-	vec3 m_Direction;
-}
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+	int specular_power;
+	vec3 direction;
+};
 
 struct PointLight
 {
-	BaseLight m_Base;
-	vec3 m_Position;
-	float m_Constant;
-	float m_Linear;
-	float m_Exp;
-}
-
-uniform int _pl_num;
-uniform PointLight _point_light;
-uniform DirectionalLight _dir_light;
-
-uniform int Ulight_type;
-uniform vec3 Uview_pos;
-uniform vec3 Ulight_color;
-uniform float Uambient;
-uniform float Udiffuse;
-uniform float Uspecular_intensity;
-uniform float Uspecular_power;
-uniform vec3 Ulight_direction;
-uniform vec3 Ulight_position;
-uniform float Upl_constant;
-uniform float Upl_linear;
-uniform float Upl_exp;
-uniform sampler2D Utex0;
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+	int specular_power;
+	vec3 position;
+	float constant;
+	float linear;
+	float exp;
+};
 
 in vec3 onormal;
 in vec3 ofragPos;
 in vec2 otexcoord;
 
+uniform PointLight _point_light0;
+uniform PointLight _point_light1;
+uniform DirectionalLight _direct_light0;
 
+uniform vec3 _view_pos;
+uniform sampler2D _tex0;
 
-vec4 CalcLightInternal(BaseLight light,vec3 dir,vec3 normal)
+vec4 CalcLightInternal(vec3 ambient,vec3 diffuse,vec3 specular,int specular_power,vec3 dir,vec3 normal)
 {
-	vec4 ambientCol = vec4(light.m_Color * light.m_Ambient,1.0f);
+	vec4 ambientCol = vec4(ambient,1.0f);
 	vec4 diffuseCol = vec4(0,0,0,0);
 	vec4 specCol = vec4(0,0,0,0);
 	
@@ -57,46 +43,42 @@ vec4 CalcLightInternal(BaseLight light,vec3 dir,vec3 normal)
 
 	if(diffuseFactor > 0)
 	{
-		diffuseCol = vec4(light.m_Color * light.m_Diffuse * diffuseFactor,1.0f);
-		vec3 vertex2eye = normalize(eye_pos - TransData.fragPos);
+		diffuseCol = vec4(diffuse * diffuseFactor,1.0f);
+		vec3 vertex2eye = normalize(_view_pos - ofragPos);
 		vec3 light_reflect = normalize(reflect(dir,normal));
 		float specFactor = dot(vertex2eye,light_reflect);
 		if(specFactor > 0)
 		{
-			specFactor = pow(specFactor,Uspecular_power);
-			specCol = vec4(light.m_Color * Uspecular_intensity * specFactor, 1.0f);
+			specFactor = pow(specFactor,specular_power);
+			specCol = vec4(specular * specFactor, 1.0f);
 		}
 	}
 	
 	return ambientCol + diffuseCol + specCol;
 }
 
-vec4 CalcDirectionalLight(BaseLight light,vec3 dir,vec3 normal)
+vec4 CalcDirectionalLight(DirectionalLight dl,vec3 normal)
 {
-	return CalcLightInternal(light,dir,normal);
+	return CalcLightInternal(dl.ambient,dl.diffuse,dl.specular,dl.specular_power,dl.direction,normal);
 }
 
-vec4 CalcPointLight(BaseLight base,vec3 position,vec3 normal)
+vec4 CalcPointLight(PointLight pl,vec3 fragPos,vec3 normal)
 {
-	vec3 lightDir =  position - Ulight_position;
+	vec3 lightDir =  fragPos - pl.position;
 	float dist = length(lightDir);
-	vec4 color = CalcLightInternal(base,lightDir,normal);
-	float attenuation = Upl_constant + Upl_linear * dist + Upl_exp * dist * dist;
+	vec4 color = CalcLightInternal(pl.ambient,pl.diffuse,pl.specular,pl.specular_power,lightDir,normal);
+	float attenuation = pl.constant + pl.linear * dist + pl.exp * dist * dist;
 	return color/attenuation;
 }
 
 void main()
 {
-	BaseLight base_light;
-	base_light.m_Ambient = Uambient;
-	base_light.m_Diffuse = Udiffuse;
-	base_light.m_Color = Ulight_color;
+
+	vec4 color0 = CalcDirectionalLight(_direct_light0,onormal);
+
+	vec4 color1 = CalcPointLight(_point_light0,ofragPos,onormal);
 	
-	vec4 color(1,1,1,1);
- 	if(Ulight_type == 0)
-		color = CalcDirectionalLight(base_light,Ulight_direction,TransData.normal);
-	else if(Ulight_type == 1)
-		color = CalcPointLight(base_light,Ulight_position,TransData.normal);
+	vec4 color2 = CalcPointLight(_point_light1,ofragPos,onormal);
 		
-	frag_color = vec4(color, 1.0f) * texture(tex0,TransData.texcoord);
+	frag_color = (color0 + color1 + color2) * texture(_tex0,otexcoord);
 }

@@ -22,6 +22,7 @@ public:
 	{
 		m_Color = TATVector3::One();
 		m_Position = TATVector3::Zero();
+		m_SpecularPower = 32;
 	}
 
 	virtual ~TATLight() {}
@@ -31,6 +32,7 @@ public:
 	TAT_REGISTER_ATTRIBUTE(TATVector3, Ambient);
 	TAT_REGISTER_ATTRIBUTE(TATVector3, Diffuse);
 	TAT_REGISTER_ATTRIBUTE(TATVector3, Specular);
+	TAT_REGISTER_ATTRIBUTE(float, SpecularPower);
 	TAT_REGISTER_ATTRIBUTE_GET(LIGHTTYPE, Type);
 };
 

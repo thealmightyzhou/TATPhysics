@@ -31,10 +31,7 @@ public:
 	//notify the actor to reupload vertex datas
 	void MarkRenderStateDirty();
 
-	void AttachTickable(TATickable* x)
-	{
-		m_TickableObjects.push_back(x);
-	}
+	void AttachTickable(TATickable* x);
 
 	void SetUseTransform(bool flag);
 
@@ -43,8 +40,6 @@ public:
 	TATransform m_WorldTransform;
 
 	TATCamera* m_RenderCamera;
-
-	TATLight* m_RenderLight;
 
 	TATMesh* m_RenderMesh;
 

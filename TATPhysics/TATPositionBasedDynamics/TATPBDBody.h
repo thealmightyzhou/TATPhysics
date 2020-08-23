@@ -107,6 +107,8 @@ public:
 
 	void UpdateAabb();
 
+	void SolveConstraintEnd();
+
 	void SetGravity(const TATVector3& g)
 	{
 		for (int i = 0; i < m_Particles.size(); i++)

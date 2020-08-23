@@ -39,7 +39,7 @@ public:
 		if (TATCollisionUtil::CalcTimeOfImpact
 		(
 			particle->Position(),
-			particle->m_PredictPos - particle->Position(),
+			vel,
 			m_Rigid,
 			m_Rigid->GetLinearVelocity(),
 			m_Rigid->GetAngularVelocity(),
@@ -70,7 +70,7 @@ public:
 				predictTr * convex->m_CollideMeshData.m_Vertices[face.m_VertexIndices[2]].m_Position
 			};
 			TATVector3 norm = (points[1] - points[0]).Cross(points[2] - points[0]).Normalized();
-			TATVector3 p = (particle->m_PredictPos - particle->Position()) * t + particle->Position();
+			TATVector3 p = vel * t + particle->Position();
 			float dist = (p - points[0]).Dot(norm) - margin;
 
 			float pen = collideRadius - dist;
@@ -87,36 +87,6 @@ public:
 
 			m_CollideDatas.push_back(data);
 		}
-
-		/*if (TATCollisionUtil::CalcTimeOfImpact(particle->Position(), vel, facePack->m_Pos, facePack->m_Vel, t, 10, margin))
-		{
-			TATVector3 norm = ((facePack->m_Pos[1] - facePack->m_Pos[0]).Cross(facePack->m_Pos[2] - facePack->m_Pos[0])).Normalized();
-
-			TATVector3 p = particle->Position() + vel * t;
-
-			float dist = (p - facePack->m_Pos[0]).Dot(norm);
-
-			float pen = margin + COLLIDE_EPS - (p - facePack->m_Pos[0]).Dot(norm);
-
-			float pen1 = margin + COLLIDE_EPS - (particle->m_PredictPos - facePack->m_Pos[0]).Dot(norm);
-
-			float pen2 = (vel * (1 - t)).Dot(norm);
-
-			TATVector3 normal = ((facePack->m_PredictPos[1] - facePack->m_PredictPos[0]).
-				Cross(facePack->m_PredictPos[2] - facePack->m_PredictPos[0])).Normalized();
-			float pen3 = margin + COLLIDE_EPS - (particle->m_PredictPos - facePack->m_PredictPos[0]).Dot(normal);
-
-			TATSoftRigidCollideData data;
-			data.m_CollideNormal = norm;
-			data.m_Particle = particle;
-			data.m_Rigid = m_Rigid;
-
-			data.m_Penetration = pen3;
-			data.m_RigidPt = p - norm * dist;
-			data.m_SoftPt = p + norm * COLLIDE_EPS;
-
-			m_CollideDatas.push_back(data);
-		}*/
 	}
 
 	TATRigidBody* m_Rigid;

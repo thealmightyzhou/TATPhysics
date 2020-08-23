@@ -249,7 +249,7 @@ public:
 	bool Contains(const TString& str) const
 	{
 		if (m_Str.length() < str.m_Str.length())
-			return;
+			return false;
 
 		const char* del = str.m_Str.c_str();
 		const char* target = m_Str.c_str();

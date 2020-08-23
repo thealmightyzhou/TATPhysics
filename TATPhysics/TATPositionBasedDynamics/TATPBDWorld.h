@@ -46,6 +46,12 @@ public:
 		m_SoftRigidCollideDatas.insert(m_SoftRigidCollideDatas.end(), datas.begin(), datas.end());
 	}
 
+	void ComputeMatrixK(const TATVector3& connector, float invMass, const TATVector3& x, TATMatrix3& iwi, TATMatrix3& K);
+
+	void SolveCollision(const TATSoftRigidCollideData& data, float dt, float& sumImpulse, float stiff, float frictionStiff);
+
+	void GenerateCollision(float dt);
+
 	int m_IterateNum;
 
 protected:

@@ -204,7 +204,10 @@ void TATDynamicWorld::InitRigidBody(TATRigidBody* rb, const TATransform& tr, flo
 	rbdata.m_Gravity = g;
 
 	in.m_InitInvInertia = rb->m_CollideShape->m_LocalInvInertiaTensor;
-	in.m_InvInertiaWorld = in.m_InitInvInertia * tr.GetBasis();
+	//in.m_InvInertiaWorld = in.m_InitInvInertia * tr.GetBasis();
+
+	TATMatrix3 m(tr.GetRotation());
+	in.m_InvInertiaWorld = m.Scaled(in.m_InitInvInertia.GetDiagonal()) * m.Transpose();
 
 }
 
@@ -214,6 +217,9 @@ void TATDynamicWorld::SyncRigidBodyData(TATRigidBody* rb)
 	rb->m_WorldTransform.SetOrigin(m_RigidBodyDatas[rb->m_DataIndex].m_Pos);
 	rb->m_WorldTransform.SetRotation(m_RigidBodyDatas[rb->m_DataIndex].m_Quat);
 
-	m_InertiaDatas[rb->m_InertiaIndex].m_InvInertiaWorld = rb->m_WorldTransform.GetBasis() * m_InertiaDatas[rb->m_InertiaIndex].m_InitInvInertia;
+	//m_InertiaDatas[rb->m_InertiaIndex].m_InvInertiaWorld = rb->m_WorldTransform.GetBasis() * m_InertiaDatas[rb->m_InertiaIndex].m_InitInvInertia;
+
+	TATMatrix3 m(rb->m_WorldTransform.GetRotation());
+	m_InertiaDatas[rb->m_InertiaIndex].m_InvInertiaWorld = m.Scaled(m_InertiaDatas[rb->m_InertiaIndex].m_InitInvInertia.GetDiagonal()) * m.Transpose();
 
 }

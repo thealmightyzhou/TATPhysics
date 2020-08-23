@@ -58,7 +58,7 @@ public:
 			for (int i = 0; i < unit->m_TexCount; i++)
 			{
 				unit->m_Textures[i]->Generate();
-				unit->m_Material->m_Shader->SetInt(TString("texture") + TString::ConvertInt(i), i);
+				unit->m_Material->m_Shader->SetInt(TString("_tex") + TString::ConvertInt(i), i);
 				glActiveTexture(GLTextureSeman[i]);
 				unit->m_Textures[i]->Use();
 			}
@@ -68,55 +68,6 @@ public:
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		unit->m_StaticDataUploaded = true;
-	}
-
-	//this will be called every frame marked dirty
-	virtual void UploadDynamicData(TATRenderUnit* unit)
-	{
-		TATShader* shader = unit->m_Material->m_Shader;
-		TATMaterial* material = unit->m_Material;
-		float mat[16];
-
-		shader->Use();
-
-		material->m_Camera->GetProjectionMatrix(mat);
-		shader->SetMat4("projection", unit->m_MatrixProj);
-
-		material->m_Camera->GetViewMatrix(mat);
-		shader->SetMat4("view", mat);
-
-		if (unit->m_UseTransform)
-			unit->m_Transform.GetOpenGLMatrix(mat);
-		else
-			TATransform::GetIdentity().GetOpenGLMatrix(mat);
-		shader->SetMat4("model", mat);
-
-		shader->SetVec3("Ulight_position", material->m_Light->GetPosition());
-
-		shader->SetVec3("Uview_pos", material->m_Camera->GetPosition());
-
-		shader->SetVec3("Ulight_color", material->m_LightColor);
-
-		shader->SetInt("Ulight_type", material->m_LightType);
-
-		shader->SetFloat("Uambient", material->m_LightAmbient);
-
-		shader->SetFloat("Udiffuse", material->m_LightDiffuse);
-
-		shader->SetFloat("Uspecular_intensity", material->m_LightSpecularIntensity);
-
-		shader->SetFloat("Uspecular_power", material->m_LightSpecularPower);
-
-		shader->SetVec3("Ulight_direction", material->m_LightDiffuse);
-
-		shader->SetVec3("Ulight_position", material->m_LightPosition);
-
-		shader->SetFloat("Upl_constant", material->m_PointLightConstant);
-
-		shader->SetFloat("Upl_linear", material->m_PointLightLinear);
-
-		shader->SetFloat("Upl_exp", material->m_PointLightExp);
-
 	}
 
 	virtual void Draw(TATRenderUnit* unit)
@@ -137,6 +88,86 @@ public:
 		UploadDynamicData(unit);
 
 		Draw(unit);
+	}
+
+	//this will be called every frame marked dirty
+	virtual void UploadDynamicData(TATRenderUnit* unit)
+	{
+		TATShader* shader = unit->m_Material->m_Shader;
+		shader->Use();
+
+		UploadMatrices(unit);
+
+		UploadLights(unit);
+
+		TATMaterial* material = unit->m_Material;
+
+		shader->SetVec3(TString("_view_pos"), material->m_Camera->GetPosition());
+
+	}
+
+	void UploadMatrices(TATRenderUnit* unit)
+	{
+		TATShader* shader = unit->m_Material->m_Shader;
+		TATMaterial* material = unit->m_Material;
+		float mat[16];
+
+		material->m_Camera->GetProjectionMatrix(mat);
+		shader->SetMat4("projection", mat);
+
+		material->m_Camera->GetViewMatrix(mat);
+		shader->SetMat4("view", mat);
+
+		if (unit->m_UseTransform)
+			unit->m_Transform.GetOpenGLMatrix(mat);
+		else
+			TATransform::GetIdentity().GetOpenGLMatrix(mat);
+		shader->SetMat4("model", mat);
+	}
+
+	void UploadLights(TATRenderUnit* unit)
+	{
+		TATShader* shader = unit->m_Material->m_Shader;
+		TATMaterial* material = unit->m_Material;
+		int plCount = 0;
+		int dlCount = 0;
+		for (int i = 0; i < material->m_Lights.size(); ++i)
+		{
+			if (material->m_Lights[i]->m_Type == LIGHTTYPE::DIRECTIONAL_LIGHT)
+			{
+				UploadDirectionLight(shader, material->m_Lights[i]->Cast<TATDirectionLight>(), dlCount);
+				dlCount++;
+			}
+			else if (material->m_Lights[i]->m_Type == LIGHTTYPE::POINT_LIGHT)
+			{
+				UploadPointLight(shader, material->m_Lights[i]->Cast<TATPointLight>(), plCount);
+				plCount++;
+			}
+		}
+	}
+
+	void UploadDirectionLight(TATShader* shader, TATDirectionLight* dl, int index)
+	{
+		TString lightName = TString("_direct_light") + TString::ConvertInt(index);
+		shader->SetVec3(lightName + TString(".ambient"), dl->m_Ambient);
+		shader->SetVec3(lightName + TString(".diffuse"), dl->m_Diffuse);
+		shader->SetVec3(lightName + TString(".specular"), dl->m_Specular);
+		shader->SetInt(lightName + TString(".specular_power"), dl->m_SpecularPower);
+		shader->SetVec3(lightName + TString(".direction"), dl->m_Direction);
+
+	}
+
+	void UploadPointLight(TATShader* shader, TATPointLight* pl, int index)
+	{
+		TString lightName = TString("_point_light") + TString::ConvertInt(index);
+		shader->SetVec3(lightName + TString(".ambient"), pl->m_Ambient);
+		shader->SetVec3(lightName + TString(".diffuse"), pl->m_Diffuse);
+		shader->SetVec3(lightName + TString(".specular"), pl->m_Specular);
+		shader->SetInt(lightName + TString(".specular_power"), pl->m_SpecularPower);
+		shader->SetVec3(lightName + TString(".position"), pl->m_Position);
+		shader->SetFloat(lightName + TString(".constant"), pl->m_Constant);
+		shader->SetFloat(lightName + TString(".linear"), pl->m_Linear);
+		shader->SetFloat(lightName + TString(".exp"), pl->m_Exp);
 	}
 };
 

@@ -118,49 +118,8 @@ public:
 		m_LightAttributes["specular"] = item;
 	}
 
-	TATLight* GenerateLight(TString* datas, int size)
-	{
-		//$Point_Light point_test0
-		//...
-		//...
-		//$
-
-		std::vector<TString> lineData;
-
-		for (int i = 1; i < size - 1; i++)
-		{
-			datas[i].Split(":", lineData);
-			m_LightAttributes[lineData[0]].SetData(lineData[1]);
-		}
-
-		TString& firstLine = datas[0];
-		firstLine.Split(" ", lineData);
-
-		if (lineData[0] == "$Point_Light")
-		{
-			TATPointLight* light = new TATPointLight(lineData[1]);
-			light->m_Ambient = m_LightAttributes["ambient"].HasEvaluated() ? m_LightAttributes["ambient"].m_Data.ToVector3() : TATVector3(0, 0, 0);
-			light->m_Diffuse = m_LightAttributes["diffuse"].HasEvaluated() ? m_LightAttributes["diffuse"].m_Data.ToVector3() : TATVector3(0, 0, 0);
-			light->m_Specular = m_LightAttributes["specular"].HasEvaluated() ? m_LightAttributes["specular"].m_Data.ToVector3() : TATVector3(0, 0, 0);
-			TATVector3 factor = m_LightAttributes["factor"].HasEvaluated() ? m_LightAttributes["factor"].m_Data.ToVector3() : TATVector3(0, 0, 0);
-			light->m_Constant = factor[0];
-			light->m_Linear = factor[1];
-			light->m_Exp = factor[2];
-			light->m_Position = m_LightAttributes["position"].HasEvaluated() ? m_LightAttributes["position"].m_Data.ToVector3() : TATVector3(0, 0, 0);
-			return light;
-		}
-
-		else if (lineData[0] == "$Direct_Light")
-		{
-			TATDirectionLight* light = new TATDirectionLight(lineData[1]);
-			light->m_Ambient = m_LightAttributes["ambient"].HasEvaluated() ? m_LightAttributes["ambient"].m_Data.ToVector3() : TATVector3(0, 0, 0);
-			light->m_Diffuse = m_LightAttributes["diffuse"].HasEvaluated() ? m_LightAttributes["diffuse"].m_Data.ToVector3() : TATVector3(0, 0, 0);
-			light->m_Specular = m_LightAttributes["specular"].HasEvaluated() ? m_LightAttributes["specular"].m_Data.ToVector3() : TATVector3(0, 0, 0);
-			light->m_Direction = m_LightAttributes["direction"].HasEvaluated() ? m_LightAttributes["direction"].m_Data.ToVector3() : TATVector3(0, -1, 0);
-
-			return light;
-		}
-	}
+	TATLight* GenerateLight(std::vector<TString>& datas, int size);
+	
 
 	std::map<TString, TMaterialItem> m_LightAttributes;
 };

@@ -4,6 +4,8 @@
 #include "../TATStage/TATActor.h"
 #include "../TATResources/TATMesh.h"
 #include "../TATGLRender/TATRenderUnit.h"
+#include "../TATApplication/TATApplication.h"
+#include "../TATApplication/TAThread.h"
 
 TATPBDBody::TATPBDBody(const TString& name, const TATModelBuffer& buffer, float invMassPerNode) :TATickable(name)
 {
@@ -127,19 +129,6 @@ void TATPBDBody::AddVolumeConstraint(float neg, float pos)
 
 bool TATPBDBody::Update(TATActor* actor, float dt)
 {
-	//TODO update normal
-
-	for (int i = 0; i < m_RenderParticles.size(); ++i)
-	{
-		int index = m_RenderParticles[i];
-		for (int j = 0; j < 3; ++j)
-		{
-			actor->m_RenderMesh->m_MeshVertices[i].m_Position[j] =
-				m_PhyBody.m_Vertices[index].m_Position.m_Datas[j];
-		}
-	}
-
-	actor->MarkRenderStateDirty();
 	return true;
 }
 
@@ -202,4 +191,34 @@ void TATPBDBody::UpdateAabb()
 		node->m_Data = &m_Particles[i];
 	}
 	m_ParticleBVH.FinishBuild();
+}
+
+void TATPBDBody::SolveConstraintEnd()
+{
+	std::vector<TATVector3> points;
+	points.resize(m_RenderParticles.size());
+	for (int i = 0; i < points.size(); ++i)
+	{
+		points[i] = m_PhyBody.m_Vertices[m_RenderParticles[i]].m_Position;
+	}
+
+	if (m_HostActor)
+	{
+		TAT_RENDER_TASK_LIST->PushTask([](std::vector<TATVector3> points, TATActor* actor)->void
+		{
+			int sz = points.size();
+			for (int i = 0; i < sz; ++i)
+			{
+				for (int j = 0; j < 3; ++j)
+				{
+					actor->m_RenderMesh->m_MeshVertices[i].m_Position[j] = points[i][j];
+				}
+
+			}
+
+			actor->MarkRenderStateDirty();
+
+		}, points, m_HostActor);
+	}
+
 }

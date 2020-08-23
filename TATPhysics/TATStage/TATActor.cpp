@@ -24,7 +24,6 @@ TATActor::~TATActor()
 {
 	m_RenderMesh = 0;
 	m_RenderCamera = 0;
-	m_RenderLight = 0;
 	TAT_RENDER_THREAD->m_RenderUnitPool.ReturnUsed(m_RenderUnit);
 	m_RenderUnit = 0;
 }
@@ -33,7 +32,6 @@ void TATActor::Initialize()
 {
 	__super::Initialize();
 	m_RenderCamera = TATWorld::Instance()->GetCamera("main");
-	m_RenderLight = TATWorld::Instance()->GetLight("main");
 	m_RenderUnit = TAT_RENDER_THREAD->m_RenderUnitPool.FetchUnused();
 	m_WorldTransform = TATransform::GetIdentity();
 	m_RenderStateDirty = true;
@@ -119,11 +117,15 @@ void TATActor::SetMaterial(TATMaterial* m)
 	m_Material = m;
 	m_RenderUnit->SetMaterial(m);
 	m_RenderCamera = m->m_Camera;
-	m_RenderLight = m->m_Light;
 }
 
 bool TATActor::Update(float dt)
 {
+	if (m_RenderUnit)
+	{
+		m_RenderUnit->m_Transform = m_WorldTransform;
+	}
+
 	for (int i = 0; i < m_TickableObjects.size(); ++i)
 	{
 		m_TickableObjects[i]->Update(this, dt);
@@ -137,4 +139,12 @@ void TATActor::MarkRenderStateDirty()
 	m_RenderStateDirty = true;
 	if (m_RenderUnit)
 		m_RenderUnit->m_StaticDataUploaded = false;
+
+	TAT_RENDER_THREAD->MarkRenderStateDirty();
+}
+
+void TATActor::AttachTickable(TATickable* x)
+{
+	m_TickableObjects.push_back(x);
+	x->m_HostActor = this;
 }

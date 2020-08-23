@@ -12,4 +12,6 @@ public:
 	virtual ~TATickable() {}
 
 	virtual bool Update(TATActor* actor, float dt);
+
+	TATActor* m_HostActor;
 };
