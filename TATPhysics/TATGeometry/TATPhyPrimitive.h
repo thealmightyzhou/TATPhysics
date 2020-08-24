@@ -95,12 +95,17 @@ public:
 	{
 		m_Vertices[0] = v0;
 		m_Vertices[1] = v1;
+		m_FaceIndices[0] = INT_MAX;
+		m_FaceIndices[1] = INT_MAX;
 	}
 
 	TATPhyEdge(UINT v0, UINT v1)
 	{
 		m_VertexIndices[0] = v0;
 		m_VertexIndices[1] = v1;
+		m_FaceIndices[0] = INT_MAX;
+		m_FaceIndices[1] = INT_MAX;
+
 	}
 
 	void Init()

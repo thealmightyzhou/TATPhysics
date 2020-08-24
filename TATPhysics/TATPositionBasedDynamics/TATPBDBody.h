@@ -97,6 +97,8 @@ public:
 
 	virtual void AddVolumeConstraint(float neg,float pos);
 
+	virtual void AddDihedralConstraint(float stiff);
+
 	virtual void AddConstraint(TATPBDConstraint* constr);
 
 	virtual void StepSimulation(float dt);
@@ -121,6 +123,11 @@ public:
 	{
 		m_LinearDamp = lin;
 		m_AngularDamp = ang;
+	}
+
+	TATPBDParticle* GetParticleAt(int index)
+	{
+		return &m_Particles[index];
 	}
 
 	std::vector<TATPBDParticle> m_Particles;

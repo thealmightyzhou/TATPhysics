@@ -6,6 +6,7 @@
 #include "../TATGLRender/TATRenderUnit.h"
 #include "../TATApplication/TATApplication.h"
 #include "../TATApplication/TAThread.h"
+#include "../TATGeometry/TATMeshInfo.h"
 
 TATPBDBody::TATPBDBody(const TString& name, const TATModelBuffer& buffer, float invMassPerNode) :TATickable(name)
 {
@@ -17,6 +18,8 @@ TATPBDBody::TATPBDBody(const TString& name, const TATModelBuffer& buffer, float 
 void TATPBDBody::Initialize()
 {
 	TATPBDWorld::Instance()->AddBody(m_GlobalName, this);
+
+	TATPhyMeshDataComputer::CompleteMeshData(m_PhyBody.m_Vertices, m_PhyBody.m_Faces, m_PhyBody.m_Edges);
 }
 
 void TATPBDBody::AddConstraint(TATPBDConstraint* constr)
@@ -124,6 +127,66 @@ void TATPBDBody::AddVolumeConstraint(float neg, float pos)
 		);
 
 		AddConstraint(constr);
+	}
+}
+
+void TATPBDBody::AddDihedralConstraint(float stiff)
+{
+	for (int i = 0; i < m_PhyBody.m_Edges.size(); ++i)
+	{
+		const TATPhyEdge& e = m_PhyBody.m_Edges[i];
+
+		if (e.m_FaceIndices[0] == INT_MAX || e.m_FaceIndices[1] == INT_MAX)
+			continue;
+
+		int face1[3]{ m_PhyBody.m_Faces[e.m_FaceIndices[0]].m_VertexIndices[0] ,
+					  m_PhyBody.m_Faces[e.m_FaceIndices[0]].m_VertexIndices[1] ,
+					  m_PhyBody.m_Faces[e.m_FaceIndices[0]].m_VertexIndices[2] };
+
+		int face2[3]{ m_PhyBody.m_Faces[e.m_FaceIndices[1]].m_VertexIndices[0] ,
+					  m_PhyBody.m_Faces[e.m_FaceIndices[1]].m_VertexIndices[1] ,
+					  m_PhyBody.m_Faces[e.m_FaceIndices[1]].m_VertexIndices[2] };
+
+		int points[4];
+		int index = 0;
+		std::set<int> index_set;
+		//make sure only share two vertex
+		for (int c = 0; c < 3; ++c)
+		{
+			if (index_set.find(face1[c]) == index_set.end())
+				index_set.insert(face1[c]);
+			else
+				points[index++] = face1[c];
+
+			if (index_set.find(face2[c]) == index_set.end())
+				index_set.insert(face2[c]);
+			else
+				points[index++] = face2[c];
+		}
+
+		for (int c = 0; c < 3; ++c)
+		{
+			bool repeat = false;
+			for (int b = 0; b < index; ++b)
+			{
+				if (face1[c] == points[b])
+					repeat = true;
+			}
+			if (!repeat)
+				points[index++] = face1[c];
+			repeat = false;
+			for (int b = 0; b < index; ++b)
+			{
+				if (face2[c] == points[b])
+					repeat = true;
+			}
+			if (!repeat)
+				points[index++] = face2[c];
+		}
+
+		TATPBDDihedralConstraint* constr = new TATPBDDihedralConstraint(GetParticleAt(points[3]), GetParticleAt(points[2])
+			, GetParticleAt(points[1]), GetParticleAt(points[0]), stiff);
+		TATPBDWorld::Instance()->AddConstraint(constr);
 	}
 }
 

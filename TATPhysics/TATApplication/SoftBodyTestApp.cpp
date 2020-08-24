@@ -10,6 +10,8 @@
 #include "../TATStage/TATLinePainter.h"
 #include "../TATPositionBasedDynamics/TATPBDBody.h"
 #include "../TATScripted/RigidBodyPawn.h"
+#include "../TATPositionBasedDynamics/TATPBDConstraint.h"
+#include "../TATPositionBasedDynamics/TATPBDWorld.h"
 
 void SoftBodyTestApp::Initialize()
 {
@@ -32,10 +34,12 @@ void SoftBodyTestApp::CreateScene()
 	TATMesh* plane = TATResourceManager::Instance()->LoadMesh("plane.obj");
 	TATMesh* tet_halfSphere = TATResourceManager::Instance()->LoadMesh("halfSphere.tmodel");
 	TATMesh* cube = TATResourceManager::Instance()->LoadMesh("cube.obj");
+	TATMesh* skirt = TATResourceManager::Instance()->LoadMesh("skirt.obj");
 
 	plane->Initialize();
 	tet_halfSphere->Initialize();
 	cube->Initialize();
+	skirt->Initialize();
 
 	TATMaterial* mat = TATResourceManager::Instance()->LoadMaterial("LightTemplate.tmaterial");
 	mat->Initialize();
@@ -72,20 +76,6 @@ void SoftBodyTestApp::CreateScene()
 	planeNode->MountActor(planeActor);
 	TATRigidBody* planeRb = TATDynamicWorld::Instance()->CreatePlane(TATVector3(0, -300, 0), TATVector3(0, 1, 0));
 
-	TATActor* softActor0 = new TATActor(tet_halfSphere);
-	softActor0->Initialize();
-	softActor0->SetMaterial(mat);
-	TATStageNode* softNode0 = m_RootNode->CreateChild("softHalfSphere");
-	softNode0->MountActor(softActor0);
-	TATPBDBody* softBody0 = new TATPBDBody("softHalfSphere", tet_halfSphere->m_Loader->m_Buffer, 1.0f);
-	softBody0->Initialize();
-	softBody0->AddPositionConstraint(0.8, 0.8);
-	softBody0->AddVolumeConstraint(0.9, 0.9);
-	softBody0->SetDamping(0.8, 0.8);
-	softBody0->SetGravity(TATVector3(0, -50, 0));
-	softActor0->AttachTickable(softBody0);
-
-
 	TATRigidBody* pawnRb = TATDynamicWorld::Instance()->CreateConvex(cube, 1);
 	tr.SetOrigin(TATVector3(0, 500, 10));
 	TATDynamicWorld::Instance()->InitRigidBody(pawnRb, tr, 0, 0.8, 0.2, TATVector3(0, 0, 0));
@@ -97,6 +87,42 @@ void SoftBodyTestApp::CreateScene()
 	pawnNode->MountActor(cubePawn);
 	cubePawn->AttachTickable(pawnRb);
 
+
+	//TATActor* softActor0 = new TATActor(tet_halfSphere);
+	//softActor0->Initialize();
+	//softActor0->SetMaterial(mat);
+	//TATStageNode* softNode0 = m_RootNode->CreateChild("softHalfSphere");
+	//softNode0->MountActor(softActor0);
+	//TATPBDBody* softBody0 = new TATPBDBody("softHalfSphere", tet_halfSphere->m_Loader->m_Buffer, 1.0f);
+	//softBody0->Initialize();
+	//softBody0->AddPositionConstraint(0.8, 0.8);
+	//softBody0->AddVolumeConstraint(0.9, 0.9);
+	//softBody0->SetDamping(0.8, 0.8);
+	//softBody0->SetGravity(TATVector3(0, -50, 0));
+	//softActor0->AttachTickable(softBody0);
+
+	//TATPBDVertexSpacePtDistConstraint* constr = new TATPBDVertexSpacePtDistConstraint(softBody0->GetParticleAt(0), TATVector3(0, -50, 0), 0.8, 0.8);
+	//TATPBDWorld::Instance()->AddConstraint(constr);
+
+	//TATPBDVertexRigidPtDistConstraint* rConstr = new TATPBDVertexRigidPtDistConstraint(softBody0->GetParticleAt(0), TATVector3(0, 0, 0),
+	//	pawnRb, 0, 0.8);
+	//TATPBDWorld::Instance()->AddConstraint(rConstr);
+
+	TATActor* skirtActor = new TATActor(skirt);
+	skirtActor->Initialize();
+	skirtActor->SetMaterial(mat);
+	TATStageNode* skirtNode = m_RootNode->CreateChild("skirtNode");
+	skirtNode->MountActor(skirtActor);
+	TATPBDBody* skirtBody = new TATPBDBody("softSkirt", skirt->m_Loader->m_Buffer, 1.0f);
+	skirtBody->Initialize();
+	skirtBody->AddPositionConstraint(0.8, 0.8);
+	skirtBody->AddDihedralConstraint(0.8);
+	skirtBody->SetDamping(0.8, 0.8);
+	skirtBody->SetGravity(TATVector3(0, -10, 0));
+	skirtActor->AttachTickable(skirtBody);
+	TATPBDVertexRigidPtDistConstraint* rConstr = new TATPBDVertexRigidPtDistConstraint(skirtBody->GetParticleAt(0), TATVector3(0, 0, 0),
+		pawnRb, 0, 0.8);
+	TATPBDWorld::Instance()->AddConstraint(rConstr);
 
 	//====================
 	//TATQuaternion rot;

@@ -2,7 +2,9 @@
 #include "TATPhyPrimitive.h"
 #include "../TATCommon/TATMatrix3.h"
 #include <unordered_set>
+#include <map>
 #include "../TATCommon/TATAabb.h"
+#include "../TATBasis/TATHasher.h"
 
 struct TATPhyMeshData
 {
@@ -108,39 +110,42 @@ public:
 		}
 	}
 
-	typedef std::unordered_set<TATPhyEdge, TATPhyEdgeHasher> TEdgeSet;
+	//typedef std::unordered_set<TATPhyEdge, TATPhyEdgeHasher> TEdgeSet;
+	typedef std::map<UINT, TATPhyEdge> TEdgeSet;
 
 	void static CreateEdges(std::vector<TATPhyVertex>& vertices, std::vector<TATPhyFace>& faces, std::vector<TATPhyEdge>& edges)
 	{
 		TEdgeSet edgeSet;
-		TATPhyEdgeHasher hasher;
+		//TATPhyEdgeHasher hasher;
 		for (int f = 0; f < (int)faces.size(); f++)
 		{
 			TATPhyFace& face = faces[f];
 			TATPhyEdge tmpEdges[3]{
 				TATPhyEdge(face.m_VertexIndices[0], face.m_VertexIndices[1]),
 				TATPhyEdge(face.m_VertexIndices[1], face.m_VertexIndices[2]),
-				TATPhyEdge(face.m_VertexIndices[2], face.m_VertexIndices[0]), };
+				TATPhyEdge(face.m_VertexIndices[2], face.m_VertexIndices[0])};
 
-			tmpEdges[0].m_HashMask = hasher(tmpEdges[0]);
-			tmpEdges[1].m_HashMask = hasher(tmpEdges[1]);
-			tmpEdges[2].m_HashMask = hasher(tmpEdges[2]);
+			tmpEdges[0].m_HashMask = static_cast<UINT>(TATHasher::HashTwo(tmpEdges[0].m_VertexIndices[0], tmpEdges[0].m_VertexIndices[1]));//hasher(tmpEdges[0]);
+			tmpEdges[1].m_HashMask = static_cast<UINT>(TATHasher::HashTwo(tmpEdges[1].m_VertexIndices[0], tmpEdges[1].m_VertexIndices[1]));//hasher(tmpEdges[1]);
+			tmpEdges[2].m_HashMask = static_cast<UINT>(TATHasher::HashTwo(tmpEdges[2].m_VertexIndices[0], tmpEdges[2].m_VertexIndices[1]));//hasher(tmpEdges[2]);
 
 			TEdgeSet::iterator it;
 			for (int i = 0; i < 3; i++)
 			{
-				TEdgeSet::iterator it = edgeSet.find(tmpEdges[i]);
+				//TEdgeSet::iterator it = edgeSet.find(tmpEdges[i]);
+				TEdgeSet::iterator it = edgeSet.find(tmpEdges[i].m_HashMask);
 				if (it == edgeSet.end())
 				{
 					tmpEdges[i].m_FaceIndices[0] = f;
-					edgeSet.insert(tmpEdges[i]);
+					edgeSet.insert(std::make_pair(tmpEdges[i].m_HashMask, tmpEdges[i]));
 				}
 				else
 				{
-					TATPhyEdge tempe = *it;
-					tempe.m_FaceIndices[1] = f;
-					edgeSet.erase(it);
-					edgeSet.insert(tempe);
+					edgeSet[tmpEdges[i].m_HashMask].m_FaceIndices[1] = f;
+					//TATPhyEdge tempe = *it;
+					//tempe.m_FaceIndices[1] = f;
+					//edgeSet.erase(it);
+					//edgeSet.insert(tempe);
 				}
 			}
 		}
@@ -150,10 +155,13 @@ public:
 		edges.resize(edgeSet.size());
 		while (it!= edgeSet.end())
 		{
-			edges[index] = *it;
+			edges[index] = it->second;
+			int face_index;
 			for (int i = 0; i < 2; i++)
 			{
-				edges[index].m_Faces[i] = &faces[edges[index].m_FaceIndices[i]];
+				face_index = edges[index].m_FaceIndices[i];
+				if(face_index != INT_MAX)
+					edges[index].m_Faces[i] = &faces[face_index];
 				edges[index].m_Vertices[i] = &vertices[edges[index].m_VertexIndices[i]];
 			}
 			edges[index].m_Direction = (edges[index].m_Vertices[1]->m_Position - edges[index].m_Vertices[0]->m_Position).Normalized();

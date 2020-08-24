@@ -86,7 +86,7 @@ public:
 	void HandleDrawSoftBodys()
 	{
 		int sz = m_DrawSoftBodyQueue.size();
-		for (int i = sz - 1; 0 <= i && i < sz; ++i)
+		for (int i = 0; i < sz; ++i)
 		{
 			TATaskDataDrawSoftBody& data = m_DrawSoftBodyQueue.front();
 			data.m_Task(data.m_RenderPoints, data.m_Actor);
