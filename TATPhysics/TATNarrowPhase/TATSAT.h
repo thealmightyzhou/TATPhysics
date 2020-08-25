@@ -318,6 +318,39 @@ public:
 	}
 };
 
+struct TATSATDistPack
+{
+public:
+	TATSATDistPack()
+	{
+		m_Dist = -TAT_MAX;
+		m_ResVertexA = 0;
+		m_ResVertexB = 0;
+		m_ResFaceA = 0;
+		m_ResFaceB = 0;
+		m_ResEdges[0] = m_ResEdges[1] = 0;
+		m_UserData = 0;
+		m_StateFlag = -1;
+	}
+
+	//always point from B to A
+	TATVector3 m_Normal;
+	TATVector3 m_ClostPtA;
+	TATVector3 m_ClostPtB;
+
+	float m_Dist;
+
+	int m_ResVertexA, m_ResVertexB;
+	int m_ResFaceA, m_ResFaceB;
+	int m_ResEdges[2];
+
+	void* m_UserData;
+
+	int m_StateFlag; //0:ptA & faceB; 1:ptB & faceA; 2:edgeA & edgeB;
+
+	int m_ResFlag; //0,1,2
+};
+
 //only for convex
 class TATSATDist
 {
@@ -451,5 +484,216 @@ public:
 			}
 			return 0;
 		}
+	}
+
+	//if true there be no penetration and can get a distance of two triangles
+	static bool TriangleDistance(TATVector3* face0, TATVector3* face1,float& dist)
+	{
+		TATSATDistPack dp;
+
+		TATVector3 ct0 = (face0[0] + face0[1] + face0[2]) / 3;
+		TATVector3 ct1 = (face1[0] + face1[1] + face1[2]) / 3;
+
+		TATVector3 normal0 = ((face0[1] - face0[0]).Cross(face0[2] - face0[0])).Normalized();
+		TATVector3 normal1 = ((face1[1] - face1[0]).Cross(face1[2] - face1[0])).Normalized();
+
+		TATVector3 dir = ct0 - ct1;
+
+		TATVector3 edge0[3]{ face0[1] - face0[0],face0[2] - face0[1],face0[0] - face0[2] };
+		TATVector3 edge1[3]{ face1[1] - face1[0],face1[2] - face1[1],face1[0] - face1[2] };
+		int edgeIndex[6]{ 0,1,1,2,2,0 };
+
+		TATVector3 testDir;
+		int res;
+
+		dp.m_StateFlag = 0;
+		{
+			testDir = normal1;
+
+			if (testDir.Dot(dir) < 0)
+			{
+				testDir = -testDir;
+			}
+
+			res = TestOneDir(face0, face1, testDir, dp);
+			if (res == 1)
+			{
+				dp.m_ResVertexA = (int)dp.m_UserData;
+				dp.m_ResFaceB = 1;
+				dp.m_ResFlag = dp.m_StateFlag;
+			}
+		}
+
+		dp.m_StateFlag = 1;
+		{
+			testDir = normal0;
+
+			//dir always from rb0 to rb1
+			if (testDir.Dot(dir) < 0)
+			{
+				testDir = -testDir;
+			}
+
+			res = TestOneDir(face0, face1, testDir, dp);
+			if (res == 1)
+			{
+				dp.m_ResVertexB = (int)dp.m_UserData;
+				dp.m_ResFaceA = 1;
+				dp.m_ResFlag = dp.m_StateFlag;
+			}
+		}
+
+		dp.m_StateFlag = 2;
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				//if (TATSAT::CanBuildMinkowskiFace(e0, e1, tr0, tr1))
+				{
+					testDir = (edge0[i]).Cross(edge1[j]).Normalized();
+
+					if (testDir.Dot(dir) < 0)
+					{
+						testDir = -testDir;
+					}
+
+					res = TestOneDir(face0, face1, testDir, dp);
+					if (res == 1)
+					{
+						dp.m_ResEdges[0] = i;
+						dp.m_ResEdges[1] = j;
+						dp.m_ResFlag = dp.m_StateFlag;
+					}
+				}
+			}
+		}
+
+		if (dp.m_StateFlag == 0)
+		{
+			float weights[3];
+			TATVector3 pt = TATGeometryUtil::ClosetPtOnTri(face0[dp.m_ResVertexA], face1[0], face1[1], face1[2], weights);
+			dp.m_ClostPtA = face0[dp.m_ResVertexA];
+			dp.m_ClostPtB = pt;
+			dp.m_Dist = dp.m_ClostPtA.Distance(dp.m_ClostPtB);
+			dist = dp.m_Dist;
+			return true;
+		}
+		else if (dp.m_StateFlag == 1)
+		{
+			float weights[3];
+			TATVector3 pt = TATGeometryUtil::ClosetPtOnTri(face1[dp.m_ResVertexB], face0[0], face0[1], face0[2], weights);
+			dp.m_ClostPtB = face1[dp.m_ResVertexB];
+			dp.m_ClostPtA = pt;
+			dp.m_Dist = dp.m_ClostPtA.Distance(dp.m_ClostPtB);
+			dist = dp.m_Dist;
+			return true;
+		}
+		else if (dp.m_StateFlag == 2)
+		{
+			TATVector3 pt0, pt1;
+			int v0 = edgeIndex[dp.m_ResEdges[0] * 2];
+			int v1 = edgeIndex[dp.m_ResEdges[0] * 2 + 1];
+			int v2 = edgeIndex[dp.m_ResEdges[1] * 2];
+			int v3 = edgeIndex[dp.m_ResEdges[1] * 2 + 1];
+			TATGeometryUtil::ClosetPtBetweenIntersectSegments(v0, v1, v2, v3, pt0, pt1);
+			dp.m_ClostPtA = pt0;
+			dp.m_ClostPtB = pt1;
+			dp.m_Dist = dp.m_ClostPtA.Distance(dp.m_ClostPtB);
+			dist = dp.m_Dist;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	static int TestOneDir(TATVector3* face0, TATVector3* face1, const TATVector3& dir, TATSATDistPack& dp)
+	{
+		int indices[4];
+		float projs[4];
+		Support(face0, face1, dir, indices, projs);
+
+		TATRange range1(projs[0], projs[1]);
+		TATRange range2(projs[2], projs[3]);
+
+		range1.SetUserData((void*)(indices[0]), (void*)(indices[1]));
+		range2.SetUserData((void*)(indices[2]), (void*)(indices[3]));
+
+		{
+			void* dataA;
+			void* dataB;
+			float dist;
+			if (range1.Coincide(range2))
+				return 0;
+
+			float dist0 = range1.m_MaxRange - range2.m_MinRange;
+			float dist1 = range2.m_MaxRange - range1.m_MinRange;
+
+			int which = dist0 < dist1 ? 1 : 2;
+
+			if (which == 1)
+				dist = -dist0;
+			else
+				dist = -dist1;
+
+			if (dist > dp.m_Dist)
+			{
+				dp.m_Dist = dist;
+				if (dp.m_StateFlag == 0)
+					dp.m_UserData = which == 1 ? (void*)indices[1] : (void*)indices[0];
+				else if (dp.m_StateFlag == 1)
+					dp.m_UserData = which == 1 ? (void*)indices[2] : (void*)indices[3];
+
+				dp.m_Normal = dir;
+				return 1;
+			}
+			return 0;
+		}
+	}
+
+	static void Support(TATVector3* face0, TATVector3* face1,const TATVector3& dir, int* indices, float* projects)
+	{
+		int i = 0, j = 0;
+		float proj;
+		indices[0] = indices[2] = -1;
+		indices[1] = indices[3] = -1;
+		projects[0] = projects[2] = TAT_MAX;
+		projects[1] = projects[3] = -TAT_MAX;
+		while (i < 3 || j < 3)
+		{
+			if (i < 3)
+			{
+				proj = face0[i].Dot(dir);
+				if (proj < projects[0])
+				{
+					projects[0] = proj;
+					indices[0] = i;
+				}
+				if (proj > projects[1])
+				{
+					projects[1] = proj;
+					indices[1] = i;
+				}
+			}
+			i++;
+			if (j < 3)
+			{
+				proj = face1[j].Dot(dir);
+				if (proj < projects[2])
+				{
+					projects[2] = proj;
+					indices[2] = j;
+				}
+				if (proj > projects[3])
+				{
+					projects[3] = proj;
+					indices[3] = j;
+				}
+
+			}
+			j++;
+		}
+
 	}
 };
