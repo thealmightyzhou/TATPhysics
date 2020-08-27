@@ -77,7 +77,7 @@ void SoftBodyTestApp::CreateScene()
 	TATRigidBody* planeRb = TATDynamicWorld::Instance()->CreatePlane(TATVector3(0, -300, 0), TATVector3(0, 1, 0));
 
 	TATRigidBody* pawnRb = TATDynamicWorld::Instance()->CreateConvex(cube, 1);
-	tr.SetOrigin(TATVector3(0, 500, 10));
+	tr.SetOrigin(TATVector3(0, 200, 10));
 	TATDynamicWorld::Instance()->InitRigidBody(pawnRb, tr, 0, 0.8, 0.2, TATVector3(0, 0, 0));
 	RigidBodyPawn* cubePawn = new RigidBodyPawn(cube, pawnRb);
 	cubePawn->Initialize();
@@ -88,18 +88,18 @@ void SoftBodyTestApp::CreateScene()
 	cubePawn->AttachTickable(pawnRb);
 
 
-	//TATActor* softActor0 = new TATActor(tet_halfSphere);
-	//softActor0->Initialize();
-	//softActor0->SetMaterial(mat);
-	//TATStageNode* softNode0 = m_RootNode->CreateChild("softHalfSphere");
-	//softNode0->MountActor(softActor0);
-	//TATPBDBody* softBody0 = new TATPBDBody("softHalfSphere", tet_halfSphere->m_Loader->m_Buffer, 1.0f);
-	//softBody0->Initialize();
-	//softBody0->AddPositionConstraint(0.8, 0.8);
-	//softBody0->AddVolumeConstraint(0.9, 0.9);
-	//softBody0->SetDamping(0.8, 0.8);
-	//softBody0->SetGravity(TATVector3(0, -50, 0));
-	//softActor0->AttachTickable(softBody0);
+	TATActor* softActor0 = new TATActor(tet_halfSphere);
+	softActor0->Initialize();
+	softActor0->SetMaterial(mat);
+	TATStageNode* softNode0 = m_RootNode->CreateChild("softHalfSphere");
+	softNode0->MountActor(softActor0);
+	TATPBDBody* softBody0 = new TATPBDBody("softHalfSphere", tet_halfSphere->m_Loader->m_Buffer, 1.0f);
+	softBody0->Initialize();
+	softBody0->AddPositionConstraint(0.8, 0.8);
+	softBody0->AddVolumeConstraint(0.9, 0.9);
+	softBody0->SetDamping(0.8, 0.8);
+	softBody0->SetGravity(TATVector3(0, -50, 0));
+	softActor0->AttachTickable(softBody0);
 
 	//TATPBDVertexSpacePtDistConstraint* constr = new TATPBDVertexSpacePtDistConstraint(softBody0->GetParticleAt(0), TATVector3(0, -50, 0), 0.8, 0.8);
 	//TATPBDWorld::Instance()->AddConstraint(constr);
@@ -116,7 +116,7 @@ void SoftBodyTestApp::CreateScene()
 	TATPBDBody* skirtBody = new TATPBDBody("softSkirt", skirt->m_Loader->m_Buffer, 1.0f);
 	skirtBody->Initialize();
 	skirtBody->AddPositionConstraint(0.8, 0.8);
-	skirtBody->AddDihedralConstraint(0.8);
+	skirtBody->AddDihedralConstraint(0.1);
 	skirtBody->SetDamping(0.8, 0.8);
 	skirtBody->SetGravity(TATVector3(0, -10, 0));
 	skirtActor->AttachTickable(skirtBody);

@@ -70,7 +70,7 @@ public:
 				predictTr * convex->m_CollideMeshData.m_Vertices[face.m_VertexIndices[2]].m_Position
 			};
 			TATVector3 norm = (points[1] - points[0]).Cross(points[2] - points[0]).Normalized();
-			TATVector3 p = vel * t + particle->Position();
+			TATVector3 p = vel * t + particle->Position() + norm * collideRadius;
 			float dist = (p - points[0]).Dot(norm) - margin;
 
 			float pen = collideRadius - dist;
@@ -231,7 +231,7 @@ public:
 	float m_DeltaTime;
 };
 
-class TATSoftCollideConvexAlgo : public TATSoftRigidCollisionAlgoPrimitive
+class TATSoftCollideConvexAlgoV2 : public TATSoftRigidCollisionAlgoPrimitive
 {
 public:
 	virtual bool ProcessSoftRigidCollision(TATPBDBody* soft, TATRigidBody* rb, float dt)

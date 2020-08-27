@@ -151,8 +151,8 @@ void TATPBDWorld::ProjectRSCollision(const TATSoftRigidCollideData& data, float 
 	}
 
 	const TATMatrix3& iwi = TATDynamicWorld::Instance()->m_InertiaDatas[rigid->m_InertiaIndex].m_InvInertiaWorld;
-	TATVector3 r = data.m_RigidPt - rigid->GetMassCenter();
-	//TATVector3 r = data.m_SoftPt - rigid->GetMassCenter();
+	//TATVector3 r = data.m_RigidPt - rigid->GetMassCenter();
+	TATVector3 r = data.m_SoftPt - rigid->GetMassCenter();
 
 	TATMatrix3 impulseMatrix = TATCollisionUtil::ImpulseMatrix
 	(
@@ -163,8 +163,8 @@ void TATPBDWorld::ProjectRSCollision(const TATSoftRigidCollideData& data, float 
 		r
 	);
 
-	TATVector3 va = rigid->GetVelocityAtWCS(data.m_RigidPt) * dt;
-	//TATVector3 va = rigid->GetVelocityAtWCS(data.m_SoftPt) * dt;
+	//TATVector3 va = rigid->GetVelocityAtWCS(data.m_RigidPt) * dt;
+	TATVector3 va = rigid->GetVelocityAtWCS(data.m_SoftPt) * dt;
 	TATVector3 vb = particle->m_PredictPos - particle->Position();
 	const TATVector3 rel_vel = vb - va;
 	const float rel_vel_normal = rel_vel.Dot(data.m_CollideNormal);
@@ -176,6 +176,9 @@ void TATPBDWorld::ProjectRSCollision(const TATSoftRigidCollideData& data, float 
 	float fricCoeff = rel_frict_vel.Length() < rel_vel_normal * particle->m_HostBody->m_FrictionCoeffcient ? 0 : 1 - frict;
 
 	float kst = 1.0f;
+
+	if (data.m_Penetration > 0)
+		return;
 
 	const TATVector3 impulse = impulseMatrix *
 		(rel_vel - rel_frict_vel * fricCoeff - data.m_Penetration * rigid->m_ContactHardness * data.m_CollideNormal) * kst;

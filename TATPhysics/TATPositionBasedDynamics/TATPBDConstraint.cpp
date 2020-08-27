@@ -159,6 +159,8 @@ TATPBDDihedralConstraint::TATPBDDihedralConstraint(TATPBDParticle* p0, TATPBDPar
 	if (dot < -1.0) dot = -1.0;
 	if (dot > 1.0) dot = 1.0;
 	m_RestValue = acos(dot);
+
+	m_HashValue = TATHasher::HashTwo((int)p0 + (int)p1 + (int)p2 + (int)p3, (int)p0 * (int)p1 * (int)p2 * (int)p3);
 }
 
 bool TATPBDDihedralConstraint::SolveConstraint()
