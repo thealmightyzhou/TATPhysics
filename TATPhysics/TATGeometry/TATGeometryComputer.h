@@ -37,6 +37,7 @@ public:
 			return true;
 	}
 
+	//TODO fill weight
 	static TATVector3 ClosetPtOnTri(const TATVector3& pt, const TATVector3& a, const TATVector3& b, const TATVector3& c,float* weight)
 	{
 		TATVector3 ab = b - a;
