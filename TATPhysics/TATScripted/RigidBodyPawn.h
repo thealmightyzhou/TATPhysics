@@ -14,42 +14,40 @@ public:
 	virtual void OnKeyPressed(int key) {}
 	virtual void OnKeyReleased(int key)
 	{
-		TATRigidBodyData& data = TATDynamicWorld::Instance()->m_RigidBodyDatas[m_Rigid->m_DataIndex];
-		data.m_LinVel.SetZero();
+		m_Rigid->m_LinVel.SetZero();
 	
 	}
 	virtual void OnKeyHold(int key) 
 	{
 		float dis = 10;
-		TATRigidBodyData& data = TATDynamicWorld::Instance()->m_RigidBodyDatas[m_Rigid->m_DataIndex];
-		TATVector3 pre_pos = data.m_Pos;
+		TATVector3 pre_pos = m_Rigid->m_Pos;
 		if (key == GLFW_KEY_UP)
 		{
-			data.m_Pos -= dis * TATVector3::UnitZ();
+			m_Rigid->m_Pos -= dis * TATVector3::UnitZ();
 		}
 		else if (key == GLFW_KEY_DOWN)
 		{
-			data.m_Pos += dis * TATVector3::UnitZ();
+			m_Rigid->m_Pos += dis * TATVector3::UnitZ();
 		}
 		else if (key == GLFW_KEY_LEFT)
 		{
-			data.m_Pos -= dis * TATVector3::UnitX();
+			m_Rigid->m_Pos -= dis * TATVector3::UnitX();
 		}
 		else if (key == GLFW_KEY_RIGHT)
 		{
-			data.m_Pos += dis * TATVector3::UnitX();
+			m_Rigid->m_Pos += dis * TATVector3::UnitX();
 		}
 		else if (key == GLFW_KEY_PAGE_UP)
 		{
-			data.m_Pos += dis * TATVector3::UnitY();
+			m_Rigid->m_Pos += dis * TATVector3::UnitY();
 		}
 		else if (key == GLFW_KEY_PAGE_DOWN)
 		{
-			data.m_Pos -= dis * TATVector3::UnitY();
+			m_Rigid->m_Pos -= dis * TATVector3::UnitY();
 		}
 
-		m_Rigid->m_WorldTransform.SetOrigin(data.m_Pos);
-		data.m_LinVel = (data.m_Pos - pre_pos) * 100;
+		m_Rigid->m_WorldTransform.SetOrigin(m_Rigid->m_Pos);
+		m_Rigid->m_LinVel = (m_Rigid->m_Pos - pre_pos) * 100;
 	}
 	virtual void OnCursorMove(float dx, float dy) {}
 	virtual void OnCursorPressed(int key) {}

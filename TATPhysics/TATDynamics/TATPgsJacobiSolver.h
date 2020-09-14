@@ -1,6 +1,5 @@
 #pragma once
 #include "TATSolverConstraint.h"
-#include "TATRigidBodyData.h"
 #include "TATRigidBody.h"
 #include <vector>
 
@@ -51,7 +50,7 @@ public:
 
 	void ResolveSingleConstraintRowGeneric(TATSolverBody* bodyA, TATSolverBody* bodyB, TATSolverConstraint* contactConstraint);
 
-	void SetupContactConstraint(TATRigidBodyData* bodies, TATInertiaData* inertias, TATSolverConstraint* solverConstraint,
+	void SetupContactConstraint(TATSolverConstraint* solverConstraint,
 		int solverBodyIdA, int solverBodyIdB,
 		TATContactPoint& cp, const TATContactSolverInfo& infoGlobal,
 		TATVector3& vel, float& rel_vel, float& relaxation,
@@ -61,22 +60,22 @@ public:
 
 	void GetContactPoint(const TATRigidBodyCollideData& contact, TATContactPoint& out);
 
-	void SolveContact(const TATRigidBodyCollideData& contact, TATRigidBodyData* bodies, TATInertiaData* inertias, TATContactSolverInfo& info);
+	void SolveContact(const TATRigidBodyCollideData& contact, TATContactSolverInfo& info);
 
-	void SolveFinish(TATRigidBodyData* bodies, TATInertiaData* inertias, const TATContactSolverInfo& info);
+	void SolveConstraint();
 
-	void InitSolverBody(int bodyIndex, const TATRigidBodyData& data, const TATRigidBody& rb);
+	void SolveFinish(const TATContactSolverInfo& info);
+
+	void InitSolverBody(int bodyIndex, const TATRigidBody& rb);
 
 	void DecomposeContact(const TATVector3& vel, const TATVector3& rel_vel, const TATVector3& normal,
 		const TATVector3& rel_pos0, const TATVector3& rel_pos1,
-		TATSolverBody* bdA, TATSolverBody* bdB, TATRigidBodyData* rb0, TATRigidBodyData* rb1,
-		TATInertiaData* in0, TATInertiaData* in1,
+		TATSolverBody* bdA, TATSolverBody* bdB,
 		TATSolverConstraint* constr0, TATSolverConstraint* constr1,
 		float relaxation, const TATContactSolverInfo& info,
 		TATContactPoint& cp);
 
-	void SetupFrictionConstraint(TATRigidBodyData* rbData0, TATRigidBodyData* rbData1,
-		TATInertiaData* inertia0, TATInertiaData* inertia1, TATSolverBody* bd0, TATSolverBody* bd1,
+	void SetupFrictionConstraint(TATSolverBody* bd0, TATSolverBody* bd1,
 		TATSolverConstraint* constr, TATContactPoint& cp,
 		const TATVector3& normal,
 		const TATVector3& rel_pos0, const TATVector3& rel_pos1, float relaxation, float desiredVel = .0f);

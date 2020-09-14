@@ -48,7 +48,7 @@ TATRigidBody::TATRigidBody() :TATickable("RigidBody" + TString::ConvertInt(GetOb
 	m_CollideShape = 0;
 	Clear();
 	m_IndexInPool = -1;
-	m_FrictionCoefficient = 0.9;
+	m_FrictionCoeff = 0.9;
 	m_ContactHardness = 1;
 	m_LinFactor.SetValue(1, 1, 1);
 	m_AngFactor.SetValue(1, 1, 1);
@@ -60,8 +60,6 @@ void TATRigidBody::Clear()
 		delete m_CollideShape;
 	m_CollideShape = 0;
 	m_BodyIndex = -1;
-	m_DataIndex = -1;
-	m_InertiaIndex = -1;
 	m_InvMass = 0.0f;
 	m_WorldTransform.SetIdentity();
 }
@@ -78,11 +76,9 @@ bool TATRigidBody::Update(TATActor* actor, float dt)
 //@location in wcs
 TATVector3 TATRigidBody::GetVelocityAtWCS(const TATVector3& location) const
 {
-	TATRigidBodyData& data = TATDynamicWorld::Instance()->m_RigidBodyDatas[m_DataIndex];
-
 	TATVector3 r = location - GetMassCenter();
 
-	return data.m_LinVel + data.m_AngVel.Cross(r);
+	return m_LinVel + m_AngVel.Cross(r);
 }
 
 //@location in lcs
@@ -93,30 +89,28 @@ TATVector3 TATRigidBody::GetVelocityAtLCS(const TATVector3& location) const
 
 void TATRigidBody::ApplyImpulse(const TATVector3& impulse, const TATVector3& r)
 {
-	if (m_InvMass = 0)
+	if (0 == m_InvMass)
 		return;
 
-	TATRigidBodyData& data = TATDynamicWorld::Instance()->m_RigidBodyDatas[m_DataIndex];
-	data.m_LinVel += impulse * m_LinFactor * m_InvMass;
+	m_LinVel += impulse * m_LinFactor * m_InvMass;
 
 	TATVector3 torque = r.Cross(impulse * m_LinFactor);
-	data.m_AngVel += TATDynamicWorld::Instance()->m_InertiaDatas[m_InertiaIndex].m_InvInertiaWorld * torque * m_AngFactor;
+	m_AngVel += m_InvInertiaWorld * torque * m_AngFactor;
 }
 
 TATVector3 TATRigidBody::GetLinearVelocity() const
 {
-	return TATDynamicWorld::Instance()->m_RigidBodyDatas[m_DataIndex].m_LinVel;
+	return m_LinVel;
 }
 
 TATVector3 TATRigidBody::GetAngularVelocity() const
 {
-	return TATDynamicWorld::Instance()->m_RigidBodyDatas[m_DataIndex].m_AngVel;
+	return m_AngVel;
 }
 
 
-void TATRigidBody::UpdataInverseInertiaWorld() const
+void TATRigidBody::UpdataInverseInertiaWorld()
 {
 	TATMatrix3 m(m_WorldTransform.GetRotation());
-	TATDynamicWorld::Instance()->m_InertiaDatas[m_InertiaIndex].m_InvInertiaWorld =
-		m.Scaled(TATDynamicWorld::Instance()->m_InertiaDatas[m_InertiaIndex].m_InitInvInertia.GetDiagonal()) * m.Transpose();
+	m_InvInertiaWorld = m.Scaled(m_InitInvInertia.GetDiagonal()) * m.Transpose();
 }

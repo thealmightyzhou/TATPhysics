@@ -16,9 +16,9 @@ public:
 
 	TATObjectPool<TATRigidBody> m_RigidBodys;
 
-	TATObjectPool<TATRigidBodyData> m_RigidBodyDatas;
+	//TATObjectPool<TATRigidBodyData> m_RigidBodyDatas;
 
-	TATObjectPool<TATInertiaData> m_InertiaDatas;
+	//TATObjectPool<TATInertiaData> m_InertiaDatas;
 
 	TATPgsJacobiSolver* m_ConstraintSolver;
 
@@ -29,6 +29,16 @@ public:
 	TATVector3 m_GlobalGravity;
 
 	void StepSimulation(float dt);
+
+	void SimulationBegin(float dt);
+
+	void PrepareSolve(float dt);
+
+	void SolveConstraint(float dt);
+
+	void SimulationEnd(float dt);
+
+	void Integrate(float dt);
 
 	void DestroyRigidBody(TATRigidBody* rb);
 

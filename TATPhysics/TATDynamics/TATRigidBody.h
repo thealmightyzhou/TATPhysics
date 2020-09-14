@@ -118,7 +118,7 @@ public:
 	{
 		SetWorldTransform(TATransform::GetIdentity());
 
-		m_FrictionCoefficient = 0.9;
+		m_FrictionCoeff = 0.9;
 		m_ContactHardness = 1;
 		m_LinFactor.SetValue(1, 1, 1);
 		m_AngFactor.SetValue(1, 1, 1);
@@ -127,7 +127,7 @@ public:
 	TATRigidBody(const TString& name,TATCollideShapePrimitive* cs, const TATransform& tr) :m_CollideShape(cs), m_WorldTransform(tr),
 		TATickable(name + TString::ConvertInt(GetObjectIndex()))
 	{
-		m_FrictionCoefficient = 0.9;
+		m_FrictionCoeff = 0.9;
 		m_ContactHardness = 1;
 		m_LinFactor.SetValue(1, 1, 1);
 		m_AngFactor.SetValue(1, 1, 1);
@@ -179,7 +179,12 @@ public:
 
 	TATVector3 GetAngularVelocity() const;
 
-	void UpdataInverseInertiaWorld() const;
+	TATVector3 GetVelocityAt(const TATVector3& r)
+	{
+		return m_LinVel + m_AngVel.Cross(r);
+	}
+
+	void UpdataInverseInertiaWorld();
 
 	void ApplyImpulse(const TATVector3& impulse, const TATVector3& r);
 
@@ -193,18 +198,31 @@ public:
 
 	float m_InvMass;
 
-	float m_FrictionCoefficient;
-
 	float m_ContactHardness;
+
+	float m_RestituitionCoeff;
+
+	float m_FrictionCoeff;
 	
 	int m_BodyIndex;
-
-	int m_DataIndex;
-
-	int m_InertiaIndex;
 
 	TATVector3 m_LinFactor;
 
 	TATVector3 m_AngFactor;
+
+	TATVector3 m_Pos;
+
+	TATQuaternion m_Quat;
+
+	TATVector3 m_LinVel;
+
+	TATVector3 m_AngVel;
+
+	TATVector3 m_Gravity;
+
+	TATMatrix3 m_InvInertiaWorld;
+
+	TATMatrix3 m_InitInvInertia;
+
 };
 

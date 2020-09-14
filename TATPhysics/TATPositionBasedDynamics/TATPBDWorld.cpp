@@ -40,8 +40,6 @@ TATPBDConstraint* TATPBDWorld::GetConstraint(int hash)
 		return 0;
 }
 
-
-
 void TATPBDWorld::StepSimulation(float dt)
 {
 	std::map<TString, TATPBDBody*>::iterator ite = m_PhyBodys.begin();
@@ -150,7 +148,7 @@ void TATPBDWorld::ProjectRSCollision(const TATSoftRigidCollideData& data, float 
 		rigid->UpdataInverseInertiaWorld();
 	}
 
-	const TATMatrix3& iwi = TATDynamicWorld::Instance()->m_InertiaDatas[rigid->m_InertiaIndex].m_InvInertiaWorld;
+	const TATMatrix3& iwi = rigid->m_InvInertiaWorld;
 	//TATVector3 r = data.m_RigidPt - rigid->GetMassCenter();
 	TATVector3 r = data.m_SoftPt - rigid->GetMassCenter();
 
@@ -172,7 +170,7 @@ void TATPBDWorld::ProjectRSCollision(const TATSoftRigidCollideData& data, float 
 		return;
 
 	const TATVector3 rel_frict_vel = rel_vel - rel_vel_normal * data.m_CollideNormal;
-	float frict = particle->m_HostBody->m_FrictionCoeffcient * rigid->m_FrictionCoefficient;
+	float frict = particle->m_HostBody->m_FrictionCoeffcient * rigid->m_FrictionCoeff;
 	float fricCoeff = rel_frict_vel.Length() < rel_vel_normal * particle->m_HostBody->m_FrictionCoeffcient ? 0 : 1 - frict;
 
 	float kst = 1.0f;
@@ -244,7 +242,7 @@ void TATPBDWorld::SolveCollision(const TATSoftRigidCollideData& data, float dt,f
 	rigid->UpdataInverseInertiaWorld();
 
 	TATMatrix3 k;
-	ComputeMatrixK(data.m_RigidPt, rigid->m_InvMass, rigid->GetMassCenter(), TATDynamicWorld::Instance()->m_InertiaDatas[rigid->m_InertiaIndex].m_InvInertiaWorld, k);
+	ComputeMatrixK(data.m_RigidPt, rigid->m_InvMass, rigid->GetMassCenter(), rigid->m_InvInertiaWorld, k);
 	if (particle->m_InvMass != 0.0)
 	{
 		k(0, 0) += particle->m_InvMass;

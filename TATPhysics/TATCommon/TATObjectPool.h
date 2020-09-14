@@ -18,6 +18,18 @@ public:
 		m_UsedCount = 0;
 	}
 
+	TATObjectPool() {}
+
+	void Initialize(int max_sz)
+	{
+		assert(max_sz > 0);
+		m_Objects = new T[max_sz];
+		m_UsedMap = new bool[max_sz];
+		TAT_MEMSET_NEW(m_UsedMap, max_sz, false);
+		m_NextUnused = 0;
+		m_UsedCount = 0;
+	}
+
 	~TATObjectPool()
 	{
 		delete m_Objects;

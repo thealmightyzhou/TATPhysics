@@ -2,6 +2,7 @@
 #include "TATransform.h"
 
 struct TATRigidBodyData;
+class TATRigidBody;
 
 #define TAT_ANGULAR_MOTION_THRESHOLD float(0.5) * TAT_HALF_PI
 
@@ -40,6 +41,8 @@ public:
 	}
 
 	static void IntegrateTransform(TATRigidBodyData* body, float timeStep, float angularDamping);
+
+	static void IntegrateTransform(TATRigidBody* body, float timeStep, float angularDamping);
 
 	static void CalculateVelocity(const TATransform& tr0, const TATransform& tr1, float timeStep, TATVector3& linVel, TATVector3& angVel)
 	{
