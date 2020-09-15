@@ -52,6 +52,7 @@ TATRigidBody::TATRigidBody() :TATickable("RigidBody" + TString::ConvertInt(GetOb
 	m_ContactHardness = 1;
 	m_LinFactor.SetValue(1, 1, 1);
 	m_AngFactor.SetValue(1, 1, 1);
+	m_UseCCD = false;
 }
 
 void TATRigidBody::Clear()

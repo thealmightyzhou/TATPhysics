@@ -9,6 +9,7 @@
 
 class TATPgsJacobiSolver;
 
+
 class TATDynamicWorld:public Singleton<TATDynamicWorld>
 {
 public:
@@ -36,9 +37,9 @@ public:
 
 	void SolveConstraint(float dt);
 
-	void SimulationEnd(float dt);
-
 	void Integrate(float dt);
+
+	void SimulationEnd(float dt);
 
 	void DestroyRigidBody(TATRigidBody* rb);
 
@@ -52,4 +53,6 @@ public:
 	void InitRigidBody(TATRigidBody* rb, const TATransform& tr, float invMass, float restituitionCoeff, float frictionCoeff, const TATVector3& g);
 
 	void SyncRigidBodyData(TATRigidBody* rb);
+
+	TATContactSolverInfo m_GlobalInfo;
 };

@@ -29,17 +29,16 @@ public:
 
 	void SetWorld(TATDynamicWorld* dyn, TATPBDWorld* softworld);
 
+	//to generate collision between objs not include self collision
 	TATBvh m_PhysicObjectBVH;
 
 	int m_IterationNum;
 
 protected:
 
-	static TATPhysicWorld* m_PhysicWorld;
+	TATDynamicWorld* m_DynWorld;
 
-	static TATDynamicWorld* m_DynWorld;
-
-	static TATPBDWorld* m_PBDWorld;
+	TATPBDWorld* m_PBDWorld;
 
 	bool m_bInitialized;
 };

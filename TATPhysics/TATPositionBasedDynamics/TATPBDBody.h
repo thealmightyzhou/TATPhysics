@@ -145,4 +145,6 @@ public:
 	TATBvh m_ParticleBVH;
 
 	float m_FrictionCoeffcient;
+
+	bool m_UseCCD;
 };

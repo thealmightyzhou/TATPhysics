@@ -30,7 +30,19 @@ public:
 
 	TATPBDConstraint* GetConstraint(int hash);
 
+	void GetBodies(std::vector<TATPBDBody*>& bodies);
+
 	void StepSimulation(float dt);
+
+	void SimulationBegin(float dt);
+
+	void PrepareSolve(float dt);
+
+	void SolveConstraint(float dt);
+
+	void Integrate(float dt);
+
+	void SimulationEnd(float dt);
 
 	virtual void ProcessCollision(float dt);
 

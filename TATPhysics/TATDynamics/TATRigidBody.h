@@ -122,6 +122,7 @@ public:
 		m_ContactHardness = 1;
 		m_LinFactor.SetValue(1, 1, 1);
 		m_AngFactor.SetValue(1, 1, 1);
+		m_UseCCD = false;
 	}
 
 	TATRigidBody(const TString& name,TATCollideShapePrimitive* cs, const TATransform& tr) :m_CollideShape(cs), m_WorldTransform(tr),
@@ -131,6 +132,7 @@ public:
 		m_ContactHardness = 1;
 		m_LinFactor.SetValue(1, 1, 1);
 		m_AngFactor.SetValue(1, 1, 1);
+		m_UseCCD = false;
 	}
 
 	virtual bool Update(TATActor* actor, float dt);
@@ -205,6 +207,8 @@ public:
 	float m_FrictionCoeff;
 	
 	int m_BodyIndex;
+
+	bool m_UseCCD;
 
 	TATVector3 m_LinFactor;
 

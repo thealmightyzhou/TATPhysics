@@ -5,6 +5,31 @@
 
 struct TATRigidBodyCollideData;
 
+struct SolverContext
+{
+public:
+	SolverContext()
+	{
+		m_RigidA = 0;
+		m_RigidB = 0;
+		m_BodyA = 0;
+		m_BodyB = 0;
+		m_Constr = 0;
+		m_FrictConstr0 = 0;
+		m_FrictConstr1 = 0;
+		m_AppliedImpulse = 0;
+	}
+
+	TATRigidBody* m_RigidA;
+	TATRigidBody* m_RigidB;
+	TATSolverBody* m_BodyA;
+	TATSolverBody* m_BodyB;
+	TATSolverConstraint* m_Constr;
+	TATSolverConstraint* m_FrictConstr0;
+	TATSolverConstraint* m_FrictConstr1;
+	float m_AppliedImpulse;
+};
+
 struct TATContactPoint
 {
 	TATVector3 m_NormalWorldB2A;
@@ -62,7 +87,13 @@ public:
 
 	void SolveContact(const TATRigidBodyCollideData& contact, TATContactSolverInfo& info);
 
+	void PrepareSolve();
+
 	void SolveConstraint();
+
+	void Integrate();
+
+	void SimulationEnd();
 
 	void SolveFinish(const TATContactSolverInfo& info);
 
@@ -86,4 +117,11 @@ public:
 	}
 
 	int m_IterateNum;
+
+	std::vector<SolverContext> m_SolverContexts;
+
+	std::vector<TATRigidBodyCollideData*> m_Contacts;
+
+	TATContactSolverInfo* m_GlobalInfo;
+
 };

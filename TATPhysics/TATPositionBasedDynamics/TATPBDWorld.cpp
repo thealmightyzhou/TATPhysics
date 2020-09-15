@@ -17,6 +17,16 @@ bool TATPBDWorld::AddBody(const TString& name, TATPBDBody* body)
 		return false;
 }
 
+void TATPBDWorld::GetBodies(std::vector<TATPBDBody*>& bodies)
+{
+	std::map<TString, TATPBDBody*>::iterator ite = m_PhyBodys.begin();
+	while (ite!= m_PhyBodys.end())
+	{
+		bodies.push_back((*ite).second);
+		ite++;
+	}
+}
+
 bool TATPBDWorld::AddConstraint(TATPBDConstraint* constr)
 {
 	if (m_Constraints.find(constr->GetHashValue()) == m_Constraints.end())
@@ -75,6 +85,58 @@ void TATPBDWorld::StepSimulation(float dt)
 	}
 
 	ite = m_PhyBodys.begin();
+	while (ite != m_PhyBodys.end())
+	{
+		ite->second->SolveConstraintEnd();
+		ite++;
+	}
+}
+
+void TATPBDWorld::SimulationBegin(float dt)
+{
+	std::map<TString, TATPBDBody*>::iterator ite = m_PhyBodys.begin();
+	while (ite != m_PhyBodys.end())
+	{
+		ite->second->StepSimulation(dt);
+		ite++;
+	}
+
+	m_SoftRigidCollideDatas.clear();
+}
+
+void TATPBDWorld::PrepareSolve(float dt)
+{
+	//GenerateCollision(dt);
+	//move to physic world
+}
+
+void TATPBDWorld::SolveConstraint(float dt)
+{
+	std::map<int, TATPBDConstraint*>::iterator it;
+
+	it = m_Constraints.begin();
+	while (it != m_Constraints.end())
+	{
+		it->second->SolveConstraint();
+		it++;
+	}
+
+	ProcessCollision(dt);
+}
+
+void TATPBDWorld::Integrate(float dt)
+{
+	std::map<TString, TATPBDBody*>::iterator ite = m_PhyBodys.begin();
+	while (ite != m_PhyBodys.end())
+	{
+		ite->second->Integrate(dt);
+		ite++;
+	}
+}
+
+void TATPBDWorld::SimulationEnd(float dt)
+{
+	std::map<TString, TATPBDBody*>::iterator ite = m_PhyBodys.begin();
 	while (ite != m_PhyBodys.end())
 	{
 		ite->second->SolveConstraintEnd();

@@ -13,6 +13,8 @@ TATPBDBody::TATPBDBody(const TString& name, const TATModelBuffer& buffer, float 
 	Build(buffer, invMassPerNode);
 
 	m_FrictionCoeffcient = 0.9;
+
+	m_UseCCD = false;
 }
 
 void TATPBDBody::Initialize()

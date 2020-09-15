@@ -141,7 +141,7 @@ void TATPgsJacobiSolver::SetupContactConstraint(TATSolverConstraint* solverConst
 	vel = vel1 - vel2;
 	relVel = cp.m_NormalWorldB2A.Dot(vel);
 
-	solverConstraint->m_Friction = cp.m_CombinedFriction;	
+	solverConstraint->m_Friction = cp.m_CombinedFriction;
 
 	restitution = RestitutionCurve(relVel, cp.m_CombinedRestitution);//CHECK
 	if (restitution <= float(0.))
@@ -284,9 +284,125 @@ void TATPgsJacobiSolver::SolveContact(const TATRigidBodyCollideData& contact, TA
 
 }
 
+void TATPgsJacobiSolver::PrepareSolve()
+{
+	if (!m_GlobalInfo)
+		return;
+
+	m_GlobalInfo->m_SplitImpulse = false;
+
+	TATVector3 vel;
+	TATVector3 relPos1;
+	TATVector3 relPos2;
+	float relVel;
+	float relaxation;
+
+	TATSolverBody* bodyA;
+	TATSolverBody* bodyB;
+	for (int i = 0; i < m_Contacts.size(); ++i)
+	{
+
+		TATRigidBody& rb0 = TATDynamicWorld::Instance()->m_RigidBodys[m_Contacts[i]->m_RbIndex0];
+		TATRigidBody& rb1 = TATDynamicWorld::Instance()->m_RigidBodys[m_Contacts[i]->m_RbIndex1];
+
+		bodyA = m_SolverBodyPool.FetchUnused();
+		bodyB = m_SolverBodyPool.FetchUnused();
+
+		rb0.m_BodyIndex = bodyA->m_IndexInPool;
+		rb1.m_BodyIndex = bodyB->m_IndexInPool;
+
+		bodyA->m_OriginalBodyIndex = m_Contacts[i]->m_RbIndex0;
+		bodyB->m_OriginalBodyIndex = m_Contacts[i]->m_RbIndex1;
+
+		InitSolverBody(rb0.m_BodyIndex, rb0);
+		InitSolverBody(rb1.m_BodyIndex, rb1);
+
+		TATSolverConstraint* constr = m_SolverContactConstraintPool.FetchUnused();
+		TATSolverConstraint* fricConstr0 = m_SolverFrictionConstraintPool.FetchUnused();
+		TATSolverConstraint* fricConstr1 = m_SolverFrictionConstraintPool.FetchUnused();
+
+		TATContactPoint cp;
+		GetContactPoint(*m_Contacts[i], cp);
+
+		SetupContactConstraint(constr, rb0.m_BodyIndex, rb1.m_BodyIndex,
+			cp, *m_GlobalInfo, vel, relVel, relaxation, relPos1, relPos2);
+
+		DecomposeContact(vel, relVel, cp.m_NormalWorldB2A, relPos1, relPos2, bodyA, bodyB, fricConstr0, fricConstr1, relaxation, *m_GlobalInfo, cp);
+
+		SolverContext context;
+
+		context.m_RigidA = &TATDynamicWorld::Instance()->m_RigidBodys[m_Contacts[i]->m_RbIndex0];
+		context.m_RigidB = &TATDynamicWorld::Instance()->m_RigidBodys[m_Contacts[i]->m_RbIndex1];
+		context.m_BodyA = bodyA;
+		context.m_BodyB = bodyB;
+		context.m_Constr = constr;
+		context.m_FrictConstr0 = fricConstr0;
+		context.m_FrictConstr1 = fricConstr1;
+		context.m_AppliedImpulse = 0;
+		m_SolverContexts.push_back(context);
+	}
+}
+
 void TATPgsJacobiSolver::SolveConstraint()
 {
-	//todo
+	for (int i = 0; i < m_SolverContexts.size(); ++i)
+	{
+		SolverContext& context = m_SolverContexts[i];
+		ResolveSingleConstraintRowGeneric(context.m_BodyA, context.m_BodyB, context.m_Constr);
+
+		context.m_AppliedImpulse = context.m_Constr->m_AppliedImpulse;
+		context.m_FrictConstr0->m_LowerLimit = -(context.m_FrictConstr0->m_Friction * context.m_AppliedImpulse);
+		context.m_FrictConstr0->m_UpperLimit = context.m_FrictConstr0->m_Friction * context.m_AppliedImpulse;
+		ResolveSingleConstraintRowGeneric(context.m_BodyA, context.m_BodyB, context.m_FrictConstr0);
+
+		context.m_FrictConstr1->m_LowerLimit = -(context.m_FrictConstr1->m_Friction * context.m_AppliedImpulse);
+		context.m_FrictConstr1->m_UpperLimit = context.m_FrictConstr1->m_Friction * context.m_AppliedImpulse;
+		ResolveSingleConstraintRowGeneric(context.m_BodyA, context.m_BodyB, context.m_FrictConstr1);
+	}
+
+}
+
+void TATPgsJacobiSolver::Integrate()
+{
+	for (int i = 0; i < m_SolverContexts.size(); ++i)
+	{
+		SolverContext& context = m_SolverContexts[i];
+		TATSolverBody* bodyA = context.m_BodyA;
+		TATSolverBody* bodyB = context.m_BodyB;
+
+		if (m_GlobalInfo->m_SplitImpulse)
+		{
+			bodyA->WriteBackVelocityAndTransform(m_GlobalInfo->m_TimeStep, m_GlobalInfo->m_SplitImpulseTurnErp);
+			bodyB->WriteBackVelocityAndTransform(m_GlobalInfo->m_TimeStep, m_GlobalInfo->m_SplitImpulseTurnErp);
+		}
+		else
+		{
+			bodyA->WriteBackVelocity();
+			bodyB->WriteBackVelocity();
+		}
+
+		TATRigidBody* rbA = context.m_RigidA;
+		TATRigidBody* rbB = context.m_RigidB;
+		rbA->m_LinVel = bodyA->m_LinVel;
+		rbA->m_AngVel = bodyA->m_AngVel;
+		rbB->m_LinVel = bodyB->m_LinVel;
+		rbB->m_AngVel = bodyB->m_AngVel;
+		if (m_GlobalInfo->m_SplitImpulse)
+		{
+			rbA->m_Pos = bodyA->GetWorldTransform().GetOrigin();
+			rbA->m_Quat = bodyA->GetWorldTransform().GetRotation();
+			rbB->m_Pos = bodyB->GetWorldTransform().GetOrigin();
+			rbB->m_Quat = bodyB->GetWorldTransform().GetRotation();
+		}
+	}
+}
+
+void TATPgsJacobiSolver::SimulationEnd()
+{
+	m_SolverBodyPool.Clear();
+	m_SolverContactConstraintPool.Clear();
+	m_Contacts.clear();
+	m_SolverContexts.clear();
 }
 
 void TATPgsJacobiSolver::SolveFinish(const TATContactSolverInfo& info)
@@ -320,7 +436,7 @@ void TATPgsJacobiSolver::SolveFinish(const TATContactSolverInfo& info)
 void TATPgsJacobiSolver::DecomposeContact(
 	const TATVector3& vel, const TATVector3& rel_vel, const TATVector3& normal,
 	const TATVector3& rel_pos0, const TATVector3& rel_pos1,
-	TATSolverBody* bdA, TATSolverBody* bdB, 
+	TATSolverBody* bdA, TATSolverBody* bdB,
 	TATSolverConstraint* constr0, TATSolverConstraint* constr1,
 	float relaxation, const TATContactSolverInfo& info,
 	TATContactPoint& cp)

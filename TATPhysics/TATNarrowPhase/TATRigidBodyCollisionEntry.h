@@ -5,11 +5,11 @@
 #include "TATSphereCollideSphereAlgo.h"
 #include "TATSphereCollidePlaneAlgo.h"
 
-class TATRbCollision
+class TATRigidBodyCollisionEntry
 {
 public:
 
-	static bool RbCollision(TATRigidBody* rb0, TATRigidBody* rb1, TATRigidBodyCollideData& data)
+	static bool ProcessRigidCollision(TATRigidBody* rb0, TATRigidBody* rb1, TATRigidBodyCollideData& data)
 	{
 
 		unsigned long mask = 0;
