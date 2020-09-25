@@ -1,5 +1,6 @@
 #pragma once
 #include "../TATCommon/TATVector3.h"
+#include "../TATMath/TATMatrix.h"
 
 class TATGeometryUtil
 {
@@ -145,6 +146,11 @@ public:
 
 		TATVector3 ptOnab = a + (hca / hca_) * ab.Length() * ab.Normalized();
 		p1 = ptOnab;
+	}
+
+	static float GetSegmentsClosetPt(const TATVector3& a, const TATVector3& b, const TATVector3& c, const TATVector3& d, float& weight0, float& weight1)
+	{
+
 	}
 };
 
