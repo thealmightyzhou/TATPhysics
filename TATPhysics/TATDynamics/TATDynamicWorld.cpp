@@ -162,7 +162,13 @@ void TATDynamicWorld::PrepareSolve(float dt)
 	m_GlobalInfo.m_TimeStep = dt;
 
 	m_ConstraintSolver->m_GlobalInfo = &m_GlobalInfo;
-	m_ConstraintSolver->m_Contacts.assign(contacts.begin(), contacts.end());
+
+	m_ConstraintSolver->m_Contacts.resize(contacts.size());
+	for (int i = 0; i < contacts.size(); ++i)
+	{
+		m_ConstraintSolver->m_Contacts[i] = &contacts[i];
+	}
+
 	m_ConstraintSolver->PrepareSolve();
 }
 

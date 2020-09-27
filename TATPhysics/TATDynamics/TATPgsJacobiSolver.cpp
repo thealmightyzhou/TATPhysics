@@ -401,6 +401,10 @@ void TATPgsJacobiSolver::SimulationEnd()
 {
 	m_SolverBodyPool.Clear();
 	m_SolverContactConstraintPool.Clear();
+	for (int i = 0; i < m_Contacts.size(); ++i)
+	{
+		delete m_Contacts[i];
+	}
 	m_Contacts.clear();
 	m_SolverContexts.clear();
 }
