@@ -148,9 +148,120 @@ public:
 		p1 = ptOnab;
 	}
 
+	//segpt0 = a * @weight0 + (1 - @weight0) * b;
+	//segpt1 = c * @weight1 + (1 - @weight1) * d;
 	static float GetSegmentsClosetPt(const TATVector3& a, const TATVector3& b, const TATVector3& c, const TATVector3& d, float& weight0, float& weight1)
 	{
+		TATMatrix A(3, 2);
+		TATVector3 ba = a - b;
+		TATVector3 dc = c - d;
 
+		//parallel
+		if (ba.Normalized().Dot(dc.Normalized()) > 0.99f)
+		{
+			TATVector3 dir = -ba.Normalized();
+			float proj0[2]{ a.Dot(dir),b.Dot(dir) };
+			float proj1[2]{ c.Dot(dir),d.Dot(dir) };
+
+			TATVector3 cd[2]{ c,d };
+
+			int swapcd = 0;
+			if (proj1[0] > proj1[1])
+			{
+				swap(proj1[0], proj1[1]);
+				swapcd = 1;
+			}
+
+			if (proj0[1] <= proj1[0])
+			{
+				weight0 = 0;
+				weight1 = 1 - swapcd;
+				return b.Distance(cd[0 + swapcd]);
+			}
+			else if (proj1[1] <= proj0[0])
+			{
+				weight0 = 1;
+				weight1 = 0 + swapcd;
+				return a.Distance(cd[1 - swapcd]);
+			}
+			else if (proj1[0] < proj0[0] && proj0[1] < proj1[1])
+			{
+				TATVector3 mid = (a + b) / 2;
+				TATVector3 pt = ClosetPtOnSegment(mid, c, d);
+				TATVector3 f = pt - c;
+				weight0 = 0.5f;
+				weight1 = 1 - (f.Dot(-dc) / (dc.Dot(dc)));
+				return pt.Distance(mid);
+			}
+			else if (proj0[0] < proj1[0] && proj1[1] < proj0[1])
+			{
+				TATVector3 mid = (c + d) / 2;
+				TATVector3 pt = ClosetPtOnSegment(mid, a, b);
+				TATVector3 f = pt - a;
+				weight0 = f.Dot(-ba) / (ba.Dot(ba));
+				weight1 = 0.5f;
+				return pt.Distance(mid);
+			}
+			else if (proj0[0] < proj1[0])
+			{
+				TATVector3 pt = ClosetPtOnSegment(cd[0 + swapcd], a, b);
+				TATVector3 f = pt - a;
+				float w0 = f.Dot(-ba) / (ba.Dot(ba));
+				float w1 = 1 - swapcd;
+
+				pt = ClosetPtOnSegment(b, cd[0 + swapcd], cd[1 - swapcd]);
+				f = pt - c;
+				float w2 = 0;
+				float w3 = 1 - (f.Dot(-dc) / (dc.Dot(dc)));
+
+				weight0 = (w0 + w2) / 2;
+				weight1 = (w1 + w3) / 2;
+
+				return (a * weight0 + (1 - weight0) * b).Distance(c * weight1 + (1 - weight1) * d);
+
+			}
+			else if (proj1[0] < proj0[0])
+			{
+				TATVector3 pt = ClosetPtOnSegment(cd[1 - swapcd], a, b);
+				TATVector3 f = pt - a;
+				float w0 = f.Dot(-ba) / (ba.Dot(ba));
+				float w1 = 0 + swapcd;
+
+				pt = ClosetPtOnSegment(a, cd[1 - swapcd], cd[0 + swapcd]);
+				f = pt - c;
+				float w2 = 1;
+				float w3 = 1 - (f.Dot(-dc) / (dc.Dot(dc)));
+
+				weight0 = (w0 + w2) / 2;
+				weight1 = (w1 + w3) / 2;
+
+				return (a * weight0 + (1 - weight0) * b).Distance(c * weight1 + (1 - weight1) * d);
+			}
+		}
+		else
+		{
+			A(0, 0) = ba[0]; A(1, 0) = ba[1]; A(2, 0) = ba[2];
+			A(0, 1) = dc[0]; A(1, 1) = dc[1]; A(2, 1) = dc[2];
+
+			TATMatrix a_transpose = A.Transpose();
+			TATVector3 bd = d - b;
+			TATMatrix bd_mat(3, 1);
+			bd_mat(0, 0) = bd[0]; bd_mat(1, 0) = bd[1]; bd_mat(2, 0) = bd[2];
+
+			TATMatrix right_part = a_transpose * bd_mat;
+			TATMatrix left_part = (a_transpose * A).Inverse();
+			TATMatrix res = left_part * right_part;
+
+			weight0 = res.Get(0, 0);
+			weight1 = res.Get(1, 0);
+
+			_Clamp(weight0, 0.0f, 1.0f);
+			_Clamp(weight1, 0.0f, 1.0f);
+
+			TATVector3 p = a * weight0 + b * (1 - weight0);
+			TATVector3 q = c * weight1 + d * (1 - weight1);
+			return p.Distance(q);
+		}
 	}
 };
 

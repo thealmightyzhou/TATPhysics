@@ -175,6 +175,19 @@ public:
 		return adj;
 	}
 
+	TATMatrix Transpose() const
+	{
+		TATMatrix m(m_Col, m_Row);
+		for (int i = 0; i < m_Row; ++i)
+		{
+			for (int j = 0; j < m_Col; ++j)
+			{
+				m(j, i) = Get(i, j);
+			}
+		}
+		return m;
+	}
+
 	void OutPut() const
 	{
 		for (int i = 0; i < m_Row; ++i)
@@ -215,6 +228,8 @@ private:
 			int flag = (row % 2 == 0 ? 1 : -1);//因为列数为0，所以行数是偶数时候，代数余子式为1.  
 			sum += flag * m->Get(row, 0) * InternalDeterminant(n - 1, sub_mat);//Mat第一列各元素与其代数余子式积的和即为行列式
 		}
+
+		delete sub_mat;
 
 		return sum;
 	}
