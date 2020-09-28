@@ -36,13 +36,18 @@ public:
 
 	TATStageNode* GetRootNode();
 
-	virtual void BeginRenderOneFrame(float dt) {}
+	virtual void BeginRenderOneFrame(float dt) 
+	{
+		Update(dt);
+	}
 
 	virtual void RenderOneFrameEnd(float dt) {}
 
 	virtual void SimulationStart(float dt) {}
 
 	virtual void SimulationEnd(float dt) {}
+
+	virtual void Update(float dt) {}
 
 	TString m_AppName;
 

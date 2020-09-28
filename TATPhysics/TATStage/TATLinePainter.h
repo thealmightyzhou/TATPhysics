@@ -5,7 +5,7 @@
 #include "../TATResources/TATResourceManager.h"
 #include "../TATApplication/TATApplication.h"
 
-class TATLinePainter : public TATManualObject,public TATRenderListener
+class TATLinePainter : public TATManualObject, public TATRenderListener
 {
 public:
 	TATLinePainter()
@@ -25,7 +25,7 @@ public:
 		m_Material = TATResourceManager::Instance()->LoadDefaultMaterial("lineDrawer.tmaterial");
 	}
 
-	void PaintLine(const TATVector3& x, const TATVector3& y,const TATVector3& color)
+	void PaintLine(const TATVector3& x, const TATVector3& y, const TATVector3& color)
 	{
 		m_RenderEleMask.UseColour();
 

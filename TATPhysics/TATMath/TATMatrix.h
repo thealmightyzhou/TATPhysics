@@ -101,7 +101,7 @@ public:
 		return cmat;
 	}
 
-	TATMatrix operator*(const TATMatrix& m) const
+	TATMatrix operator * (const TATMatrix& m) const
 	{
 		assert(m_Col == m.m_Row);
 
