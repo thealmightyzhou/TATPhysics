@@ -20,14 +20,14 @@ public:
 
 	bool inline Penetration(const TATRange& other, void*& data0, void*& data1, float& dist)
 	{
-		if (other.m_MaxRange > m_MaxRange && other.m_MinRange < m_MinRange)
+		if (other.m_MinRange < m_MinRange && m_MaxRange < other.m_MaxRange)
 		{
 			data0 = m_MinData;
 			data1 = m_MaxData;
 			dist = m_MaxRange - m_MinRange;
 			return false;
 		}
-		else if (m_MaxRange > other.m_MaxRange && m_MinRange < other.m_MinRange)
+		else if (m_MinRange < other.m_MinRange && other.m_MaxRange < m_MaxRange)
 		{
 			data0 = other.m_MinData;
 			data1 = other.m_MaxData;
@@ -120,6 +120,60 @@ public:
 		else
 		{
 			return val2;
+		}
+	}
+
+	//seperate or penetration
+	//@dist = seperate + value ; penetrate - value
+	//------      1.seperate
+	//        ---
+	//------	  2.include
+	//  ---
+	//-----       3.penetration
+	//   -----    
+	bool Distance(const TATRange& other, float& dist, int item[2])
+	{
+		if (m_MaxRange <= other.m_MinRange)
+		{
+			dist = other.m_MinRange - m_MaxRange;
+			item[0] = 1;
+			item[1] = 2;
+			return true;
+		}
+		else if (other.m_MaxRange <= m_MinRange)
+		{
+			dist = m_MinRange - other.m_MaxRange;
+			item[0] = 0;
+			item[1] = 3;
+			return true;
+		}
+		else if (m_MinRange <= other.m_MinRange && other.m_MaxRange <= m_MaxRange)
+		{
+			dist = other.m_MinRange - other.m_MaxRange;
+			item[0] = -1;
+			item[1] = -1;
+			return false;
+		}
+		else if (other.m_MinRange <= m_MinRange && m_MaxRange <= other.m_MaxRange)
+		{
+			dist = m_MinRange - m_MaxRange;
+			item[0] = -1;
+			item[1] = -1;
+			return false;
+		}
+		else if (m_MinRange < other.m_MinRange)
+		{
+			dist = other.m_MinRange - m_MaxRange;
+			item[0] = 1;
+			item[1] = 2;
+			return false;
+		}
+		else if (other.m_MinRange < m_MinRange)
+		{
+			dist = m_MinRange - other.m_MaxRange;
+			item[0] = 0;
+			item[1] = 3;
+			return false;
 		}
 	}
 

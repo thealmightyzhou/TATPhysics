@@ -9,7 +9,7 @@ public:
 	bool ComputeCollision(TATRigidBody* rb0,TATRigidBody* rb1) override
 	{
 		TATSATCollideData satdata;
-		bool collide = TATSAT::SeparateAxisTest(TATRigidBodyGroup(rb0, rb1), satdata);
+		bool collide = TATSAT::SeparateAxisTest(rb0, rb1, satdata);
 		if (collide)
 		{
 			m_CollideData.m_CollideNormal = satdata.m_CollideNormal;

@@ -149,8 +149,10 @@ void TATRenderThread::RenderOneFrame(float dt)
 			actor = node->m_Actor;
 		if (actor)
 		{
+			actor->SetRelativeTransform(node->GetWorldTransform());
 			actor->Update(dt);
 			unit = actor->m_RenderUnit;
+
 		}
 
 		if (node && node->GetVisible() && actor && unit)

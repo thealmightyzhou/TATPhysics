@@ -38,8 +38,7 @@ public:
 			return true;
 	}
 
-	//TODO fill weight
-	static TATVector3 ClosetPtOnTri(const TATVector3& pt, const TATVector3& a, const TATVector3& b, const TATVector3& c,float* weight)
+	static TATVector3 ClosetPtOnTri(const TATVector3& pt, const TATVector3& a, const TATVector3& b, const TATVector3& c, float* weight)
 	{
 		TATVector3 ab = b - a;
 		TATVector3 ac = c - a;
@@ -50,24 +49,45 @@ public:
 		float d1 = ab.Dot(ap);
 		float d2 = ac.Dot(ap);
 		if (d1 <= .0f && d2 <= .0f)
+		{
+			weight[0] = 1;
+			weight[1] = 0;
+			weight[2] = 0;
 			return a;
+		}
+
 
 		TATVector3 bp = p - b;
 		float d3 = ab.Dot(bp);
 		float d4 = ac.Dot(bp);
 		if (d3 >= .0f && d4 <= d3)
+		{
+			weight[0] = 0;
+			weight[1] = 1;
+			weight[2] = 0;
 			return b;
+		}
+
 
 		TATVector3 cp = p - c;
 		float d5 = ab.Dot(cp);
 		float d6 = ac.Dot(cp);
 		if (d6 >= .0f && d5 < d6)
+		{
+			weight[0] = 0;
+			weight[1] = 0;
+			weight[2] = 1;
 			return c;
+		}
+
 
 		float vc = d1 * d4 - d3 * d2;
 		if (vc <= .0f && d1 >= .0f && d3 <= .0f)
 		{
 			float v1 = d1 / (d1 - d3);
+			weight[0] = 1 - v1;
+			weight[1] = v1;
+			weight[2] = 0;
 			return a + v1 * ab;
 		}
 
@@ -75,6 +95,9 @@ public:
 		if (vb <= .0f && d2 >= .0f && d6 <= .0f)
 		{
 			float w1 = d2 / (d2 - d6);
+			weight[0] = 1 - w1;
+			weight[1] = 0;
+			weight[2] = w1;
 			return a + w1 * ac;
 		}
 
@@ -82,6 +105,9 @@ public:
 		if (va <= .0f && (d4 - d3) >= .0f && (d5 - d6) >= .0f)
 		{
 			float w1 = (d4 - d3) / ((d4 - d3) + (d5 - d6));
+			weight[0] = 0;
+			weight[1] = 1 - w1;
+			weight[2] = w1;
 			return b + w1 * (c - b);
 		}
 
@@ -89,15 +115,11 @@ public:
 		float v = vb * denom;
 		float w = vc * denom;
 
+		weight[0] = 1 - v - w;
+		weight[1] = v;
+		weight[2] = w;
+
 		return a + ab * v + ac * w;
-	}
-
-	static float PtTriDist(const TATVector3& pt, const TATVector3& a, const TATVector3& b, const TATVector3& c)
-	{
-		float weight[3];
-		TATVector3 ptOnTri = ClosetPtOnTri(pt, a, b, c, weight);
-		return pt.Distance(ptOnTri);
-
 	}
 
 	static TATVector3 ClosetPtOnSegment(const TATVector3& p, const TATVector3& e0, const TATVector3& e1)

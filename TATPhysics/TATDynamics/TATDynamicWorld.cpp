@@ -65,6 +65,9 @@ void TATDynamicWorld::StepSimulation(float dt)
 		rbA = (TATRigidBody*)bpCollides[i].m_node1->m_Data;
 		rbB = (TATRigidBody*)bpCollides[i].m_node2->m_Data;
 
+		if (rbA->m_ControllByUser || rbB->m_ControllByUser)
+			continue;
+
 		TATRigidBodyCollideData cd;
 		if (TATRigidBodyCollisionEntry::ProcessRigidCollision(rbA, rbB, cd))
 		{
@@ -303,8 +306,12 @@ void TATDynamicWorld::InitRigidBody(TATRigidBody* rb, const TATransform& tr, flo
 
 void TATDynamicWorld::SyncRigidBodyData(TATRigidBody* rb)
 {
-	rb->m_WorldTransform.SetOrigin(rb->m_Pos);
-	rb->m_WorldTransform.SetRotation(rb->m_Quat);
+	if (!rb->m_ControllByUser)
+	{
+		rb->m_WorldTransform.SetOrigin(rb->m_Pos);
+		rb->m_WorldTransform.SetRotation(rb->m_Quat);
 
-	rb->UpdataInverseInertiaWorld();
+		rb->UpdataInverseInertiaWorld();
+	}
+
 }

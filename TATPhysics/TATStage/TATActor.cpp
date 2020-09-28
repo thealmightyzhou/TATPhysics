@@ -121,9 +121,11 @@ void TATActor::SetMaterial(TATMaterial* m)
 
 bool TATActor::Update(float dt)
 {
+	TATransform tr = m_RelativeTransform * m_WorldTransform;
+
 	if (m_RenderUnit)
 	{
-		m_RenderUnit->m_Transform = m_WorldTransform;
+		m_RenderUnit->m_Transform = tr;
 	}
 
 	for (int i = 0; i < m_TickableObjects.size(); ++i)

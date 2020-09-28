@@ -55,9 +55,9 @@ public:
 
 		float radius = 0.001f;
 
-		TATSATCollideData cd;
-		float dist = TATSATDist::ConvexDistance(csA, csB, fromA, fromB, cd) + allowedPenetration;
-		n = cd.m_CollideNormal; //B2A
+		TATSATDistPack cd;
+		float dist = TATSATDistSolver::SolveConvexDistance(csA, csB, fromA, fromB, cd) + allowedPenetration;
+		n = cd.m_Normal;
 		float projectedLinearVelocity = relLinVel.Dot(n);
 
 		if (projectedLinearVelocity + maxAngularProjectedVelocity <= TAT_EPSILON)
@@ -90,11 +90,11 @@ public:
 			TATransformUtil::IntegrateTransform(fromB, linVelB, angVelB, lambda, interpolatedTrB);
 			relativeTr = interpolatedTrB.InverseTimes(interpolatedTrA);
 
-			TATSATCollideData data;
+			TATSATDistPack data;
 
-			dist = allowedPenetration + TATSATDist::ConvexDistance(csA, csB, interpolatedTrA, interpolatedTrB, data);
-			cp = data.m_CollidePtA;
-			n = data.m_CollideNormal;
+			dist = allowedPenetration + TATSATDistSolver::SolveConvexDistance(csA, csB, interpolatedTrA, interpolatedTrB, data);
+			cp = data.m_ClostPtA;
+			n = data.m_Normal;
 
 			numIter++;
 			if (numIter > MAX_ITERATIONS)
@@ -143,7 +143,8 @@ public:
 			face[1] += vf[1] * dt;
 			face[2] += vf[2] * dt;
 
-			float dis = TATGeometryUtil::PtTriDist(pt, face[0], face[1], face[2]);
+			float w[3];
+			float dis = TATGeometryUtil::ClosetPtOnTri(pt, face[0], face[1], face[2], w).Distance(pt);
 			if (dis < (margin + COLLIDE_EPS) && TATVoronoiUtil::PtInFaceVor(pt, face[0], face[1], face[2]))
 			{
 				t = time;
@@ -291,7 +292,7 @@ public:
 		TATVector3 inte_face1[3]{ face1[0],face1[1],face1[2] };
 
 		float distance;
-		if (!TATSATDist::TriangleDistance(inte_face0, inte_face1, distance))
+		if (!TATSATDistSolver::TriangleDistance(inte_face0, inte_face1, distance))
 			return false;
 
 		if (distance < margin + collide_radius)
@@ -363,7 +364,7 @@ public:
 				inte_face0[i] += t * vel0[i];
 				inte_face1[i] += t * vel1[i];
 			}
-			if (!TATSATDist::TriangleDistance(inte_face0, inte_face1, distance))
+			if (!TATSATDistSolver::TriangleDistance(inte_face0, inte_face1, distance))
 				return false;
 
 			if (distance < margin + collide_radius)

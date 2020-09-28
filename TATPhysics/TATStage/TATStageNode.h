@@ -62,6 +62,7 @@ public:
 		m_RelativeTransform.SetRotation(rot);
 	}
 
+	//if node mount a physic body not set this
 	void SetTransform(const TATransform& tr)
 	{
 		m_RelativeTransform = tr;

@@ -123,6 +123,7 @@ public:
 		m_LinFactor.SetValue(1, 1, 1);
 		m_AngFactor.SetValue(1, 1, 1);
 		m_UseCCD = false;
+		m_ControllByUser = false;
 	}
 
 	TATRigidBody(const TString& name,TATCollideShapePrimitive* cs, const TATransform& tr) :m_CollideShape(cs), m_WorldTransform(tr),
@@ -133,6 +134,7 @@ public:
 		m_LinFactor.SetValue(1, 1, 1);
 		m_AngFactor.SetValue(1, 1, 1);
 		m_UseCCD = false;
+		m_ControllByUser = false;
 	}
 
 	virtual bool Update(TATActor* actor, float dt);
@@ -209,6 +211,9 @@ public:
 	int m_BodyIndex;
 
 	bool m_UseCCD;
+
+	//do not update by dynamic world
+	bool m_ControllByUser;
 
 	TATVector3 m_LinFactor;
 

@@ -169,5 +169,13 @@ public:
 			it++;
 			index++;
 		}
+
+		for (int i = 0; i < edges.size(); ++i)
+		{
+			edges[i].m_Vertices[0]->m_EdgeIndices.push_back(i);
+			edges[i].m_Vertices[0]->m_Edges.push_back(&edges[i]);
+			edges[i].m_Vertices[1]->m_EdgeIndices.push_back(i);
+			edges[i].m_Vertices[1]->m_Edges.push_back(&edges[i]);
+		}
 	}
 };

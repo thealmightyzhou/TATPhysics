@@ -35,9 +35,16 @@ public:
 
 	void SetUseTransform(bool flag);
 
+	void SetRelativeTransform(const TATransform& tr)
+	{
+		m_RelativeTransform = tr;
+	}
+
 	TATRenderUnit* m_RenderUnit;
 
 	TATransform m_WorldTransform;
+
+	TATransform m_RelativeTransform;
 
 	TATCamera* m_RenderCamera;
 
