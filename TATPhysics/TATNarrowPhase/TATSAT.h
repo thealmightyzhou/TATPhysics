@@ -326,19 +326,45 @@ public:
 	struct VertexGroup
 	{
 	public:
-		VertexGroup(TATPhyVertex* a, TATPhyVertex* b) :m_VertexA(a), m_VertexB(b)
+		VertexGroup(TATPhyVertex* a, TATPhyVertex* b, float dist) :m_VertexA(a), m_VertexB(b), m_Dist(dist)
 		{
 			m_Use = true;
+			m_VertexIndexA = -1;
+			m_VertexIndexB = -1;
+		}
+
+		VertexGroup(int a, int b, float dist) :m_VertexIndexA(a), m_VertexIndexB(b), m_Dist(dist)
+		{
+			m_Use = true;
+			m_VertexA = 0;
+			m_VertexB = 0;
 		}
 
 		bool Equals(const VertexGroup& g)
 		{
-			return ((m_VertexA == g.m_VertexA && m_VertexB == g.m_VertexB) ||
+			if (m_VertexIndexA == -1)
+			{
+				return ((m_VertexA == g.m_VertexA && m_VertexB == g.m_VertexB) ||
 					(m_VertexA == g.m_VertexB && m_VertexB == g.m_VertexA));
+			}
+
+			else if (m_VertexA == 0)
+			{
+				return ((m_VertexIndexA == g.m_VertexIndexA && m_VertexIndexB == g.m_VertexIndexB) ||
+					(m_VertexIndexA == g.m_VertexIndexB && m_VertexIndexB == g.m_VertexIndexA));
+			}
+
+			return false;
 		}
 
 		TATPhyVertex* m_VertexA;
 		TATPhyVertex* m_VertexB;
+
+		int m_VertexIndexA;
+		int m_VertexIndexB;
+
+		float m_Dist;
+
 		bool m_Use;
 	};
 
@@ -455,6 +481,24 @@ public:
 		TATVector3 va, vb;
 		float min_dist = TAT_MAX;
 		float dist;
+
+		float max_sep = -TAT_MAX;
+		int max_index = -1;
+
+		for (int i = 0; i < cd.m_VertexGroups.size(); ++i)
+		{
+			if (cd.m_VertexGroups[i].m_Dist > max_sep)
+			{
+				max_sep = cd.m_VertexGroups[i].m_Dist;
+				max_index = i;
+			}
+		}
+
+		for (int i = 0; i < cd.m_VertexGroups.size(); ++i)
+		{
+			if (cd.m_VertexGroups[i].m_Dist < cd.m_VertexGroups[max_index].m_Dist - TAT_EPSILON2)
+				cd.m_VertexGroups[i].m_Use = false;
+		}
 
 		for (int i = 0; i < (int)cd.m_VertexGroups.size() - 1; ++i)
 		{
@@ -682,7 +726,7 @@ public:
 				cd.m_ResVerticesA.push_back(&vertices0[ptA]);
 				cd.m_ResVerticesB.push_back(&vertices1[ptB]);
 
-				cd.m_VertexGroups.push_back(TATSATDistPack::VertexGroup(&vertices0[ptA], &vertices0[ptB]));
+				cd.m_VertexGroups.push_back(TATSATDistPack::VertexGroup(&vertices0[ptA], &vertices0[ptB], dist));
 
 				return 1;
 			}
@@ -691,10 +735,8 @@ public:
 	}
 
 	//if true there be no penetration and can get a distance of two triangles
-	static bool TriangleDistance(TATVector3* face0, TATVector3* face1, float& dist)
+	static float SolveTriangleDistance(TATVector3* face0, TATVector3* face1, TATSATDistPack& dp)
 	{
-		TATSATDistPack dp;
-
 		TATVector3 ct0 = (face0[0] + face0[1] + face0[2]) / 3;
 		TATVector3 ct1 = (face1[0] + face1[1] + face1[2]) / 3;
 
@@ -722,8 +764,6 @@ public:
 			res = TestOneDir(face0, face1, testDir, dp);
 			if (res == 1)
 			{
-				dp.m_ResVertexA = (int)dp.m_UserData;
-				dp.m_ResFaceB = 1;
 				dp.m_ResFlag = dp.m_StateFlag;
 			}
 		}
@@ -741,8 +781,6 @@ public:
 			res = TestOneDir(face0, face1, testDir, dp);
 			if (res == 1)
 			{
-				dp.m_ResVertexB = (int)dp.m_UserData;
-				dp.m_ResFaceA = 1;
 				dp.m_ResFlag = dp.m_StateFlag;
 			}
 		}
@@ -764,23 +802,124 @@ public:
 					res = TestOneDir(face0, face1, testDir, dp);
 					if (res == 1)
 					{
-						dp.m_ResEdges[0] = i;
-						dp.m_ResEdges[1] = j;
 						dp.m_ResFlag = dp.m_StateFlag;
 					}
 				}
 			}
 		}
 
-		if (dp.m_StateFlag == 0)
+		TATVector3 va, vb;
+		float min_dist = TAT_MAX;
+		float dist;
+
+		float max_sep = -TAT_MAX;
+		int max_index = -1;
+
+		//find max seperate distance
+		for (int i = 0; i < dp.m_VertexGroups.size(); ++i)
+		{
+			if (dp.m_VertexGroups[i].m_Dist > max_sep)
+			{
+				max_sep = dp.m_VertexGroups[i].m_Dist;
+				max_index = i;
+			}
+		}
+
+		//eliminate the wrong pair
+		for (int i = 0; i < dp.m_VertexGroups.size(); ++i)
+		{
+			if (dp.m_VertexGroups[i].m_Dist < dp.m_VertexGroups[max_index].m_Dist - TAT_EPSILON2)
+				dp.m_VertexGroups[i].m_Use = false;
+		}
+
+		//eliminate same pair
+		for (int i = 0; i < (int)dp.m_VertexGroups.size() - 1; ++i)
+		{
+			for (int j = i + 1; j < (int)dp.m_VertexGroups.size(); ++j)
+			{
+				if (dp.m_VertexGroups[i].Equals(dp.m_VertexGroups[j]))
+				{
+					dp.m_VertexGroups[j].m_Use = false;
+				}
+			}
+		}
+
+		for (int i = 0; i < dp.m_VertexGroups.size(); ++i)
+		{
+			if (dp.m_VertexGroups[i].m_Use)
+			{
+				int v0 = dp.m_VertexGroups[i].m_VertexIndexA;
+				int v1 = dp.m_VertexGroups[i].m_VertexIndexB;
+
+				float weight[3];
+				TATVector3 pt = TATGeometryUtil::ClosetPtOnTri(face0[v0], face1[0], face1[1], face1[2], weight);
+				dist = pt.Distance(face0[v0]);
+				if (dist < min_dist)
+				{
+					min_dist = dist;
+					dp.m_ClostPtA = face0[v0];
+					dp.m_ClostPtB = pt;
+				}
+
+				pt = TATGeometryUtil::ClosetPtOnTri(face1[v1], face0[0], face0[1], face0[2], weight);
+				dist = pt.Distance(face1[v1]);
+				if (dist < min_dist)
+				{
+					min_dist = dist;
+					dp.m_ClostPtA = pt;
+					dp.m_ClostPtB = face1[v1];
+				}
+
+				TATVector3 e0[2]{ face0[v0], face0[(v0 + 1) % 3] };
+				TATVector3 e1[2]{ face0[v0], face0[(v0 + 2) % 3] };
+				TATVector3 e2[2]{ face1[v1], face1[(v1 + 1) % 3] };
+				TATVector3 e3[2]{ face1[v1], face1[(v1 + 2) % 3] };
+
+				float w1, w2;
+				dist = TATGeometryUtil::GetSegmentsClosetPt(e0[0], e0[1], e2[0], e2[1], w1, w2);
+				if (dist < min_dist)
+				{
+					min_dist = dist;
+					dp.m_ClostPtA = w1 * e0[0] + (1 - w1) * e0[1];
+					dp.m_ClostPtB = w2 * e2[0] + (1 - w2) * e2[1];
+				}
+
+				dist = TATGeometryUtil::GetSegmentsClosetPt(e0[0], e0[1], e3[0], e3[1], w1, w2);
+				if (dist < min_dist)
+				{
+					min_dist = dist;
+					dp.m_ClostPtA = w1 * e0[0] + (1 - w1) * e0[1];
+					dp.m_ClostPtB = w2 * e3[0] + (1 - w2) * e3[1];
+				}
+
+				dist = TATGeometryUtil::GetSegmentsClosetPt(e1[0], e1[1], e2[0], e2[1], w1, w2);
+				if (dist < min_dist)
+				{
+					min_dist = dist;
+					dp.m_ClostPtA = w1 * e1[0] + (1 - w1) * e1[1];
+					dp.m_ClostPtB = w2 * e2[0] + (1 - w2) * e2[1];
+				}
+
+				dist = TATGeometryUtil::GetSegmentsClosetPt(e1[0], e1[1], e3[0], e3[1], w1, w2);
+				if (dist < min_dist)
+				{
+					min_dist = dist;
+					dp.m_ClostPtA = w1 * e1[0] + (1 - w1) * e1[1];
+					dp.m_ClostPtB = w2 * e3[0] + (1 - w2) * e3[1];
+				}
+			}
+		}
+
+		return dp.m_ClostPtA.Distance(dp.m_ClostPtB);
+
+		/*if (dp.m_StateFlag == 0)
 		{
 			float weights[3];
 			TATVector3 pt = TATGeometryUtil::ClosetPtOnTri(face0[dp.m_ResVertexA], face1[0], face1[1], face1[2], weights);
 			dp.m_ClostPtA = face0[dp.m_ResVertexA];
 			dp.m_ClostPtB = pt;
 			dp.m_Dist = dp.m_ClostPtA.Distance(dp.m_ClostPtB);
-			dist = dp.m_Dist;
-			return true;
+			return dp.m_Dist;
 		}
 		else if (dp.m_StateFlag == 1)
 		{
@@ -789,8 +928,7 @@ public:
 			dp.m_ClostPtB = face1[dp.m_ResVertexB];
 			dp.m_ClostPtA = pt;
 			dp.m_Dist = dp.m_ClostPtA.Distance(dp.m_ClostPtB);
-			dist = dp.m_Dist;
-			return true;
+			return dp.m_Dist;
 		}
 		else if (dp.m_StateFlag == 2)
 		{
@@ -801,29 +939,24 @@ public:
 			int v3 = edgeIndex[dp.m_ResEdges[1] * 2 + 1];
 
 			float w1, w2;
-			dist = TATGeometryUtil::GetSegmentsClosetPt(v0, v1, v2, v3, w1, w2);
-			dp.m_ClostPtA = v0 * w1 + v1 * (1 - w1);
-			dp.m_ClostPtB = v2 * w2 + v3 * (1 - w2);
-			dp.m_Dist = dist;
+			dp.m_Dist = TATGeometryUtil::GetSegmentsClosetPt(face0[v0], face0[v1], face1[v2], face1[v3], w1, w2);
+			dp.m_ClostPtA = face0[v0] * w1 + face0[v1] * (1 - w1);
+			dp.m_ClostPtB = face1[v2] * w2 + face1[v3] * (1 - w2);
+			return dp.m_Dist;
 
-			//TATGeometryUtil::ClosetPtBetweenIntersectSegments(v0, v1, v2, v3, pt0, pt1);
-			//dp.m_ClostPtA = pt0;
-			//dp.m_ClostPtB = pt1;
-			//dp.m_Dist = dp.m_ClostPtA.Distance(dp.m_ClostPtB);
-			//dist = dp.m_Dist;
 			return true;
 		}
 		else
 		{
 			return false;
-		}
+		}*/
 	}
 
 	static int TestOneDir(TATVector3* face0, TATVector3* face1, const TATVector3& dir, TATSATDistPack& dp)
 	{
 		int indices[4];
 		float projs[4];
-		Support(face0, face1, dir, indices, projs);
+		Support(face0, 3, face1, 3, dir, indices, projs);
 
 		TATRange range1(projs[0], projs[1]);
 		TATRange range2(projs[2], projs[3]);
@@ -835,35 +968,28 @@ public:
 			void* dataA;
 			void* dataB;
 			float dist;
-			if (range1.Coincide(range2))
+			int item[2];
+
+			range1.Distance(range2, dist, item);
+			if (item[0] == -1 || item[1] == -1)
 				return 0;
 
-			float dist0 = range1.m_MaxRange - range2.m_MinRange;
-			float dist1 = range2.m_MaxRange - range1.m_MinRange;
+			int ptA = indices[item[0]];
+			int ptB = indices[item[1]];
 
-			int which = dist0 < dist1 ? 1 : 2;
-
-			if (which == 1)
-				dist = -dist0;
-			else
-				dist = -dist1;
-
-			if (dist > dp.m_Dist)
+			if (dist >= dp.m_Dist - TAT_EPSILON2)
 			{
 				dp.m_Dist = dist;
-				if (dp.m_StateFlag == 0)
-					dp.m_UserData = which == 1 ? (void*)indices[1] : (void*)indices[0];
-				else if (dp.m_StateFlag == 1)
-					dp.m_UserData = which == 1 ? (void*)indices[2] : (void*)indices[3];
 
-				dp.m_Normal = dir;
+				dp.m_VertexGroups.push_back(TATSATDistPack::VertexGroup(ptA, ptB, dist));
+
 				return 1;
 			}
 			return 0;
 		}
 	}
 
-	static void Support(TATVector3* face0, TATVector3* face1, const TATVector3& dir, int* indices, float* projects)
+	static void Support(TATVector3* face0, int n0, TATVector3* face1, int n1, const TATVector3& dir, int* indices, float* projects)
 	{
 		int i = 0, j = 0;
 		float proj;
@@ -871,9 +997,9 @@ public:
 		indices[1] = indices[3] = -1;
 		projects[0] = projects[2] = TAT_MAX;
 		projects[1] = projects[3] = -TAT_MAX;
-		while (i < 3 || j < 3)
+		while (i < n0 || j < n1)
 		{
-			if (i < 3)
+			if (i < n0)
 			{
 				proj = face0[i].Dot(dir);
 				if (proj < projects[0])
@@ -888,7 +1014,7 @@ public:
 				}
 			}
 			i++;
-			if (j < 3)
+			if (j < n1)
 			{
 				proj = face1[j].Dot(dir);
 				if (proj < projects[2])

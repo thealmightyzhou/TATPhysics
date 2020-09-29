@@ -283,140 +283,54 @@ public:
 		int ite_num,
 		float margin,
 		float collide_radius,
-		float& t
+		float& t,
+		TATVector3& normal
 	)
 	{
 		t = 0;
-
-		TATVector3 inte_face0[3]{ face0[0],face0[1],face0[2] };
-		TATVector3 inte_face1[3]{ face1[0],face1[1],face1[2] };
-
-		float distance;
-		if (!TATSATDistSolver::TriangleDistance(inte_face0, inte_face1, distance))
-			return false;
-
-		if (distance < margin + collide_radius)
-			return true;
-
-		TATVector3 edge0[3]{ inte_face0[1] - inte_face0[0],inte_face0[2] - inte_face0[1],inte_face0[2] - inte_face0[0] };
-		TATVector3 edge1[3]{ inte_face1[1] - inte_face1[0],inte_face1[2] - inte_face1[1],inte_face1[2] - inte_face1[0] };
-		TATVector3 normal0 = ((inte_face0[1] - inte_face0[0]).Cross(inte_face0[2] - inte_face0[0])).Normalized();
-		TATVector3 normal1 = ((inte_face1[1] - inte_face1[0]).Cross(inte_face1[2] - inte_face1[0])).Normalized();
-
-		TATVector3 ct0 = (inte_face0[0] + inte_face0[1] + inte_face0[2]) / 3;
-		TATVector3 ct1 = (inte_face1[0] + inte_face1[1] + inte_face1[2]) / 3;
-
-		TATVector3 correct_dir = ct0 - ct1;
-
-		TATVector3 test_dirs[11]
-		{
-			edge0[0].Cross(edge1[0]).Normalized(),
-			edge0[0].Cross(edge1[1]).Normalized(),
-			edge0[0].Cross(edge1[2]).Normalized(),
-			edge0[1].Cross(edge1[0]).Normalized(),
-			edge0[1].Cross(edge1[1]).Normalized(),
-			edge0[1].Cross(edge1[2]).Normalized(),
-			edge0[2].Cross(edge1[0]).Normalized(),
-			edge0[2].Cross(edge1[1]).Normalized(),
-			edge0[2].Cross(edge1[2]).Normalized(),
-			normal0,
-			normal1
-		};
+		int ite = 0;
+		TATVector3 tri0[3]{ face0[0],face0[1],face0[2] };
+		TATVector3 tri1[3]{ face1[0],face1[1],face1[2] };
 
 		float nvel0[3];
 		float nvel1[3];
-		float minTime = TAT_MAX;
-		float time;
-		for (int i = 0; i < 11; ++i)
-		{
-			if (test_dirs[i].Dot(correct_dir) < 0)
-				test_dirs[i] = -test_dirs[i];
 
-			float dist;
-			if (!Support(inte_face0, inte_face1, test_dirs[i], dist))
-				continue;
-
-			for (int j = 0; j < 3; ++j)
-			{
-				nvel0[j] = vel0[j].Dot(test_dirs[i]);
-				nvel1[j] = vel1[j].Dot(test_dirs[i]);
-			}
-
-			float rel_vel = nvel1[_MaxOfArray<float>(nvel1, 3)] - nvel0[_MinOfArray<float>(nvel0, 3)];
-			time = (dist - margin) / rel_vel;
-
-			if (time < 0 || 1 < time)
-				continue;
-			else
-				if (time < minTime)
-					minTime = time;
-		}
-
-
-		int ite = 0;
+		TATVector3 norm;
+		float dt;
+		float dist;
+		TATSATDistPack dp;
+		
 		while (ite < ite_num)
 		{
-			t += minTime;
-			minTime = TAT_MAX;
+			dist = TATSATDistSolver::SolveTriangleDistance(tri0, tri1, dp) - margin;
+			if (dist < collide_radius)
+			{
+				normal = (dp.m_ClostPtB - dp.m_ClostPtA).Normalized();
+				return true;
+			}
+
+			norm = (dp.m_ClostPtB - dp.m_ClostPtA).Normalized();
+			for (int i = 0; i < 3; ++i)
+			{
+				nvel0[i] = vel0[i].Dot(norm);
+				nvel1[i] = vel1[i].Dot(norm);
+			}
+
+			float rel_vel = _MaxOfArray<float>(nvel0, 3) - _MinOfArray<float>(nvel1, 3);
+			if (rel_vel < TAT_EPSILON)
+			{
+				return false;
+			}
+			dt = dist / rel_vel;
+			t += dt;
+
+			if (t > 1)
+				return false;
 
 			for (int i = 0; i < 3; ++i)
 			{
-				inte_face0[i] += t * vel0[i];
-				inte_face1[i] += t * vel1[i];
-			}
-			if (!TATSATDistSolver::TriangleDistance(inte_face0, inte_face1, distance))
-				return false;
-
-			if (distance < margin + collide_radius)
-				return true;
-
-			edge0[0] = inte_face0[1] - inte_face0[0];
-			edge0[1] = inte_face0[2] - inte_face0[1];
-			edge0[2] = inte_face0[2] - inte_face0[0];
-			edge1[0] = inte_face1[1] - inte_face1[0];
-			edge1[1] = inte_face1[2] - inte_face1[1];
-			edge1[2] = inte_face1[2] - inte_face1[0];
-			normal0 = ((inte_face0[1] - inte_face0[0]).Cross(inte_face0[2] - inte_face0[0])).Normalized();
-			normal1 = ((inte_face1[1] - inte_face1[0]).Cross(inte_face1[2] - inte_face1[0])).Normalized();
-			ct0 = (inte_face0[0] + inte_face0[1] + inte_face0[2]) / 3;
-			ct1 = (inte_face1[0] + inte_face1[1] + inte_face1[2]) / 3;
-			correct_dir = ct0 - ct1;
-
-			test_dirs[0] = edge0[0].Cross(edge1[0]).Normalized();
-			test_dirs[1] = edge0[0].Cross(edge1[1]).Normalized();
-			test_dirs[2] = edge0[0].Cross(edge1[2]).Normalized();
-			test_dirs[3] = edge0[1].Cross(edge1[0]).Normalized();
-			test_dirs[4] = edge0[1].Cross(edge1[1]).Normalized();
-			test_dirs[5] = edge0[1].Cross(edge1[2]).Normalized();
-			test_dirs[6] = edge0[2].Cross(edge1[0]).Normalized();
-			test_dirs[7] = edge0[2].Cross(edge1[1]).Normalized();
-			test_dirs[8] = edge0[2].Cross(edge1[2]).Normalized();
-			test_dirs[9] = normal0;
-			test_dirs[10] = normal1;
-			
-			for (int i = 0; i < 11; ++i)
-			{
-				if (test_dirs[i].Dot(correct_dir) < 0)
-					test_dirs[i] = -test_dirs[i];
-
-				float dist;
-				if (!Support(inte_face0, inte_face1, test_dirs[i], dist))
-					continue;
-
-				for (int j = 0; j < 3; ++j)
-				{
-					nvel0[j] = vel0[j].Dot(test_dirs[i]);
-					nvel1[j] = vel1[j].Dot(test_dirs[i]);
-				}
-
-				float rel_vel = nvel1[_MaxOfArray<float>(nvel1, 3)] - nvel0[_MinOfArray<float>(nvel0, 3)];
-				time = (dist - margin) / rel_vel;
-
-				if (time < 0 || 1 < time)
-					continue;
-				else
-					if (time < minTime)
-						minTime = time;
+				tri0[i] = face0[i] + t * vel0[i];
+				tri1[i] = face1[i] + t * vel1[i];
 			}
 
 			ite++;

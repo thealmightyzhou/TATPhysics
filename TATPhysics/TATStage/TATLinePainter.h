@@ -37,6 +37,22 @@ public:
 		MarkRenderStateDirty();
 	}
 
+	void PaintTriangle(const TATVector3& a, const TATVector3& b, const TATVector3& c, const TATVector3& color)
+	{
+		m_RenderEleMask.UseColour();
+
+		m_RenderVertices.push_back(TATRenderVertex(a, color));
+		m_RenderVertices.push_back(TATRenderVertex(b, color));
+		m_RenderVertices.push_back(TATRenderVertex(b, color));
+		m_RenderVertices.push_back(TATRenderVertex(c, color));
+		m_RenderVertices.push_back(TATRenderVertex(c, color));
+		m_RenderVertices.push_back(TATRenderVertex(a, color));
+
+		ComputeOrder();
+		m_RenderUnit->m_ReadyToRender = true;
+		MarkRenderStateDirty();
+	}
+
 	void ComputeOrder()
 	{
 		if(m_RenderOrder.size() != m_RenderVertices.size())

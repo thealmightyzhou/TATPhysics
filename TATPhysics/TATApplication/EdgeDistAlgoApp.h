@@ -20,7 +20,7 @@ public:
 
 		m_MainCamera->SetPosition(TATVector3(0, 0, -20));
 		m_MainCamera->SetDirection(TATVector3(0, 0, 1));
-		m_MainCamera->SetSpeed(100);
+		m_MainCamera->SetSpeed(30);
 	}
 
 	virtual void CreateScene() 
@@ -40,7 +40,7 @@ public:
 		cubeActor->SetMaterial(mat);
 		cubeActor->SetUseTransform(true);
 		TATStageNode* node3 = m_RootNode->CreateChild("cube");
-		node3->MountActor(cubeActor);
+		//node3->MountActor(cubeActor);
 		TATRigidBody* rb = TATDynamicWorld::Instance()->CreateConvex(cube, 0.1f);
 		rb->Initialize();
 		rb->m_ControllByUser = true;
@@ -54,7 +54,7 @@ public:
 		cubeActor1->m_WorldTransform = TATransform(TATQuaternion::GetIdentity(), TATVector3(50, 0, 0));
 		TATStageNode* node4 = m_RootNode->CreateChild("py");
 		node4->SetPosition(TATVector3(40, 0, 0));
-		node4->MountActor(cubeActor1);
+		//node4->MountActor(cubeActor1);
 		TATRigidBody* rb1 = TATDynamicWorld::Instance()->CreateConvex(cube, 0.1f);
 		rb1->Initialize();
 		rb1->m_ControllByUser = true;
@@ -121,7 +121,33 @@ public:
 			m_Rigid1->m_CollideShape->Cast<TATCollideShapeConvex>(), m_Rigid0->m_WorldTransform, m_Rigid1->m_WorldTransform, cd);
 
 		TAT_RENDER_THREAD->m_LinePainter->Clear();
-		TAT_RENDER_THREAD->m_LinePainter->PaintLine(cd.m_ClostPtA, cd.m_ClostPtB, TATVector3(1, 1, 1));
+		//TAT_RENDER_THREAD->m_LinePainter->PaintLine(cd.m_ClostPtA, cd.m_ClostPtB, TATVector3(1, 1, 1));
+
+		ori.FromAngleAxis(TATVector3(1, 1, 1), x);
+		tr.SetOrigin(TATVector3(0, 0, 0));
+		tr.SetRotation(ori);
+
+		TATVector3 tri0[3]
+		{
+			TATVector3(-4.78,8.572,-12.743),
+			TATVector3(16.116,0,-4.254),
+			TATVector3(-4.78,-8.572,4.235)
+		};
+
+		TATVector3 tri1[3]
+		{
+			ori * TATVector3(4.487,0,6.718),
+			ori * TATVector3(29.488,0,21.153),
+			ori * TATVector3(4.487,0,35.587)
+		};
+
+		TATSATDistPack dp;
+		dist = TATSATDistSolver::SolveTriangleDistance(tri0, tri1, dp);
+
+		TAT_RENDER_THREAD->m_LinePainter->PaintTriangle(tri0[0], tri0[1], tri0[2], TATVector3(0, 1, 0));
+		TAT_RENDER_THREAD->m_LinePainter->PaintTriangle(tri1[0], tri1[1], tri1[2], TATVector3(0, 0, 1));
+
+		TAT_RENDER_THREAD->m_LinePainter->PaintLine(dp.m_ClostPtA, dp.m_ClostPtB, TATVector3(1, 0, 0));
 	}
 
 	TATRigidBody* m_Rigid0;
