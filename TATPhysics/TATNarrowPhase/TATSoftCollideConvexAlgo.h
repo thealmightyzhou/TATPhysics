@@ -208,8 +208,8 @@ public:
 		float t;
 		float margin = 0.2;
 		float collideRadius = 0.02f;
-
-		if (TATCollisionUtil::CalcTimeOfImpact
+		TATVector3 norm;
+		if (TATCollisionUtil::GetTriTriTOIWithRadius
 		(
 			soft_pt,
 			soft_vel,
@@ -218,7 +218,8 @@ public:
 			margin,
 			collideRadius,
 			64,
-			t
+			t,
+			norm
 		))
 		{
 			//TODO

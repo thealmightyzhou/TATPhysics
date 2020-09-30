@@ -108,66 +108,54 @@ public:
 		return true;
 	}
 
-	static bool CalcTimeOfImpact
+	static bool GetPtTriTOIWithRadius
 	(
 		TATVector3 pt, const TATVector3& vp,
 		TATVector3 face[3], TATVector3 vf[3],
-		float& t, int iterateNum, float margin
+		float& t, int iterateNum, float margin,
+		float collide_radius, TATVector3& normal
 	)
 	{
-		TATVector3 originPos = pt;
-
+		TATVector3 p = pt;
+		TATVector3 f[3]{ face[0],face[1],face[2] };
 		int iteNum = 0;
-		TATVector3 normal = ((face[1] - face[0]).Cross(face[2] - face[0])).SafeNormalize();
-		float dist = (pt - face[0]).Dot(normal) - margin;
+		TATVector3 norm;
+		TATVector3 ptOnTri;
+		float dist;
+		float vn[3];
+		float rel_vel;
 
-		if (dist < 0)
-			return false;
-
-		float vel[3];
-		vel[0] = vf[0].Dot(normal);
-		vel[1] = vf[1].Dot(normal);
-		vel[2] = vf[2].Dot(normal);
-
-		float rel_vel = vel[_MaxOfArray<float>(vel, 3)] - vp.Dot(normal);
-
-		float time = dist / rel_vel;
-		if (1.0 < time || time < 0.0)
-			return false;
-
-		float dt = time;
+		float dt;
 		while (iteNum < iterateNum)
 		{
-			pt += vp * dt;
-			face[0] += vf[0] * dt;
-			face[1] += vf[1] * dt;
-			face[2] += vf[2] * dt;
-
 			float w[3];
-			float dis = TATGeometryUtil::ClosetPtOnTri(pt, face[0], face[1], face[2], w).Distance(pt);
-			if (dis < (margin + COLLIDE_EPS) && TATVoronoiUtil::PtInFaceVor(pt, face[0], face[1], face[2]))
+			dist = TATGeometryUtil::ClosetPtOnTri(p, f[0], f[1], f[2], w).Distance(p) - margin;
+			if (dist < collide_radius)
 			{
-				t = time;
+				normal = p - (f[0] * w[0] + f[1] * w[1] + f[2] * w[2]);
 				return true;
 			}
 
-			normal = ((face[1] - face[0]).Cross(face[2] - face[0])).SafeNormalize();
-			vel[0] = vf[0].Dot(normal);
-			vel[1] = vf[1].Dot(normal);
-			vel[2] = vf[2].Dot(normal);
+			ptOnTri = f[0] * w[0] + f[1] * w[1] + f[2] * w[2];
+			norm = p - ptOnTri;
+			vn[0] = vf[0].Dot(normal);
+			vn[1] = vf[1].Dot(normal);
+			vn[2] = vf[2].Dot(normal);
 
-			dist = (pt - face[0]).Dot(normal) - margin;
+			rel_vel = vn[_MaxOfArray<float>(vn, 3)] - vp.Dot(normal);
 
-			if (dist < -TAT_EPSILON2)
+			if (rel_vel <= 0)
 				return false;
-
-			rel_vel = vel[_MaxOfArray<float>(vel, 3)] - vp.Dot(normal);
 
 			dt = dist / rel_vel;
-			time += dt;
-
-			if (1.0 + TAT_EPSILON < time || time < -TAT_EPSILON)
+			t += dt;
+			if (t > 1)
 				return false;
+
+			p = pt + vp * t;
+			f[0] = face[0] + vf[0] * t;
+			f[1] = face[1] + vf[1] * t;
+			f[2] = face[2] + vf[2] * t;
 
 			iteNum++;
 		}
@@ -274,7 +262,7 @@ public:
 		return false;
 	}
 
-	static bool CalcTimeOfImpact
+	static bool GetTriTriTOIWithRadius
 	(
 		TATVector3* face0,
 		TATVector3* vel0,
@@ -316,8 +304,8 @@ public:
 				nvel1[i] = vel1[i].Dot(norm);
 			}
 
-			float rel_vel = _MaxOfArray<float>(nvel0, 3) - _MinOfArray<float>(nvel1, 3);
-			if (rel_vel < TAT_EPSILON)
+			float rel_vel = nvel0[_MaxOfArray<float>(nvel0, 3)] - nvel1[_MinOfArray<float>(nvel1, 3)];
+			if (rel_vel <= 0)
 			{
 				return false;
 			}
@@ -336,19 +324,6 @@ public:
 			ite++;
 		}
 
-	}
-
-	static bool Support(TATVector3* face0, TATVector3* face1, const TATVector3& dir, float& dis)
-	{
-		float proj0[3]{ face0[0].Dot(dir), face0[1].Dot(dir), face0[2].Dot(dir) };
-		float proj1[3]{ face1[0].Dot(dir), face1[1].Dot(dir), face1[2].Dot(dir) };
-		TATRange range0(proj0[_MinOfArray<float>(proj0, 3)], proj0[_MaxOfArray<float>(proj0, 3)]);
-		TATRange range1(proj1[_MinOfArray<float>(proj1, 3)], proj1[_MaxOfArray<float>(proj1, 3)]);
-		if (range0.Coincide(range1))
-			return false;
-		
-		float dist[2]{ range0.m_MaxRange - range1.m_MinRange,range1.m_MaxRange - range0.m_MinRange };
-		dis = -dist[_MinOfArray<float>(dist, 2)];
 	}
 
 	static TATMatrix3 MassMatrix(float im, const TATMatrix3& iwi, const TATVector3& r)

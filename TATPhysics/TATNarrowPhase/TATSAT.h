@@ -405,7 +405,7 @@ public:
 		cd.m_TrB = tr1;
 
 		TATVector3 dir = tr0 * convex0->m_LocalMassCenter -
-						 tr1 * convex0->m_LocalMassCenter;
+						 tr1 * convex1->m_LocalMassCenter;
 
 		std::vector<TATPhyFace>& faces0 = convex0->m_CollideMeshData.m_Faces;
 		std::vector<TATPhyFace>& faces1 = convex1->m_CollideMeshData.m_Faces;
@@ -688,53 +688,6 @@ public:
 		}
 	}
 
-	//test on wcs
-	//edge data must be recalculate
-	static int TestOneDir(TATCollideShapeConvex* convex0, TATCollideShapeConvex* convex1, const TATVector3& dir, TATSATDistPack& cd)
-	{
-
-		std::vector<TATPhyVertex>& vertices0 = convex0->m_CollideMeshData.m_Vertices;
-		std::vector<TATPhyVertex>& vertices1 = convex1->m_CollideMeshData.m_Vertices;
-
-		TATransform tr0 = cd.m_TrA;
-		TATransform tr1 = cd.m_TrB;
-
-		int indices[4];
-		float projs[4];
-		TATSAT::Support(vertices0, vertices1, tr0, tr1, dir, indices, projs);
-
-		TATRange range1(projs[0], projs[1]);
-		TATRange range2(projs[2], projs[3]);
-
-		{
-			void* dataA;
-			void* dataB;
-			float dist;
-			int item[2];
-
-			range1.Distance(range2, dist, item);
-			if (item[0] == -1 || item[1] == -1)
-				return 0;
-
-			int ptA = indices[item[0]];
-			int ptB = indices[item[1]];
-
-			if (dist >= cd.m_Dist - TAT_EPSILON2)
-			{
-				cd.m_Dist = dist;
-
-				cd.m_ResVerticesA.push_back(&vertices0[ptA]);
-				cd.m_ResVerticesB.push_back(&vertices1[ptB]);
-
-				cd.m_VertexGroups.push_back(TATSATDistPack::VertexGroup(&vertices0[ptA], &vertices0[ptB], dist));
-
-				return 1;
-			}
-			return 0;
-		}
-	}
-
-	//if true there be no penetration and can get a distance of two triangles
 	static float SolveTriangleDistance(TATVector3* face0, TATVector3* face1, TATSATDistPack& dp)
 	{
 		TATVector3 ct0 = (face0[0] + face0[1] + face0[2]) / 3;
@@ -772,7 +725,6 @@ public:
 		{
 			testDir = normal0;
 
-			//dir always from rb0 to rb1
 			if (testDir.Dot(dir) < 0)
 			{
 				testDir = -testDir;
@@ -910,46 +862,64 @@ public:
 			}
 		}
 
-		return dp.m_ClostPtA.Distance(dp.m_ClostPtB);
+		return max_sep > 0 ? dp.m_ClostPtA.Distance(dp.m_ClostPtB) : -dp.m_ClostPtA.Distance(dp.m_ClostPtB);
+	}
 
-		/*if (dp.m_StateFlag == 0)
-		{
-			float weights[3];
-			TATVector3 pt = TATGeometryUtil::ClosetPtOnTri(face0[dp.m_ResVertexA], face1[0], face1[1], face1[2], weights);
-			dp.m_ClostPtA = face0[dp.m_ResVertexA];
-			dp.m_ClostPtB = pt;
-			dp.m_Dist = dp.m_ClostPtA.Distance(dp.m_ClostPtB);
-			return dp.m_Dist;
-		}
-		else if (dp.m_StateFlag == 1)
-		{
-			float weights[3];
-			TATVector3 pt = TATGeometryUtil::ClosetPtOnTri(face1[dp.m_ResVertexB], face0[0], face0[1], face0[2], weights);
-			dp.m_ClostPtB = face1[dp.m_ResVertexB];
-			dp.m_ClostPtA = pt;
-			dp.m_Dist = dp.m_ClostPtA.Distance(dp.m_ClostPtB);
-			return dp.m_Dist;
-		}
-		else if (dp.m_StateFlag == 2)
-		{
-			TATVector3 pt0, pt1;
-			int v0 = edgeIndex[dp.m_ResEdges[0] * 2];
-			int v1 = edgeIndex[dp.m_ResEdges[0] * 2 + 1];
-			int v2 = edgeIndex[dp.m_ResEdges[1] * 2];
-			int v3 = edgeIndex[dp.m_ResEdges[1] * 2 + 1];
+	static float SolveTriConvexDistance(TATVector3* tri, TATCollideShapeConvex* convex, const TATransform& tr, TATSATDistPack& dp)
+	{
+		TATCollideShapeConvex* con = CreateTriConvex(tri);
+		TATransform tr0;
 
-			float w1, w2;
-			dp.m_Dist = TATGeometryUtil::GetSegmentsClosetPt(face0[v0], face0[v1], face1[v2], face1[v3], w1, w2);
-			dp.m_ClostPtA = face0[v0] * w1 + face0[v1] * (1 - w1);
-			dp.m_ClostPtB = face1[v2] * w2 + face1[v3] * (1 - w2);
-			return dp.m_Dist;
+		float dist = SolveConvexDistance(con, convex, tr0, tr, dp);
 
-			return true;
-		}
-		else
+		delete con;
+		return dist;
+	}
+
+	//test on wcs
+	//edge data must be recalculate
+	static int TestOneDir(TATCollideShapeConvex* convex0, TATCollideShapeConvex* convex1, const TATVector3& dir, TATSATDistPack& cd)
+	{
+
+		std::vector<TATPhyVertex>& vertices0 = convex0->m_CollideMeshData.m_Vertices;
+		std::vector<TATPhyVertex>& vertices1 = convex1->m_CollideMeshData.m_Vertices;
+
+		TATransform tr0 = cd.m_TrA;
+		TATransform tr1 = cd.m_TrB;
+
+		int indices[4];
+		float projs[4];
+		TATSAT::Support(vertices0, vertices1, tr0, tr1, dir, indices, projs);
+
+		TATRange range1(projs[0], projs[1]);
+		TATRange range2(projs[2], projs[3]);
+
 		{
-			return false;
-		}*/
+			void* dataA;
+			void* dataB;
+			float dist;
+			int item[2];
+
+			range1.Distance(range2, dist, item);
+			if (item[0] == -1 || item[1] == -1)
+				return 0;
+
+			int ptA = indices[item[0]];
+			int ptB = indices[item[1]];
+
+			if (dist >= cd.m_Dist - TAT_EPSILON2)
+			{
+				cd.m_Dist = dist;
+
+				cd.m_ResVerticesA.push_back(&vertices0[ptA]);
+				cd.m_ResVerticesB.push_back(&vertices1[ptB]);
+
+				cd.m_VertexGroups.push_back(TATSATDistPack::VertexGroup(&vertices0[ptA], &vertices1[ptB], dist));
+
+				return 1;
+			}
+			return 0;
+		}
 	}
 
 	static int TestOneDir(TATVector3* face0, TATVector3* face1, const TATVector3& dir, TATSATDistPack& dp)
@@ -989,7 +959,41 @@ public:
 		}
 	}
 
-	static void Support(TATVector3* face0, int n0, TATVector3* face1, int n1, const TATVector3& dir, int* indices, float* projects)
+	static int TestOneDir(TATVector3* v0, int n0, TATVector3* v1, int n1, const TATVector3& dir, TATSATDistPack& dp)
+	{
+		int indices[4];
+		float projs[4];
+		Support(v0, n0, v1, n1, dir, indices, projs);
+
+		TATRange range1(projs[0], projs[1]);
+		TATRange range2(projs[2], projs[3]);
+
+		{
+			void* dataA;
+			void* dataB;
+			float dist;
+			int item[2];
+
+			range1.Distance(range2, dist, item);
+			if (item[0] == -1 || item[1] == -1)
+				return 0;
+
+			int ptA = indices[item[0]];
+			int ptB = indices[item[1]];
+
+			if (dist >= dp.m_Dist - TAT_EPSILON2)
+			{
+				dp.m_Dist = dist;
+
+				dp.m_VertexGroups.push_back(TATSATDistPack::VertexGroup(ptA, ptB, dist));
+
+				return 1;
+			}
+			return 0;
+		}
+	}
+
+	static void Support(TATVector3* v0, int n0, TATVector3* v1, int n1, const TATVector3& dir, int* indices, float* projects)
 	{
 		int i = 0, j = 0;
 		float proj;
@@ -1001,7 +1005,7 @@ public:
 		{
 			if (i < n0)
 			{
-				proj = face0[i].Dot(dir);
+				proj = v0[i].Dot(dir);
 				if (proj < projects[0])
 				{
 					projects[0] = proj;
@@ -1016,7 +1020,7 @@ public:
 			i++;
 			if (j < n1)
 			{
-				proj = face1[j].Dot(dir);
+				proj = v1[j].Dot(dir);
 				if (proj < projects[2])
 				{
 					projects[2] = proj;
@@ -1032,5 +1036,68 @@ public:
 			j++;
 		}
 
+	}
+
+	static TATCollideShapeConvex* CreateTriConvex(TATVector3* tri)
+	{
+		TATPhyMeshData mesh;
+		mesh.m_Vertices.push_back(TATPhyVertex(tri[0]));
+		mesh.m_Vertices.push_back(TATPhyVertex(tri[1]));
+		mesh.m_Vertices.push_back(TATPhyVertex(tri[2]));
+
+		mesh.m_Faces.push_back(TATPhyFace(0, 1, 2));
+		mesh.m_Faces.push_back(TATPhyFace(0, 2, 1));
+		mesh.m_Faces[0].m_Normal = (tri[1] - tri[0]).Cross(tri[2] - tri[0]).Normalized();
+		mesh.m_Faces[1].m_Normal = -mesh.m_Faces[0].m_Normal;
+
+		mesh.m_Edges.push_back(TATPhyEdge(0, 1));
+		mesh.m_Edges.push_back(TATPhyEdge(1, 2));
+		mesh.m_Edges.push_back(TATPhyEdge(2, 0));
+
+		for (int i = 0; i < 3; ++i)
+		{
+			mesh.m_Vertices[i].m_FaceIndices.push_back(0);
+			mesh.m_Vertices[i].m_Faces.push_back(&mesh.m_Faces[0]);
+			mesh.m_Vertices[i].m_FaceIndices.push_back(1);
+			mesh.m_Vertices[i].m_Faces.push_back(&mesh.m_Faces[1]);
+		}
+
+		mesh.m_Faces[0].m_Normal = (tri[1] - tri[0]).Cross(tri[2] - tri[0]).Normalized();
+		mesh.m_Faces[0].m_Vertices[0] = &mesh.m_Vertices[0];
+		mesh.m_Faces[0].m_Vertices[1] = &mesh.m_Vertices[1];
+		mesh.m_Faces[0].m_Vertices[2] = &mesh.m_Vertices[2];
+
+		mesh.m_Edges[0].m_Vertices[0] = &mesh.m_Vertices[0];
+		mesh.m_Edges[0].m_Vertices[1] = &mesh.m_Vertices[1];
+		mesh.m_Edges[1].m_Vertices[0] = &mesh.m_Vertices[1];
+		mesh.m_Edges[1].m_Vertices[1] = &mesh.m_Vertices[2];
+		mesh.m_Edges[2].m_Vertices[0] = &mesh.m_Vertices[2];
+		mesh.m_Edges[2].m_Vertices[1] = &mesh.m_Vertices[0];
+
+		for (int i = 0; i < 3; ++i)
+		{
+			mesh.m_Edges[i].m_Direction = (mesh.m_Edges[i].m_Vertices[1]->m_Position - mesh.m_Edges[i].m_Vertices[0]->m_Position).Normalized();
+			mesh.m_Edges[i].m_FaceIndices[0] = 0;
+			mesh.m_Edges[i].m_FaceIndices[1] = 1;
+			mesh.m_Edges[i].m_Faces[0] = &mesh.m_Faces[0];
+			mesh.m_Edges[i].m_Faces[1] = &mesh.m_Faces[1];
+		}
+
+		mesh.m_Vertices[0].m_EdgeIndices.push_back(0);
+		mesh.m_Vertices[0].m_EdgeIndices.push_back(2);
+		mesh.m_Vertices[1].m_EdgeIndices.push_back(0);
+		mesh.m_Vertices[1].m_EdgeIndices.push_back(1);
+		mesh.m_Vertices[2].m_EdgeIndices.push_back(1);
+		mesh.m_Vertices[2].m_EdgeIndices.push_back(2);
+
+		mesh.m_Vertices[0].m_Edges.push_back(&mesh.m_Edges[0]);
+		mesh.m_Vertices[0].m_Edges.push_back(&mesh.m_Edges[2]);
+		mesh.m_Vertices[1].m_Edges.push_back(&mesh.m_Edges[0]);
+		mesh.m_Vertices[1].m_Edges.push_back(&mesh.m_Edges[1]);
+		mesh.m_Vertices[2].m_Edges.push_back(&mesh.m_Edges[1]);
+		mesh.m_Vertices[2].m_Edges.push_back(&mesh.m_Edges[2]);
+
+		TATCollideShapeConvex* convex = new TATCollideShapeConvex(mesh, 1, false);
+		return convex;
 	}
 };

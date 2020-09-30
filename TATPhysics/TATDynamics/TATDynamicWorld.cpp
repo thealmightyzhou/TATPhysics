@@ -217,7 +217,7 @@ TATRigidBody* TATDynamicWorld::CreateConvex(TATMesh* mesh, float invMass)
 		data.m_Faces[i].m_VertexIndices[2] = mesh->m_MeshFaces[i].m_Vertices[2];
 	}
 
-	TATCollideShapeConvex* convex = new TATCollideShapeConvex(data, invMass);
+	TATCollideShapeConvex* convex = new TATCollideShapeConvex(data, invMass, true);
 
 	//TATRigidBodyData* rbdata = m_RigidBodyDatas.FetchUnused();
 	//TATInertiaData* in =  m_InertiaDatas.FetchUnused();

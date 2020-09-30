@@ -88,7 +88,7 @@ public:
 class TATCollideShapeConvex :public TATCollideShapePrimitive
 {
 public:
-	TATCollideShapeConvex(const TATPhyMeshData& meshData, float invMass);
+	TATCollideShapeConvex(const TATPhyMeshData& meshData, float invMass, bool autofill = true);
 
 	TATPhyMeshData m_CollideMeshData;
 
