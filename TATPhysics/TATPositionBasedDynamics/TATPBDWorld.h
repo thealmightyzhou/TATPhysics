@@ -5,6 +5,7 @@
 #include "../TATGeometry/TATMeshInfo.h"
 #include "../TATBasis/TString.h"
 #include "../TATNarrowPhase/TATSoftRigidCollisionData.h"
+#include "../TATNarrowPhase/TATSoftSoftCollisionData.h"
 #include "../TATBroadPhase/TATBvh.h"
 #include <map>
 
@@ -36,7 +37,7 @@ public:
 
 	void SimulationBegin(float dt);
 
-	void PrepareSolve(float dt);
+	void PrepareSolve(std::vector<TATSoftSoftCollideData>& ss, float dt);
 
 	void SolveConstraint(float dt);
 
@@ -58,11 +59,9 @@ public:
 		m_SoftRigidCollideDatas.insert(m_SoftRigidCollideDatas.end(), datas.begin(), datas.end());
 	}
 
-	void ComputeMatrixK(const TATVector3& connector, float invMass, const TATVector3& x, TATMatrix3& iwi, TATMatrix3& K);
+	//void ComputeMatrixK(const TATVector3& connector, float invMass, const TATVector3& x, TATMatrix3& iwi, TATMatrix3& K);
 
-	void SolveCollision(const TATSoftRigidCollideData& data, float dt, float& sumImpulse, float stiff, float frictionStiff);
-
-	void GenerateCollision(float dt);
+	//void SolveCollision(const TATSoftRigidCollideData& data, float dt, float& sumImpulse, float stiff, float frictionStiff);
 
 	int m_IterateNum;
 

@@ -115,5 +115,59 @@ public:
 		else
 			return false;
 	}
+
+	void SolveRSContacts(TATSoftRigidCollideData& data, float dt)
+	{
+		TATPBDParticle* particle = data.m_Particle;
+		TATRigidBody* rigid = data.m_Rigid;
+
+		if (rigid->m_InvMass != 0)
+		{
+			TATransform predictTr;
+			TATransformUtil::IntegrateTransform(rigid->GetWorldTransform(), rigid->GetLinearVelocity(), rigid->GetAngularVelocity(), data.m_HitFraction * dt, predictTr);
+			rigid->SetWorldTransform(predictTr);
+			rigid->UpdataInverseInertiaWorld();
+		}
+
+		const TATMatrix3& iwi = rigid->m_InvInertiaWorld;
+		//TATVector3 r = data.m_RigidPt - rigid->GetMassCenter();
+		TATVector3 r = data.m_SoftPt - rigid->GetMassCenter();
+
+		TATMatrix3 impulseMatrix = TATCollisionUtil::ImpulseMatrix
+		(
+			dt,
+			data.m_Particle->m_InvMass,
+			rigid->m_InvMass,
+			iwi,
+			r
+			);
+
+		//TATVector3 va = rigid->GetVelocityAtWCS(data.m_RigidPt) * dt;
+		TATVector3 va = rigid->GetVelocityAtWCS(data.m_SoftPt) * dt;
+		TATVector3 vb = particle->m_PredictPos - particle->Position();
+		const TATVector3 rel_vel = vb - va;
+		const float rel_vel_normal = rel_vel.Dot(data.m_CollideNormal);
+		if (rel_vel_normal > 0)
+			return;
+
+		const TATVector3 rel_frict_vel = rel_vel - rel_vel_normal * data.m_CollideNormal;
+		float frict = particle->m_HostBody->m_FrictionCoeffcient * rigid->m_FrictionCoeff;
+		float fricCoeff = rel_frict_vel.Length() < rel_vel_normal * particle->m_HostBody->m_FrictionCoeffcient ? 0 : 1 - frict;
+
+		float kst = 1.0f;
+
+		if (data.m_Penetration > 0)
+			return;
+
+		const TATVector3 impulse = impulseMatrix *
+			(rel_vel - rel_frict_vel * fricCoeff - data.m_Penetration * rigid->m_ContactHardness * data.m_CollideNormal) * kst;
+
+		particle->m_PredictPos = data.m_SoftPt;
+		particle->m_PredictPos -= impulse * particle->m_InvMass * dt;
+		//particle->m_Velocity -= impulse * particle->m_InvMass;
+
+		rigid->ApplyImpulse(impulse, r);
+
+	}
 };
 

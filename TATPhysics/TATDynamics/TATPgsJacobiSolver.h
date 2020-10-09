@@ -87,7 +87,7 @@ public:
 
 	void SolveContact(const TATRigidBodyCollideData& contact, TATContactSolverInfo& info);
 
-	void PrepareSolve();
+	void PrepareSolve(std::vector<TATRigidBodyCollideData>& contacts);
 
 	void SolveConstraint();
 
@@ -119,8 +119,6 @@ public:
 	int m_IterateNum;
 
 	std::vector<SolverContext> m_SolverContexts;
-
-	std::vector<TATRigidBodyCollideData*> m_Contacts;
 
 	TATContactSolverInfo* m_GlobalInfo;
 

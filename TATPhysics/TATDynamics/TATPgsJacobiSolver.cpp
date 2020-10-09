@@ -284,7 +284,7 @@ void TATPgsJacobiSolver::SolveContact(const TATRigidBodyCollideData& contact, TA
 
 }
 
-void TATPgsJacobiSolver::PrepareSolve()
+void TATPgsJacobiSolver::PrepareSolve(std::vector<TATRigidBodyCollideData>& contacts)
 {
 	if (!m_GlobalInfo)
 		return;
@@ -299,11 +299,11 @@ void TATPgsJacobiSolver::PrepareSolve()
 
 	TATSolverBody* bodyA;
 	TATSolverBody* bodyB;
-	for (int i = 0; i < m_Contacts.size(); ++i)
+	for (int i = 0; i < contacts.size(); ++i)
 	{
 
-		TATRigidBody& rb0 = TATDynamicWorld::Instance()->m_RigidBodys[m_Contacts[i]->m_RbIndex0];
-		TATRigidBody& rb1 = TATDynamicWorld::Instance()->m_RigidBodys[m_Contacts[i]->m_RbIndex1];
+		TATRigidBody& rb0 = TATDynamicWorld::Instance()->m_RigidBodys[contacts[i].m_RbIndex0];
+		TATRigidBody& rb1 = TATDynamicWorld::Instance()->m_RigidBodys[contacts[i].m_RbIndex1];
 
 		bodyA = m_SolverBodyPool.FetchUnused();
 		bodyB = m_SolverBodyPool.FetchUnused();
@@ -311,8 +311,8 @@ void TATPgsJacobiSolver::PrepareSolve()
 		rb0.m_BodyIndex = bodyA->m_IndexInPool;
 		rb1.m_BodyIndex = bodyB->m_IndexInPool;
 
-		bodyA->m_OriginalBodyIndex = m_Contacts[i]->m_RbIndex0;
-		bodyB->m_OriginalBodyIndex = m_Contacts[i]->m_RbIndex1;
+		bodyA->m_OriginalBodyIndex = contacts[i].m_RbIndex0;
+		bodyB->m_OriginalBodyIndex = contacts[i].m_RbIndex1;
 
 		InitSolverBody(rb0.m_BodyIndex, rb0);
 		InitSolverBody(rb1.m_BodyIndex, rb1);
@@ -322,7 +322,7 @@ void TATPgsJacobiSolver::PrepareSolve()
 		TATSolverConstraint* fricConstr1 = m_SolverFrictionConstraintPool.FetchUnused();
 
 		TATContactPoint cp;
-		GetContactPoint(*m_Contacts[i], cp);
+		GetContactPoint(contacts[i], cp);
 
 		SetupContactConstraint(constr, rb0.m_BodyIndex, rb1.m_BodyIndex,
 			cp, *m_GlobalInfo, vel, relVel, relaxation, relPos1, relPos2);
@@ -331,8 +331,8 @@ void TATPgsJacobiSolver::PrepareSolve()
 
 		SolverContext context;
 
-		context.m_RigidA = &TATDynamicWorld::Instance()->m_RigidBodys[m_Contacts[i]->m_RbIndex0];
-		context.m_RigidB = &TATDynamicWorld::Instance()->m_RigidBodys[m_Contacts[i]->m_RbIndex1];
+		context.m_RigidA = &TATDynamicWorld::Instance()->m_RigidBodys[contacts[i].m_RbIndex0];
+		context.m_RigidB = &TATDynamicWorld::Instance()->m_RigidBodys[contacts[i].m_RbIndex1];
 		context.m_BodyA = bodyA;
 		context.m_BodyB = bodyB;
 		context.m_Constr = constr;
@@ -401,11 +401,14 @@ void TATPgsJacobiSolver::SimulationEnd()
 {
 	m_SolverBodyPool.Clear();
 	m_SolverContactConstraintPool.Clear();
-	for (int i = 0; i < m_Contacts.size(); ++i)
+	for (int i = 0; i < m_SolverContexts.size(); ++i)
 	{
-		delete m_Contacts[i];
+		m_SolverBodyPool.ReturnUsed(m_SolverContexts[i].m_BodyA);
+		m_SolverBodyPool.ReturnUsed(m_SolverContexts[i].m_BodyB);
+		m_SolverContactConstraintPool.ReturnUsed(m_SolverContexts[i].m_Constr);
+		m_SolverFrictionConstraintPool.ReturnUsed(m_SolverContexts[i].m_FrictConstr0);
+		m_SolverFrictionConstraintPool.ReturnUsed(m_SolverContexts[i].m_FrictConstr1);
 	}
-	m_Contacts.clear();
 	m_SolverContexts.clear();
 }
 

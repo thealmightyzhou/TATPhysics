@@ -2,6 +2,9 @@
 
 #include "../TATBroadPhase/TATBvh.h"
 #include "../TATCommon/TATSingleton.h"
+#include "../TATNarrowPhase/TATRigidBodyCollideData.h"
+#include "../TATNarrowPhase/TATSoftRigidCollisionData.h"
+#include "../TATNarrowPhase/TATSoftSoftCollisionData.h"
 
 class TATDynamicWorld;
 class TATPBDWorld;
@@ -27,6 +30,8 @@ public:
 
 	virtual void Integrate(float dt);
 
+	virtual void SolveRSContacts(float dt);
+
 	void SetWorld(TATDynamicWorld* dyn, TATPBDWorld* softworld);
 
 	//to generate collision between objs not include self collision
@@ -41,4 +46,8 @@ protected:
 	TATPBDWorld* m_PBDWorld;
 
 	bool m_bInitialized;
+
+	std::vector<TATRigidBodyCollideData> m_RRCollides;
+	std::vector<TATSoftRigidCollideData> m_RSCollides;
+	std::vector<TATSoftSoftCollideData> m_SSCollides;
 };

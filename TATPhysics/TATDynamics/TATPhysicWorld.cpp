@@ -112,8 +112,8 @@ void TATPhysicWorld::SimulationBegin(float dt)
 class PhysicObjectOverlapCB :public TATBvhCollideCallBack
 {
 public:
-	PhysicObjectOverlapCB(float dt):
-		m_TimeStep(dt)
+	PhysicObjectOverlapCB(float dt, std::vector<TATRigidBodyCollideData>& rr, std::vector<TATSoftRigidCollideData>& rs, std::vector<TATSoftSoftCollideData>& ss) :
+		m_TimeStep(dt), m_RRCollides(rr), m_RSCollides(rs), m_SSCollides(ss)
 	{
 
 	}
@@ -126,36 +126,45 @@ public:
 
 		if (rb1 && rb2)
 		{
-			TATRigidBodyCollideData data;//TODO
+			TATRigidBodyCollideData data;
 			TATRigidBodyCollisionEntry::ProcessRigidCollision(rb1, rb2, data);
+			m_RRCollides.push_back(data);
+			
 		}
 		else if (rb1 && soft2)
 		{
-			std::vector<TATSoftRigidCollideData> datas;//TODO
+			std::vector<TATSoftRigidCollideData> datas;
 			TATSoftRigidCollisionEntry::ProcessSoftRigidCollision(soft2, rb1, m_TimeStep, datas);
+			m_RSCollides.insert(m_RSCollides.end(), datas.begin(), datas.end());
 		}
 		else if (soft1 && rb2)
 		{
-			std::vector<TATSoftRigidCollideData> datas;//TODO
+			std::vector<TATSoftRigidCollideData> datas;
 			TATSoftRigidCollisionEntry::ProcessSoftRigidCollision(soft1, rb2, m_TimeStep, datas);
+			m_RSCollides.insert(m_RSCollides.end(), datas.begin(), datas.end());
 		}
 		else if (soft1 && soft2)
 		{
+			std::vector<TATSoftSoftCollideData> datas;
+			
 			//TODO
 		}
 	}
 
 	float m_TimeStep;
+	std::vector<TATRigidBodyCollideData>& m_RRCollides;
+	std::vector<TATSoftRigidCollideData>& m_RSCollides;
+	std::vector<TATSoftSoftCollideData>& m_SSCollides;
 };
 
 void TATPhysicWorld::PrepareSolveConstraint(float dt)
 {
-	PhysicObjectOverlapCB cb(dt);
+	PhysicObjectOverlapCB cb(dt, m_RRCollides, m_RSCollides, m_SSCollides);
 	m_PhysicObjectBVH.CollideWithBVTree(&m_PhysicObjectBVH, &cb);
 
-	m_DynWorld->PrepareSolve(dt);
+	m_DynWorld->PrepareSolve(m_RRCollides, dt);
 
-	m_PBDWorld->PrepareSolve(dt);
+	m_PBDWorld->PrepareSolve(m_SSCollides, dt);
 }
 
 void TATPhysicWorld::SolveConstraint(float dt)
@@ -163,6 +172,13 @@ void TATPhysicWorld::SolveConstraint(float dt)
 	m_DynWorld->SolveConstraint(dt);
 
 	m_PBDWorld->SolveConstraint(dt);
+
+	SolveRSContacts(dt);
+}
+
+void TATPhysicWorld::SolveRSContacts(float dt)
+{
+	TATSoftRigidCollisionEntry::SolveRSContacts(m_RSCollides, dt);
 }
 
 void TATPhysicWorld::Integrate(float dt)
@@ -177,5 +193,9 @@ void TATPhysicWorld::SimulationEnd(float dt)
 	m_DynWorld->SimulationEnd(dt);
 
 	m_PBDWorld->SimulationEnd(dt);
+
+	m_RRCollides.clear();
+	m_RSCollides.clear();
+	m_SSCollides.clear();
 }
 

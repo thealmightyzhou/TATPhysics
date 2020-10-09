@@ -39,10 +39,7 @@ public:
 class TATPhysicThread :public TAThread
 {
 public:
-	TATPhysicThread()
-	{
-		
-	}
+	TATPhysicThread();
 
 	virtual void Run() override
 	{

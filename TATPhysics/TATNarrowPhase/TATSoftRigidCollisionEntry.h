@@ -9,16 +9,7 @@ class TATSoftRigidCollisionEntry
 public:
 	static bool ProcessSoftRigidCollision(TATPBDBody* soft, TATRigidBody* rb, float dt, std::vector<TATSoftRigidCollideData>& data)
 	{
-		TATSoftRigidCollisionAlgoPrimitive* algo = 0;
-		switch (rb->GetShapeType())
-		{
-		case CollideShapeType::CollidePlane:
-			algo = new TATSoftCollidePlaneAlgo();
-			break;
-		case CollideShapeType::CollideConvex:
-			algo = new TATSoftCollideConvexAlgo();
-			break;
-		}
+		TATSoftRigidCollisionAlgoPrimitive* algo = GetAlgo(soft, rb);
 
 		if (algo)
 		{
@@ -35,5 +26,34 @@ public:
 		}
 
 		return false;
+	}
+
+	static void SolveRSContacts(std::vector<TATSoftRigidCollideData>& data, float dt)
+	{
+		TATSoftRigidCollisionAlgoPrimitive* algo = 0;
+		for (int i = 0; i < data.size(); ++i)
+		{
+			algo = GetAlgo(data[i].m_Soft, data[i].m_Rigid);
+			if (algo)
+			{
+				algo->SolveRSContacts(data[i],dt);
+				delete algo;
+				algo = 0;
+			}
+		}
+	}
+
+	static TATSoftRigidCollisionAlgoPrimitive* GetAlgo(TATPBDBody* soft, TATRigidBody* rb)
+	{
+		TATSoftRigidCollisionAlgoPrimitive* algo = 0;
+		switch (rb->GetShapeType())
+		{
+		case CollideShapeType::CollidePlane:
+			algo = new TATSoftCollidePlaneAlgo();
+			break;
+		case CollideShapeType::CollideConvex:
+			algo = new TATSoftCollideConvexAlgo();
+			break;
+		}
 	}
 };

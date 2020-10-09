@@ -119,60 +119,18 @@ void TATDynamicWorld::StepSimulation(float dt)
 
 void TATDynamicWorld::SimulationBegin(float dt)
 {
-	m_RigidBodyBVTree.Clear();
-	TATVector3 aabbMin, aabbMax;
 
-	const std::vector<TATRigidBody*>& rigidbodys = m_RigidBodys.FetchAllUsed();
-	for (int i = 0; i < (int)rigidbodys.size(); i++)
-	{
-		TATRigidBody* rb = rigidbodys[i];
-		rb->m_PreWorldTransform = rb->m_WorldTransform;
-		rb->UpdateWorldAabb();
-		rb->GetWorldAabb(aabbMin, aabbMax);
-
-		TATBVNode* node = m_RigidBodyBVTree.InsertAabbNode(aabbMin, aabbMax);
-		node->m_Data = (void*)(rb);
-	}
-	m_RigidBodyBVTree.FinishBuild();
 }
 
-void TATDynamicWorld::PrepareSolve(float dt)
+void TATDynamicWorld::PrepareSolve(std::vector<TATRigidBodyCollideData>& contacts,float dt)
 {
-	//broad phase
-	//-----------------
-	std::vector<TATBVCollisonPair> bpCollides;
-	TATRigidBodyOverlapCallBack cb(bpCollides);
-	m_RigidBodyBVTree.CollideWithBVTree(&m_RigidBodyBVTree, &cb);
-
-	//narrow phase
-	//-----------------
-	std::vector<TATRigidBodyCollideData> contacts;
-	TATRigidBody* rbA = 0;
-	TATRigidBody* rbB = 0;
-	for (int i = 0; i < (int)bpCollides.size(); i++)
-	{
-		rbA = (TATRigidBody*)bpCollides[i].m_node1->m_Data;
-		rbB = (TATRigidBody*)bpCollides[i].m_node2->m_Data;
-
-		TATRigidBodyCollideData cd;
-		if (TATRigidBodyCollisionEntry::ProcessRigidCollision(rbA, rbB, cd))
-		{
-			contacts.push_back(cd);
-		}
-	}
 
 	m_GlobalInfo.m_Damping = 0.98f;
 	m_GlobalInfo.m_TimeStep = dt;
 
 	m_ConstraintSolver->m_GlobalInfo = &m_GlobalInfo;
 
-	m_ConstraintSolver->m_Contacts.resize(contacts.size());
-	for (int i = 0; i < contacts.size(); ++i)
-	{
-		m_ConstraintSolver->m_Contacts[i] = &contacts[i];
-	}
-
-	m_ConstraintSolver->PrepareSolve();
+	m_ConstraintSolver->PrepareSolve(contacts);
 }
 
 void TATDynamicWorld::SolveConstraint(float dt)

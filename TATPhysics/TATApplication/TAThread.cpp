@@ -8,6 +8,12 @@
 #include "../TATBasis/TATErrorReporter.h"
 #include "../TATBasis/TATimer.h"
 #include "../TATPositionBasedDynamics/TATPBDWorld.h"
+#include "../TATDynamics/TATPhysicWorld.h"
+
+TATPhysicThread::TATPhysicThread()
+{
+	TATPhysicWorld::Instance()->SetWorld(TATDynamicWorld::Instance(), TATPBDWorld::Instance());
+}
 
 void TATPhysicThread::AddListener(TATPhysicListener* listener)
 {
@@ -45,9 +51,11 @@ void TATPhysicThread::PhysicLoop()
 				m_PhysicListeners[i]->SimulationStart(timeStep);
 			}
 
-			TATPBDWorld::Instance()->StepSimulation(timeStep);
+			//TATPBDWorld::Instance()->StepSimulation(timeStep);
 
-			TATDynamicWorld::Instance()->StepSimulation(timeStep);
+			//TATDynamicWorld::Instance()->StepSimulation(timeStep);
+
+			TATPhysicWorld::Instance()->StepSimulation(timeStep);
 
 			for (int i = 0; i < (int)m_PhysicListeners.size(); ++i)
 			{

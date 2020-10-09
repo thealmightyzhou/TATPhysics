@@ -30,5 +30,7 @@ public:
 		return false;
 	}
 
+	virtual void SolveRSContacts(TATSoftRigidCollideData& c,float dt) {}
+
 	std::vector<TATSoftRigidCollideData> m_CollisionDatas;
 };

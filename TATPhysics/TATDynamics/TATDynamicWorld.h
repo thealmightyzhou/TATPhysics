@@ -33,7 +33,7 @@ public:
 
 	void SimulationBegin(float dt);
 
-	void PrepareSolve(float dt);
+	void PrepareSolve(std::vector<TATRigidBodyCollideData>& contacts, float dt);
 
 	void SolveConstraint(float dt);
 
