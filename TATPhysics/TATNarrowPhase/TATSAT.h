@@ -1040,10 +1040,13 @@ public:
 
 	static TATCollideShapeConvex* CreateTriConvex(TATVector3* tri)
 	{
-		TATPhyMeshData mesh;
-		mesh.m_Vertices.push_back(TATPhyVertex(tri[0]));
-		mesh.m_Vertices.push_back(TATPhyVertex(tri[1]));
-		mesh.m_Vertices.push_back(TATPhyVertex(tri[2]));
+		TATPhyMeshData cmesh;
+		cmesh.m_Vertices.push_back(TATPhyVertex(tri[0]));
+		cmesh.m_Vertices.push_back(TATPhyVertex(tri[1]));
+		cmesh.m_Vertices.push_back(TATPhyVertex(tri[2]));
+
+		TATCollideShapeConvex * convex = new TATCollideShapeConvex(cmesh, 1, false);
+		TATPhyMeshData & mesh = convex->m_CollideMeshData;
 
 		mesh.m_Faces.push_back(TATPhyFace(0, 1, 2));
 		mesh.m_Faces.push_back(TATPhyFace(0, 2, 1));
@@ -1066,6 +1069,9 @@ public:
 		mesh.m_Faces[0].m_Vertices[0] = &mesh.m_Vertices[0];
 		mesh.m_Faces[0].m_Vertices[1] = &mesh.m_Vertices[1];
 		mesh.m_Faces[0].m_Vertices[2] = &mesh.m_Vertices[2];
+		mesh.m_Faces[1].m_Vertices[0] = &mesh.m_Vertices[0];
+		mesh.m_Faces[1].m_Vertices[1] = &mesh.m_Vertices[2];
+		mesh.m_Faces[1].m_Vertices[2] = &mesh.m_Vertices[1];
 
 		mesh.m_Edges[0].m_Vertices[0] = &mesh.m_Vertices[0];
 		mesh.m_Edges[0].m_Vertices[1] = &mesh.m_Vertices[1];
@@ -1097,7 +1103,6 @@ public:
 		mesh.m_Vertices[2].m_Edges.push_back(&mesh.m_Edges[1]);
 		mesh.m_Vertices[2].m_Edges.push_back(&mesh.m_Edges[2]);
 
-		TATCollideShapeConvex* convex = new TATCollideShapeConvex(mesh, 1, false);
 		return convex;
 	}
 };

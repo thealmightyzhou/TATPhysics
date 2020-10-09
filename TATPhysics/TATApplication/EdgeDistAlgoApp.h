@@ -141,14 +141,14 @@ public:
 			ori * TATVector3(4.487,0,35.587)
 		};
 
-		TATSATDistPack dp;
-		dist = TATSATDistSolver::SolveTriangleDistance(tri0, tri1, dp);
+		//TATSATDistPack dp;
+		//dist = TATSATDistSolver::SolveTriangleDistance(tri0, tri1, dp);
 
 		TATSATDistPack dp1;
 		dist = TATSATDistSolver::SolveTriConvexDistance(tri1, m_Rigid0->m_CollideShape->Cast<TATCollideShapeConvex>(),m_Rigid0->GetWorldTransform(), dp1);
 
 		//TAT_RENDER_THREAD->m_LinePainter->PaintTriangle(tri0[0], tri0[1], tri0[2], TATVector3(0, 1, 0));
-		//TAT_RENDER_THREAD->m_LinePainter->PaintTriangle(tri1[0], tri1[1], tri1[2], TATVector3(0, 0, 1));
+		TAT_RENDER_THREAD->m_LinePainter->PaintTriangle(tri1[0], tri1[1], tri1[2], TATVector3(0, 0, 1));
 
 		//TAT_RENDER_THREAD->m_LinePainter->PaintLine(dp.m_ClostPtA, dp.m_ClostPtB, TATVector3(1, 0, 0));
 
