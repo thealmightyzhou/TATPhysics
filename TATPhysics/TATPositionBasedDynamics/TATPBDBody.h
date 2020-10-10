@@ -3,6 +3,7 @@
 #include "../TATResources/TATModelLoader.h"
 #include "../TATBasis/TATickable.h"
 #include "../TATBroadPhase/TATBvh.h"
+#include "../TATDynamics/TATPhyBody.h"
 
 class TATActor;
 class TATPBDConstraint;
@@ -16,7 +17,8 @@ public:
 	{
 		m_Velocity.SetZero();
 		m_ExternalForce.SetZero();
-		m_PredictPos = m_PhyVertex.m_Position;
+		m_CurrPos = m_PhyVertex.m_Position;
+		m_LastPos = m_CurrPos;
 	}
 
 	float m_InvMass;
@@ -24,15 +26,11 @@ public:
 	TATVector3 m_ExternalForce;
 	TATVector3 m_InstantForce;
 	TATVector3 m_ConstantForce;
-	TATVector3 m_PredictPos;
+	TATVector3 m_CurrPos;
+	TATVector3 m_LastPos;
 	TATPhyVertex& m_PhyVertex;
 	TATPBDBody* m_HostBody;
 	int m_Index;
-
-	TATVector3& Position()
-	{
-		return m_PhyVertex.m_Position;
-	}
 
 	void AddInstantForce(const TATVector3& f)
 	{
@@ -45,7 +43,7 @@ public:
 	}
 };
 
-class TATPBDBody:public TATickable
+class TATPBDBody:public TATickable ,public TATPhyBody
 {
 public:
 

@@ -147,7 +147,7 @@ void TATPBDWorld::ProcessCollision(float dt)
 {
 	for (int i = 0; i < m_SoftRigidCollideDatas.size(); ++i)
 	{
-		ProjectRSCollision(m_SoftRigidCollideDatas[i], dt);
+		//ProjectRSCollision(m_SoftRigidCollideDatas[i], dt);
 
 		//float impulse_sum = 0.0f;
 		//SolveCollision(m_SoftRigidCollideDatas[i], dt, impulse_sum, 1.0, 0);

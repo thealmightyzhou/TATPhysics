@@ -5,8 +5,8 @@
 int main()
 {
 	//TestApp* app = new TestApp("TestApp");
-	//SoftBodyTestApp* app = new SoftBodyTestApp("SoftBodyTest");
+	SoftBodyTestApp* app = new SoftBodyTestApp("SoftBodyTest");
 
-	EdgeDistAlgoApp* app = new EdgeDistAlgoApp("EdgeDistAlgo");
+	//EdgeDistAlgoApp* app = new EdgeDistAlgoApp("EdgeDistAlgo");
 	app->Run();
 }

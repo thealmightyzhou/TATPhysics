@@ -209,16 +209,16 @@ float TATPgsJacobiSolver::RestitutionCurve(float rel_vel, float restitution)
 	return rest;
 }
 
-void TATPgsJacobiSolver::InitSolverBody(int bodyIndex, const TATRigidBody& rb)
+void TATPgsJacobiSolver::InitSolverBody(int bodyIndex, TATRigidBody* rb)
 {
 	TATSolverBody& body = m_SolverBodyPool[bodyIndex];
-	body.m_AngVel = rb.m_AngVel;
-	body.m_InvMass = rb.m_InvMass;
-	body.m_LinVel = rb.m_LinVel;
-	body.m_WorldTransform.SetOrigin(rb.m_Pos);
-	body.m_WorldTransform.SetRotation(rb.m_Quat);
-	body.m_MassCenter = rb.GetMassCenter();
-	body.m_OriginalBodyIndex = rb.m_IndexInPool;
+	body.m_AngVel = rb->m_AngVel;
+	body.m_InvMass = rb->m_InvMass;
+	body.m_LinVel = rb->m_LinVel;
+	body.m_WorldTransform.SetOrigin(rb->m_Pos);
+	body.m_WorldTransform.SetRotation(rb->m_Quat);
+	body.m_MassCenter = rb->GetMassCenter();
+	body.m_OriginalBodyIndex = rb->m_IndexInPool;
 	body.m_DeltaAngVel.SetZero();
 	body.m_DeltaLinVel.SetZero();
 	body.m_PushVel.SetZero();
@@ -236,17 +236,17 @@ void TATPgsJacobiSolver::SolveContact(const TATRigidBodyCollideData& contact, TA
 	float relVel;
 	float relaxation;
 
-	TATRigidBody& rb0 = TATDynamicWorld::Instance()->m_RigidBodys[contact.m_RbIndex0];
-	TATRigidBody& rb1 = TATDynamicWorld::Instance()->m_RigidBodys[contact.m_RbIndex1];
+	TATRigidBody* rb0 = contact.m_RigidA;
+	TATRigidBody* rb1 = contact.m_RigidB;
 
 	TATSolverBody* bodyA = m_SolverBodyPool.FetchUnused();
 	TATSolverBody* bodyB = m_SolverBodyPool.FetchUnused();
 
-	rb0.m_BodyIndex = bodyA->m_IndexInPool;
-	rb1.m_BodyIndex = bodyB->m_IndexInPool;
+	rb0->m_BodyIndex = bodyA->m_IndexInPool;
+	rb1->m_BodyIndex = bodyB->m_IndexInPool;
 
-	InitSolverBody(rb0.m_BodyIndex, rb0);
-	InitSolverBody(rb1.m_BodyIndex, rb1);
+	InitSolverBody(bodyA->m_IndexInPool, rb0);
+	InitSolverBody(bodyB->m_IndexInPool, rb1);
 
 	TATSolverConstraint* constr = m_SolverContactConstraintPool.FetchUnused();
 	TATSolverConstraint* fricConstr0 = m_SolverFrictionConstraintPool.FetchUnused();
@@ -255,7 +255,7 @@ void TATPgsJacobiSolver::SolveContact(const TATRigidBodyCollideData& contact, TA
 	TATContactPoint cp;
 	GetContactPoint(contact, cp);
 
-	SetupContactConstraint(constr, rb0.m_BodyIndex, rb1.m_BodyIndex,
+	SetupContactConstraint(constr, rb0->m_BodyIndex, rb1->m_BodyIndex,
 		cp, info, vel, relVel, relaxation, relPos1, relPos2);
 
 	DecomposeContact(vel, relVel, cp.m_NormalWorldB2A, relPos1, relPos2, bodyA, bodyB, fricConstr0, fricConstr1, relaxation, info, cp);
@@ -302,20 +302,20 @@ void TATPgsJacobiSolver::PrepareSolve(std::vector<TATRigidBodyCollideData>& cont
 	for (int i = 0; i < contacts.size(); ++i)
 	{
 
-		TATRigidBody& rb0 = TATDynamicWorld::Instance()->m_RigidBodys[contacts[i].m_RbIndex0];
-		TATRigidBody& rb1 = TATDynamicWorld::Instance()->m_RigidBodys[contacts[i].m_RbIndex1];
+		TATRigidBody* rb0 = contacts[i].m_RigidA;
+		TATRigidBody* rb1 = contacts[i].m_RigidB;
 
 		bodyA = m_SolverBodyPool.FetchUnused();
 		bodyB = m_SolverBodyPool.FetchUnused();
 
-		rb0.m_BodyIndex = bodyA->m_IndexInPool;
-		rb1.m_BodyIndex = bodyB->m_IndexInPool;
+		rb0->m_BodyIndex = bodyA->m_IndexInPool;
+		rb1->m_BodyIndex = bodyB->m_IndexInPool;
 
 		bodyA->m_OriginalBodyIndex = contacts[i].m_RbIndex0;
 		bodyB->m_OriginalBodyIndex = contacts[i].m_RbIndex1;
 
-		InitSolverBody(rb0.m_BodyIndex, rb0);
-		InitSolverBody(rb1.m_BodyIndex, rb1);
+		InitSolverBody(rb0->m_BodyIndex, rb0);
+		InitSolverBody(rb1->m_BodyIndex, rb1);
 
 		TATSolverConstraint* constr = m_SolverContactConstraintPool.FetchUnused();
 		TATSolverConstraint* fricConstr0 = m_SolverFrictionConstraintPool.FetchUnused();
@@ -324,7 +324,7 @@ void TATPgsJacobiSolver::PrepareSolve(std::vector<TATRigidBodyCollideData>& cont
 		TATContactPoint cp;
 		GetContactPoint(contacts[i], cp);
 
-		SetupContactConstraint(constr, rb0.m_BodyIndex, rb1.m_BodyIndex,
+		SetupContactConstraint(constr, rb0->m_BodyIndex, rb1->m_BodyIndex,
 			cp, *m_GlobalInfo, vel, relVel, relaxation, relPos1, relPos2);
 
 		DecomposeContact(vel, relVel, cp.m_NormalWorldB2A, relPos1, relPos2, bodyA, bodyB, fricConstr0, fricConstr1, relaxation, *m_GlobalInfo, cp);

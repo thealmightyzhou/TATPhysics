@@ -6,6 +6,7 @@
 #include "../TATCommon/TATSingleton.h"
 #include "../TATResources/TATMesh.h"
 #include "TATSolverConstraint.h"
+#include "../TATNarrowPhase/TATRigidBodyCollideData.h"
 
 class TATPgsJacobiSolver;
 

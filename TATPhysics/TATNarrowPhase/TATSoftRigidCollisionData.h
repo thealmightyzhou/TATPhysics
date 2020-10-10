@@ -13,8 +13,10 @@ struct TATSoftRigidCollideData
 	TATRigidBody* m_Rigid;
 	TATPBDBody* m_Soft;
 	TATPBDParticle* m_Particle;
+	int m_SoftFaceIndex;
 	float m_Penetration;
 	float m_HitFraction;
+	float m_SoftFaceWeight[3];
 	TATVector3 m_CollideNormal; // point form rigid to soft
 	TATVector3 m_SoftPt;
 	TATVector3 m_RigidPt;

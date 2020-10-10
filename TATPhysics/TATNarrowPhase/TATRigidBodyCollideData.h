@@ -10,6 +10,8 @@ public:
 
 	int m_RbIndex0; //get from TATDynamicWorld
 	int m_RbIndex1;
+	TATRigidBody* m_RigidA;
+	TATRigidBody* m_RigidB;
 	float m_Penetration;
 	TATVector3 m_CollidePt0;
 	TATVector3 m_CollidePt1;

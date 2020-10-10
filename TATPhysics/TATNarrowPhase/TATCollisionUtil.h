@@ -272,7 +272,9 @@ public:
 		float margin,
 		float collide_radius,
 		float& t,
-		TATVector3& normal
+		TATVector3& normal,
+		float w1[3],
+		float w2[3]
 	)
 	{
 		t = 0;
@@ -294,6 +296,8 @@ public:
 			if (dist < collide_radius)
 			{
 				normal = (dp.m_ClostPtB - dp.m_ClostPtA).Normalized();
+				TATGeometryUtil::ClosetPtOnTri(dp.m_ClostPtA, tri0[0], tri0[1], tri0[2], w1);
+				TATGeometryUtil::ClosetPtOnTri(dp.m_ClostPtB, tri1[0], tri1[1], tri1[2], w2);
 				return true;
 			}
 
@@ -336,6 +340,11 @@ public:
 	static TATMatrix3 ImpulseMatrix(float dt, float ima, float imb, const TATMatrix3& iwi, const TATVector3& r)
 	{
 		return (TATMatrix3::Diagonal(1.0f / dt) * (TATMatrix3::Diagonal(ima) + MassMatrix(imb, iwi, r)).Inverse());
+	}
+
+	static TATMatrix3 ImpulseMatrix(float ima, float imb, const TATMatrix3& iwi, const TATVector3& r)
+	{
+		return (TATMatrix3::Diagonal(ima) + MassMatrix(imb, iwi, r)).Inverse();
 	}
 
 	static TATMatrix3 ImpulseMatrix(float ima, const TATMatrix3& iia, const TATVector3& ra,

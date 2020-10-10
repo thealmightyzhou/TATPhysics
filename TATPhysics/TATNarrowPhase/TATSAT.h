@@ -399,6 +399,7 @@ class TATSATDistSolver
 {
 public:
 
+	//if seperate return positive value other wise return negative value
 	static float SolveConvexDistance(TATCollideShapeConvex* convex0, TATCollideShapeConvex* convex1, const TATransform& tr0, const TATransform& tr1, TATSATDistPack& cd)
 	{
 		cd.m_TrA = tr0;
@@ -477,7 +478,6 @@ public:
 			}
 		}
 
-		//FindClosetPt(cd);
 		TATVector3 va, vb;
 		float min_dist = TAT_MAX;
 		float dist;
@@ -494,18 +494,24 @@ public:
 			}
 		}
 
+		int usecnt = cd.m_VertexGroups.size();
 		for (int i = 0; i < cd.m_VertexGroups.size(); ++i)
 		{
 			if (cd.m_VertexGroups[i].m_Dist < cd.m_VertexGroups[max_index].m_Dist - TAT_EPSILON2)
+			{
 				cd.m_VertexGroups[i].m_Use = false;
+				usecnt--;
+			}
+
 		}
 
 		for (int i = 0; i < (int)cd.m_VertexGroups.size() - 1; ++i)
 		{
 			for (int j = i + 1; j < cd.m_VertexGroups.size(); ++j)
 			{
-				if (cd.m_VertexGroups[i].Equals(cd.m_VertexGroups[j]))
+				if (cd.m_VertexGroups[i].Equals(cd.m_VertexGroups[j]) && usecnt > 1)
 				{
+					usecnt--;
 					cd.m_VertexGroups[j].m_Use = false;
 				}
 			}
@@ -526,10 +532,21 @@ public:
 			}
 		}
 
-		cd.m_Normal = (cd.m_ClostPtA - cd.m_ClostPtB);
-		cd.m_Normal.SafeNormalize();
 
-		return min_dist;
+		if (max_sep > 0)
+		{
+			cd.m_Normal = (cd.m_ClostPtA - cd.m_ClostPtB);
+			cd.m_Normal.SafeNormalize();
+			return min_dist;
+		}
+
+		else
+		{
+			cd.m_Normal = (cd.m_ClostPtB - cd.m_ClostPtA);
+			cd.m_Normal.SafeNormalize();
+			return -min_dist;
+		}
+
 	}
 
 	static void FindClosetFeature(TATPhyVertex* p0, TATPhyVertex* p1,const TATransform& tr0,const TATransform& tr1,TATVector3& va,TATVector3& vb)
@@ -901,8 +918,6 @@ public:
 			int item[2];
 
 			range1.Distance(range2, dist, item);
-			if (item[0] == -1 || item[1] == -1)
-				return 0;
 
 			int ptA = indices[item[0]];
 			int ptB = indices[item[1]];
@@ -941,8 +956,6 @@ public:
 			int item[2];
 
 			range1.Distance(range2, dist, item);
-			if (item[0] == -1 || item[1] == -1)
-				return 0;
 
 			int ptA = indices[item[0]];
 			int ptB = indices[item[1]];
@@ -975,8 +988,6 @@ public:
 			int item[2];
 
 			range1.Distance(range2, dist, item);
-			if (item[0] == -1 || item[1] == -1)
-				return 0;
 
 			int ptA = indices[item[0]];
 			int ptB = indices[item[1]];

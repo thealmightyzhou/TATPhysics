@@ -99,6 +99,7 @@ void SoftBodyTestApp::CreateScene()
 	softBody0->AddVolumeConstraint(0.9, 0.9);
 	softBody0->SetDamping(0.8, 0.8);
 	softBody0->SetGravity(TATVector3(0, -50, 0));
+	softBody0->m_UseCCD = true;
 	softActor0->AttachTickable(softBody0);
 
 	//TATPBDVertexSpacePtDistConstraint* constr = new TATPBDVertexSpacePtDistConstraint(softBody0->GetParticleAt(0), TATVector3(0, -50, 0), 0.8, 0.8);
@@ -119,6 +120,7 @@ void SoftBodyTestApp::CreateScene()
 	skirtBody->AddDihedralConstraint(0.1);
 	skirtBody->SetDamping(0.8, 0.8);
 	skirtBody->SetGravity(TATVector3(0, -10, 0));
+	skirtBody->m_UseCCD = true;
 	skirtActor->AttachTickable(skirtBody);
 	TATPBDVertexRigidPtDistConstraint* rConstr = new TATPBDVertexRigidPtDistConstraint(skirtBody->GetParticleAt(0), TATVector3(0, 0, 0),
 		pawnRb, 0, 0.8);

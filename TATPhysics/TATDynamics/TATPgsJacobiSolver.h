@@ -97,7 +97,7 @@ public:
 
 	void SolveFinish(const TATContactSolverInfo& info);
 
-	void InitSolverBody(int bodyIndex, const TATRigidBody& rb);
+	void InitSolverBody(int bodyIndex, TATRigidBody* rb);
 
 	void DecomposeContact(const TATVector3& vel, const TATVector3& rel_vel, const TATVector3& normal,
 		const TATVector3& rel_pos0, const TATVector3& rel_pos1,

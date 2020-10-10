@@ -81,21 +81,21 @@ void TATPhysicWorld::SimulationBegin(float dt)
 		if (particles.size() == 0)
 			continue;
 
-		min = particles[0].m_PredictPos;
-		max = particles[0].m_PredictPos;
+		min = particles[0].m_CurrPos;
+		max = particles[0].m_CurrPos;
 		for (int p = 0; p < particles.size(); ++p)
 		{
 			if (soft[i]->m_UseCCD)
 			{
-				min.SetMin(particles[p].m_PredictPos);
-				min.SetMin(particles[p].Position());
-				max.SetMax(particles[p].m_PredictPos);
-				max.SetMax(particles[p].Position());
+				min.SetMin(particles[p].m_CurrPos);
+				min.SetMin(particles[p].m_LastPos);
+				max.SetMax(particles[p].m_CurrPos);
+				max.SetMax(particles[p].m_LastPos);
 			}
 			else
 			{
-				min.SetMin(particles[p].m_PredictPos);
-				max.SetMax(particles[p].m_PredictPos);
+				min.SetMin(particles[p].m_CurrPos);
+				max.SetMax(particles[p].m_CurrPos);
 			}
 		}
 		
@@ -120,33 +120,39 @@ public:
 	virtual void NodeOverlapped(TATBVNode* node1, TATBVNode* node2) 
 	{
 		TATRigidBody* rb1 = (TATRigidBody*)(node1->m_Data);
-		TATPBDBody* soft1 = (TATPBDBody*)(node1->m_Data);
 		TATRigidBody* rb2 = (TATRigidBody*)(node2->m_Data);
+		TATPBDBody* soft1 = (TATPBDBody*)(node1->m_Data);
 		TATPBDBody* soft2 = (TATPBDBody*)(node2->m_Data);
 
-		if (rb1 && rb2)
+		if (rb1->Legal() && rb2->Legal() && rb1->m_Type == TATPhyBody::BodyType::RigidBody && rb2->m_Type == TATPhyBody::BodyType::RigidBody)
 		{
 			TATRigidBodyCollideData data;
-			TATRigidBodyCollisionEntry::ProcessRigidCollision(rb1, rb2, data);
-			m_RRCollides.push_back(data);
-			
+			if (TATRigidBodyCollisionEntry::ProcessRigidCollision(rb1, rb2, data))
+			{
+				data.m_RigidA = rb1;
+				data.m_RigidB = rb2;
+				m_RRCollides.push_back(data);
+			}
 		}
-		else if (rb1 && soft2)
+		else if (rb1->Legal() && soft2->Legal() && rb1->m_Type == TATPhyBody::BodyType::RigidBody && soft2->m_Type == TATPhyBody::BodyType::SoftBody)
 		{
 			std::vector<TATSoftRigidCollideData> datas;
-			TATSoftRigidCollisionEntry::ProcessSoftRigidCollision(soft2, rb1, m_TimeStep, datas);
-			m_RSCollides.insert(m_RSCollides.end(), datas.begin(), datas.end());
+			if (TATSoftRigidCollisionEntry::ProcessSoftRigidCollision(soft2, rb1, m_TimeStep, datas))
+			{
+				m_RSCollides.insert(m_RSCollides.end(), datas.begin(), datas.end());
+			}
 		}
-		else if (soft1 && rb2)
+		else if (soft1->Legal() && rb2->Legal() && soft1->m_Type == TATPhyBody::BodyType::SoftBody && rb2->m_Type == TATPhyBody::BodyType::RigidBody)
 		{
 			std::vector<TATSoftRigidCollideData> datas;
-			TATSoftRigidCollisionEntry::ProcessSoftRigidCollision(soft1, rb2, m_TimeStep, datas);
-			m_RSCollides.insert(m_RSCollides.end(), datas.begin(), datas.end());
+			if (TATSoftRigidCollisionEntry::ProcessSoftRigidCollision(soft1, rb2, m_TimeStep, datas))
+			{
+				m_RSCollides.insert(m_RSCollides.end(), datas.begin(), datas.end());
+			}
 		}
-		else if (soft1 && soft2)
+		else if (soft1->Legal() && soft2->Legal() && soft1->m_Type == TATPhyBody::BodyType::SoftBody && soft2->m_Type == TATPhyBody::BodyType::SoftBody)
 		{
 			std::vector<TATSoftSoftCollideData> datas;
-			
 			//TODO
 		}
 	}

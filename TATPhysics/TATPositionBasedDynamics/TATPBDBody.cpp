@@ -8,7 +8,7 @@
 #include "../TATApplication/TAThread.h"
 #include "../TATGeometry/TATMeshInfo.h"
 
-TATPBDBody::TATPBDBody(const TString& name, const TATModelBuffer& buffer, float invMassPerNode) :TATickable(name)
+TATPBDBody::TATPBDBody(const TString& name, const TATModelBuffer& buffer, float invMassPerNode) :TATickable(name), TATPhyBody(BodyType::SoftBody)
 {
 	Build(buffer, invMassPerNode);
 
@@ -199,6 +199,8 @@ bool TATPBDBody::Update(TATActor* actor, float dt)
 
 void TATPBDBody::StepSimulation(float dt)
 {
+	m_ParticleBVH.Clear();
+
 	for (int i = 0; i < m_Particles.size(); ++i)
 	{
 		TATPBDParticle& particle = m_Particles[i];
@@ -207,9 +209,14 @@ void TATPBDBody::StepSimulation(float dt)
 		particle.m_Velocity += particle.m_ExternalForce * particle.m_InvMass * dt;
 		DampVelocity(particle, dt);
 
-		particle.m_PredictPos = particle.Position() + dt * particle.m_Velocity;
+		particle.m_CurrPos = particle.m_LastPos + dt * particle.m_Velocity;
+
+		TATAabb bound;
+		bound.SetOrigin(particle.m_LastPos, particle.m_CurrPos);
+		m_ParticleBVH.InsertAabbNode(bound.m_OriginMin - TATVector3::One() * 0.1f, bound.m_OriginMax + TATVector3::One() * 0.1f)->m_Data = (void*)&m_Particles[i];
 	}
 
+	m_ParticleBVH.FinishBuild();
 	//generate collision
 
 	//v <- v + dt * im * f
@@ -236,8 +243,8 @@ void TATPBDBody::Integrate(float dt)
 	for (int i = 0; i < m_Particles.size(); ++i)
 	{
 		TATPBDParticle& particle = m_Particles[i];
-		particle.m_Velocity = (particle.m_PredictPos - particle.Position()) / dt;
-		particle.Position() = particle.m_PredictPos;
+		particle.m_Velocity = (particle.m_CurrPos - particle.m_LastPos) / dt;
+		particle.m_LastPos = particle.m_CurrPos;
 		
 		//friction and restitution adjust velocity
 	}
@@ -250,7 +257,8 @@ void TATPBDBody::UpdateAabb()
 	{
 		TATPBDParticle& particle = m_Particles[i];
 		TATAabb bound;
-		bound.SetOrigin(particle.Position(), particle.m_PredictPos);
+		
+		bound.SetOrigin(particle.m_LastPos, particle.m_CurrPos);
 		TATBVNode* node = m_ParticleBVH.InsertAabbNode(bound.m_OriginMin - TATVector3::One() * 0.1f,
 			bound.m_OriginMax + TATVector3::One() * 0.1f);
 		node->m_Data = &m_Particles[i];
@@ -260,6 +268,11 @@ void TATPBDBody::UpdateAabb()
 
 void TATPBDBody::SolveConstraintEnd()
 {
+	for (int i = 0; i < m_Particles.size(); ++i)
+	{
+		m_Particles[i].m_LastPos = m_Particles[i].m_CurrPos;
+		m_Particles[i].m_PhyVertex.m_Position = m_Particles[i].m_CurrPos;
+	}
 	std::vector<TATVector3> points;
 	points.resize(m_RenderParticles.size());
 	for (int i = 0; i < points.size(); ++i)

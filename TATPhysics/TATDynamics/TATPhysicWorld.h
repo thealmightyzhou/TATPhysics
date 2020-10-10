@@ -16,6 +16,8 @@ public:
 	{
 		m_IterationNum = 4;
 		m_bInitialized = false;
+		m_DynWorld = 0;
+		m_PBDWorld = 0;
 	}
 
 	virtual void StepSimulation(float dt);

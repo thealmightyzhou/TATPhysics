@@ -4,6 +4,7 @@
 #include "../TATCommon/TATAabb.h"
 #include "../TATCommon/TATObjectPool.h"
 #include "../TATBasis/TATickable.h"
+#include "TATPhyBody.h"
 
 class TATActor;
 
@@ -27,6 +28,7 @@ public:
 		m_LocalMassCenter = TATVector3::Zero();
 		m_LocalInertiaTensor = TATMatrix3::GetIdentity();
 		m_LocalInvInertiaTensor = TATMatrix3::GetIdentity();
+		m_Margin = 0.05f;
 	}
 	virtual ~TATCollideShapePrimitive() {}
 
@@ -49,6 +51,8 @@ public:
 	float m_InvMass;
 
 	float m_OriginMass;
+
+	float m_Margin;
 
 	TATVector3 m_LocalMassCenter;
 
@@ -111,10 +115,10 @@ public:
 	TATVector3 m_Normal;
 };
 
-class TATRigidBody : public TATickable
+class TATRigidBody : public TATickable ,public TATPhyBody
 {
 public:
-	TATRigidBody(const TString& name,TATCollideShapePrimitive* cs) :m_CollideShape(cs),TATickable(name + TString::ConvertInt(GetObjectIndex()))
+	TATRigidBody(const TString& name,TATCollideShapePrimitive* cs) :m_CollideShape(cs),TATickable(name + TString::ConvertInt(GetObjectIndex())),TATPhyBody(BodyType::RigidBody)
 	{
 		SetWorldTransform(TATransform::GetIdentity());
 
@@ -127,7 +131,7 @@ public:
 	}
 
 	TATRigidBody(const TString& name,TATCollideShapePrimitive* cs, const TATransform& tr) :m_CollideShape(cs), m_WorldTransform(tr),
-		TATickable(name + TString::ConvertInt(GetObjectIndex()))
+		TATickable(name + TString::ConvertInt(GetObjectIndex())), TATPhyBody(BodyType::RigidBody)
 	{
 		m_FrictionCoeff = 0.9;
 		m_ContactHardness = 1;

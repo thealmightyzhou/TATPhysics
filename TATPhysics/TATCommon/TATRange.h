@@ -124,7 +124,7 @@ public:
 	}
 
 	//seperate or penetration
-	//@dist = seperate + value ; penetrate - value
+	//@dist = seperate: + value ; penetrate: - value
 	//------      1.seperate
 	//        ---
 	//------	  2.include
@@ -149,16 +149,22 @@ public:
 		}
 		else if (m_MinRange <= other.m_MinRange && other.m_MaxRange <= m_MaxRange)
 		{
-			dist = other.m_MinRange - other.m_MaxRange;
-			item[0] = -1;
-			item[1] = -1;
+			float pen0 = other.m_MaxRange - m_MinRange;
+			float pen1 = m_MaxRange - other.m_MinRange;
+			bool side = pen0 < pen1;
+			dist = side ? -pen0 : -pen1;
+			item[0] = side ? 0 : 1;
+			item[1] = side ? 3 : 2;
 			return false;
 		}
 		else if (other.m_MinRange <= m_MinRange && m_MaxRange <= other.m_MaxRange)
 		{
-			dist = m_MinRange - m_MaxRange;
-			item[0] = -1;
-			item[1] = -1;
+			float pen0 = m_MaxRange - other.m_MinRange;
+			float pen1 = other.m_MaxRange - m_MinRange;
+			bool side = pen0 < pen1;
+			dist = side ? -pen0 : -pen1;
+			item[0] = side ? 1 : 0;
+			item[1] = side ? 2 : 3;
 			return false;
 		}
 		else if (m_MinRange < other.m_MinRange)

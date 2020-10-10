@@ -6,7 +6,7 @@ TATPBDVertexDistConstraint::TATPBDVertexDistConstraint(TATPBDParticle* v0, TATPB
 	m_Vertex0(v0), m_Vertex1(v1),
 	m_CompressionStiffness(compressStiff), m_StrechStiffness(strechStiff)
 {
-	m_RestValue = v0->Position().Distance(v1->Position());
+	m_RestValue = v0->m_LastPos.Distance(v1->m_LastPos);
 	m_HashValue = TATHasher::HashTwo((int)v0, (int)v1);
 }
 
@@ -16,7 +16,7 @@ bool TATPBDVertexDistConstraint::SolveConstraint()
 	if (wSum == 0.0)
 		return false;
 
-	TATVector3 n = m_Vertex1->m_PredictPos - m_Vertex0->m_PredictPos;
+	TATVector3 n = m_Vertex1->m_CurrPos - m_Vertex0->m_CurrPos;
 	float d = n.Length();
 	n.SafeNormalize();
 
@@ -26,8 +26,8 @@ bool TATPBDVertexDistConstraint::SolveConstraint()
 	else
 		corr = m_StrechStiffness * n * (d - m_RestValue) / wSum;
 
-	m_Vertex0->m_PredictPos += m_Vertex0->m_InvMass * corr;
-	m_Vertex1->m_PredictPos += -m_Vertex1->m_InvMass * corr;
+	m_Vertex0->m_CurrPos += m_Vertex0->m_InvMass * corr;
+	m_Vertex1->m_CurrPos += -m_Vertex1->m_InvMass * corr;
 	return true;
 }
 
@@ -36,7 +36,7 @@ bool TATPBDVertexDistConstraint::SolveConstraint()
 TATPBDVertexSpacePtDistConstraint::TATPBDVertexSpacePtDistConstraint(TATPBDParticle* v, const TATVector3& pt, float comp, float strech) :
 	m_Vertex(v), m_Position(pt), m_CompressionStiffness(comp), m_StrechStiffness(strech)
 {
-	m_RestValue = v->Position().Distance(pt);
+	m_RestValue = v->m_LastPos.Distance(pt);
 	m_HashValue = TATHasher::HashThree((int)v * pt.X, (int)v * pt.Y, (int)v * pt.Z);
 }
 
@@ -46,7 +46,7 @@ bool TATPBDVertexSpacePtDistConstraint::SolveConstraint()
 	if (wSum == 0.0)
 		return false;
 
-	TATVector3 n = m_Position - m_Vertex->m_PredictPos;
+	TATVector3 n = m_Position - m_Vertex->m_CurrPos;
 	float d = n.Length();
 	n.SafeNormalize();
 
@@ -56,7 +56,7 @@ bool TATPBDVertexSpacePtDistConstraint::SolveConstraint()
 	else
 		corr = m_StrechStiffness * n * (d - m_RestValue) / wSum;
 
-	m_Vertex->m_PredictPos += m_Vertex->m_InvMass * corr;
+	m_Vertex->m_CurrPos += m_Vertex->m_InvMass * corr;
 	return true;
 }
 
@@ -65,7 +65,7 @@ bool TATPBDVertexSpacePtDistConstraint::SolveConstraint()
 TATPBDVertexRigidPtDistConstraint::TATPBDVertexRigidPtDistConstraint(TATPBDParticle* v, const TATVector3& ptInLocal, TATRigidBody* rigid, float comp, float strech) :
 	m_Vertex(v), m_Position(ptInLocal), m_Rigid(rigid), m_CompressionStiffness(comp), m_StrechStiffness(strech)
 {
-	m_RestValue = v->Position().Distance(rigid->GetWorldTransform() * ptInLocal);
+	m_RestValue = v->m_LastPos.Distance(rigid->GetWorldTransform() * ptInLocal);
 	m_HashValue = TATHasher::HashThree((int)v * (int)rigid, (int)v + (int)rigid, (int)v * (ptInLocal.X + ptInLocal.Y + ptInLocal.Z));
 }
 
@@ -75,7 +75,7 @@ bool TATPBDVertexRigidPtDistConstraint::SolveConstraint()
 	if (wSum == 0.0)
 		return false;
 	const TATVector3 pos = m_Rigid->GetWorldTransform() * m_Position;
-	TATVector3 n = pos - m_Vertex->m_PredictPos;
+	TATVector3 n = pos - m_Vertex->m_CurrPos;
 	float d = n.Length();
 	n.SafeNormalize();
 
@@ -85,8 +85,8 @@ bool TATPBDVertexRigidPtDistConstraint::SolveConstraint()
 	else
 		corr = m_StrechStiffness * n * (d - m_RestValue) / wSum;
 
-	m_Vertex->m_PredictPos += m_Vertex->m_InvMass * corr;
-	//m_Vertex1->m_PredictPos += -m_Vertex1->m_InvMass * corr;
+	m_Vertex->m_CurrPos += m_Vertex->m_InvMass * corr;
+	//m_Vertex1->m_CurrPos += -m_Vertex1->m_InvMass * corr;
 	return true;
 }
 
@@ -96,14 +96,14 @@ TATPBDVolumeConstraint::TATPBDVolumeConstraint(TATPBDParticle* p0, TATPBDParticl
 	m_Vertex0(p0), m_Vertex1(p1), m_Vertex2(p2), m_Vertex3(p3),
 	m_NegtiveStiffness(negStiff), m_PositiveStiffness(posStiff)
 {
-	m_RestValue = static_cast<float>(1.0 / 6.0)* (p1->Position() - p0->Position()).Cross(p2->Position() - p0->Position()).Dot(p3->Position() - p0->Position());
+	m_RestValue = static_cast<float>(1.0 / 6.0)* (p1->m_LastPos - p0->m_LastPos).Cross(p2->m_LastPos - p0->m_LastPos).Dot(p3->m_LastPos - p0->m_LastPos);
 	m_HashValue = TATHasher::HashTwo((int)p0 + (int)p1 + (int)p2 + (int)p3, (int)p0 * (int)p1 * (int)p2 * (int)p3);
 }
 
 bool TATPBDVolumeConstraint::SolveConstraint()
 {
-	float volume = static_cast<float>(1.0 / 6.0)* (m_Vertex1->m_PredictPos - m_Vertex0->m_PredictPos)
-		.Cross(m_Vertex2->m_PredictPos - m_Vertex0->m_PredictPos).Dot(m_Vertex3->m_PredictPos - m_Vertex0->m_PredictPos);
+	float volume = static_cast<float>(1.0 / 6.0)* (m_Vertex1->m_CurrPos - m_Vertex0->m_CurrPos)
+		.Cross(m_Vertex2->m_CurrPos - m_Vertex0->m_CurrPos).Dot(m_Vertex3->m_CurrPos - m_Vertex0->m_CurrPos);
 
 	if (m_PositiveStiffness == 0.0 && volume > 0.0)
 		return false;
@@ -112,10 +112,10 @@ bool TATPBDVolumeConstraint::SolveConstraint()
 		return false;
 
 
-	TATVector3 grad0 = (m_Vertex1->m_PredictPos - m_Vertex2->m_PredictPos).Cross(m_Vertex3->m_PredictPos - m_Vertex2->m_PredictPos);
-	TATVector3 grad1 = (m_Vertex2->m_PredictPos - m_Vertex0->m_PredictPos).Cross(m_Vertex3->m_PredictPos - m_Vertex0->m_PredictPos);
-	TATVector3 grad2 = (m_Vertex0->m_PredictPos - m_Vertex1->m_PredictPos).Cross(m_Vertex3->m_PredictPos - m_Vertex1->m_PredictPos);
-	TATVector3 grad3 = (m_Vertex1->m_PredictPos - m_Vertex0->m_PredictPos).Cross(m_Vertex2->m_PredictPos - m_Vertex0->m_PredictPos);
+	TATVector3 grad0 = (m_Vertex1->m_CurrPos - m_Vertex2->m_CurrPos).Cross(m_Vertex3->m_CurrPos - m_Vertex2->m_CurrPos);
+	TATVector3 grad1 = (m_Vertex2->m_CurrPos - m_Vertex0->m_CurrPos).Cross(m_Vertex3->m_CurrPos - m_Vertex0->m_CurrPos);
+	TATVector3 grad2 = (m_Vertex0->m_CurrPos - m_Vertex1->m_CurrPos).Cross(m_Vertex3->m_CurrPos - m_Vertex1->m_CurrPos);
+	TATVector3 grad3 = (m_Vertex1->m_CurrPos - m_Vertex0->m_CurrPos).Cross(m_Vertex2->m_CurrPos - m_Vertex0->m_CurrPos);
 
 	float lambda =
 		m_Vertex0->m_InvMass * grad0.Length2() +
@@ -131,10 +131,10 @@ bool TATPBDVolumeConstraint::SolveConstraint()
 	else
 		lambda = m_PositiveStiffness * (volume - m_RestValue) / lambda;
 
-	m_Vertex0->m_PredictPos += -lambda * m_Vertex0->m_InvMass * grad0;
-	m_Vertex1->m_PredictPos += -lambda * m_Vertex1->m_InvMass * grad1;
-	m_Vertex2->m_PredictPos += -lambda * m_Vertex2->m_InvMass * grad2;
-	m_Vertex3->m_PredictPos += -lambda * m_Vertex3->m_InvMass * grad3;
+	m_Vertex0->m_CurrPos += -lambda * m_Vertex0->m_InvMass * grad0;
+	m_Vertex1->m_CurrPos += -lambda * m_Vertex1->m_InvMass * grad1;
+	m_Vertex2->m_CurrPos += -lambda * m_Vertex2->m_InvMass * grad2;
+	m_Vertex3->m_CurrPos += -lambda * m_Vertex3->m_InvMass * grad3;
 
 	return true;
 }
@@ -144,12 +144,12 @@ bool TATPBDVolumeConstraint::SolveConstraint()
 TATPBDDihedralConstraint::TATPBDDihedralConstraint(TATPBDParticle* p0, TATPBDParticle* p1, TATPBDParticle* p2, TATPBDParticle* p3, float stiff) :
 	m_Particle0(p0), m_Particle1(p1), m_Particle2(p2), m_Particle3(p3), m_Stiffness(stiff)
 {
-	TATVector3 e = p3->m_PredictPos - p2->m_PredictPos;
+	TATVector3 e = p3->m_CurrPos - p2->m_CurrPos;
 	float eLen = e.Length();
 	float inv_eLen = static_cast<float>(1.0) / eLen;
 
-	TATVector3 n1 = (p2->m_PredictPos - p0->m_PredictPos).Cross(p3->m_PredictPos - p0->m_PredictPos);
-	TATVector3 n2 = (p3->m_PredictPos - p1->m_PredictPos).Cross(p2->m_PredictPos - p1->m_PredictPos);
+	TATVector3 n1 = (p2->m_CurrPos - p0->m_CurrPos).Cross(p3->m_CurrPos - p0->m_CurrPos);
+	TATVector3 n2 = (p3->m_CurrPos - p1->m_CurrPos).Cross(p2->m_CurrPos - p1->m_CurrPos);
 
 	n1.SafeNormalize();
 	n2.SafeNormalize();
@@ -165,22 +165,22 @@ TATPBDDihedralConstraint::TATPBDDihedralConstraint(TATPBDParticle* p0, TATPBDPar
 
 bool TATPBDDihedralConstraint::SolveConstraint()
 {
-	TATVector3 e = m_Particle3->m_PredictPos - m_Particle2->m_PredictPos;
+	TATVector3 e = m_Particle3->m_CurrPos - m_Particle2->m_CurrPos;
 	float eLen = e.Length();
 	float inv_eLen = static_cast<float>(1.0) / eLen;
-	TATVector3 n1 = (m_Particle2->m_PredictPos - m_Particle0->m_PredictPos).Cross(m_Particle3->m_PredictPos - m_Particle0->m_PredictPos);
+	TATVector3 n1 = (m_Particle2->m_CurrPos - m_Particle0->m_CurrPos).Cross(m_Particle3->m_CurrPos - m_Particle0->m_CurrPos);
 	//n1.SafeNormalize(); 
 	n1 /= n1.Length2();
-	TATVector3 n2 = (m_Particle3->m_PredictPos - m_Particle1->m_PredictPos).Cross(m_Particle2->m_PredictPos - m_Particle1->m_PredictPos);
+	TATVector3 n2 = (m_Particle3->m_CurrPos - m_Particle1->m_CurrPos).Cross(m_Particle2->m_CurrPos - m_Particle1->m_CurrPos);
 	//n2.SafeNormalize();
 	n2 /= n2.Length2();
 
 	TATVector3 d0 = eLen * n1;
 	TATVector3 d1 = eLen * n2;
-	TATVector3 d2 = (m_Particle0->m_PredictPos - m_Particle3->m_PredictPos).Dot(e) * inv_eLen * n1
-		+ (m_Particle1->m_PredictPos - m_Particle3->m_PredictPos).Dot(e) * inv_eLen * n2;
-	TATVector3 d3 = (m_Particle2->m_PredictPos - m_Particle0->m_PredictPos).Dot(e) * inv_eLen * n1 
-		+ (m_Particle2->m_PredictPos - m_Particle1->m_PredictPos).Dot(e) * inv_eLen * n2;
+	TATVector3 d2 = (m_Particle0->m_CurrPos - m_Particle3->m_CurrPos).Dot(e) * inv_eLen * n1
+		+ (m_Particle1->m_CurrPos - m_Particle3->m_CurrPos).Dot(e) * inv_eLen * n2;
+	TATVector3 d3 = (m_Particle2->m_CurrPos - m_Particle0->m_CurrPos).Dot(e) * inv_eLen * n1 
+		+ (m_Particle2->m_CurrPos - m_Particle1->m_CurrPos).Dot(e) * inv_eLen * n2;
 
 	n1.SafeNormalize();
 	n2.SafeNormalize();
@@ -204,8 +204,8 @@ bool TATPBDDihedralConstraint::SolveConstraint()
 	if (n1.Cross(n2).Dot(e) > 0.0)
 		lambda = -lambda;
 
-	m_Particle0->m_PredictPos += -m_Particle0->m_InvMass * lambda * d0;
-	m_Particle1->m_PredictPos += -m_Particle1->m_InvMass * lambda * d1;
-	m_Particle2->m_PredictPos += -m_Particle2->m_InvMass * lambda * d2;
-	m_Particle3->m_PredictPos += -m_Particle3->m_InvMass * lambda * d3;
+	m_Particle0->m_CurrPos += -m_Particle0->m_InvMass * lambda * d0;
+	m_Particle1->m_CurrPos += -m_Particle1->m_InvMass * lambda * d1;
+	m_Particle2->m_CurrPos += -m_Particle2->m_InvMass * lambda * d2;
+	m_Particle3->m_CurrPos += -m_Particle3->m_InvMass * lambda * d3;
 }

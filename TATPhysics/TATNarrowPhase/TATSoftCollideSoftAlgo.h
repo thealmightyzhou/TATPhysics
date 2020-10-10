@@ -20,23 +20,23 @@ public:
 		std::vector<TATPhyFace>& faces = m_Soft1->m_PhyBody.m_Faces;
 		TATVector3 face[3]
 		{
-			m_Soft1->GetParticleAt(faces[face_id].m_VertexIndices[0])->Position(),
-			m_Soft1->GetParticleAt(faces[face_id].m_VertexIndices[1])->Position(),
-			m_Soft1->GetParticleAt(faces[face_id].m_VertexIndices[2])->Position()
+			m_Soft1->GetParticleAt(faces[face_id].m_VertexIndices[0])->m_LastPos,
+			m_Soft1->GetParticleAt(faces[face_id].m_VertexIndices[1])->m_LastPos,
+			m_Soft1->GetParticleAt(faces[face_id].m_VertexIndices[2])->m_LastPos
 		};
 		TATVector3 vel[3]
 		{
-			m_Soft1->GetParticleAt(faces[face_id].m_VertexIndices[0])->m_PredictPos - face[0],
-			m_Soft1->GetParticleAt(faces[face_id].m_VertexIndices[1])->m_PredictPos - face[1],
-			m_Soft1->GetParticleAt(faces[face_id].m_VertexIndices[2])->m_PredictPos - face[2],
+			m_Soft1->GetParticleAt(faces[face_id].m_VertexIndices[0])->m_CurrPos - face[0],
+			m_Soft1->GetParticleAt(faces[face_id].m_VertexIndices[1])->m_CurrPos - face[1],
+			m_Soft1->GetParticleAt(faces[face_id].m_VertexIndices[2])->m_CurrPos - face[2],
 		};
 
 		float t;
 		float margin = 0.2;
 		float collide_radius = 0.02;
-		if (TATCollisionUtil::CalcTimeOfImpact(particle->Position(), particle->m_PredictPos - particle->Position(), face, vel, t, 64, margin))
+		if (TATCollisionUtil::CalcTimeOfImpact(particle->m_LastPos, particle->m_CurrPos - particle->m_LastPos, face, vel, t, 64, margin))
 		{
-			TATVector3 pt = particle->Position() + t * (particle->m_PredictPos - particle->Position());
+			TATVector3 pt = particle->m_LastPos + t * (particle->m_CurrPos - particle->m_LastPos);
 			face[0] = face[0] + t * vel[0];
 			face[1] = face[1] + t * vel[1];
 			face[2] = face[2] + t * vel[2];
@@ -84,13 +84,13 @@ public:
 
 		for (int i = 0; i < faces.size(); ++i)
 		{
-			pos0 = soft1->GetParticleAt(faces[i].m_VertexIndices[0])->Position();
-			pos1 = soft1->GetParticleAt(faces[i].m_VertexIndices[1])->Position();
-			pos2 = soft1->GetParticleAt(faces[i].m_VertexIndices[2])->Position();
+			pos0 = soft1->GetParticleAt(faces[i].m_VertexIndices[0])->m_LastPos;
+			pos1 = soft1->GetParticleAt(faces[i].m_VertexIndices[1])->m_LastPos;
+			pos2 = soft1->GetParticleAt(faces[i].m_VertexIndices[2])->m_LastPos;
 
-			vel0 = soft1->GetParticleAt(faces[i].m_VertexIndices[0])->m_PredictPos - pos0;
-			vel1 = soft1->GetParticleAt(faces[i].m_VertexIndices[1])->m_PredictPos - pos1;
-			vel2 = soft1->GetParticleAt(faces[i].m_VertexIndices[2])->m_PredictPos - pos2;
+			vel0 = soft1->GetParticleAt(faces[i].m_VertexIndices[0])->m_CurrPos - pos0;
+			vel1 = soft1->GetParticleAt(faces[i].m_VertexIndices[1])->m_CurrPos - pos1;
+			vel2 = soft1->GetParticleAt(faces[i].m_VertexIndices[2])->m_CurrPos - pos2;
 
 			min = pos0;
 			min.SetMin(pos1);

@@ -38,16 +38,16 @@ public:
 		}
 
 		TATVector3 faceVel[3]{ TATVector3::Zero(),TATVector3::Zero() ,TATVector3::Zero() };
-		TATVector3 vel = particle->m_PredictPos - particle->Position();
+		TATVector3 vel = particle->m_CurrPos - particle->m_LastPos;
 
 		float t;
 		float margin = 0.2;
 		float collide_radius = 0.02;
 
 		TATVector3 norm;
-		if (TATCollisionUtil::GetPtTriTOIWithRadius(particle->Position(), vel, points, faceVel, t, 10, margin,collide_radius, norm))
+		if (TATCollisionUtil::GetPtTriTOIWithRadius(particle->m_LastPos, vel, points, faceVel, t, 10, margin,collide_radius, norm))
 		{
-			TATVector3 p = particle->Position() + vel * t;
+			TATVector3 p = particle->m_LastPos + vel * t;
 			//plane face is static
 			TATVector3 norm = ((points[1] - points[0]).Cross(points[2] - points[0])).Normalized();
 			float pen = margin - (p - m_PlanePoints[0]).Dot(norm);
@@ -116,57 +116,20 @@ public:
 			return false;
 	}
 
-	void SolveRSContacts(TATSoftRigidCollideData& data, float dt)
+	virtual void SolveRSContacts(TATSoftRigidCollideData& data, float dt)
 	{
 		TATPBDParticle* particle = data.m_Particle;
 		TATRigidBody* rigid = data.m_Rigid;
 
-		if (rigid->m_InvMass != 0)
+		TATCollideShapePlane* plane = rigid->m_CollideShape->Cast<TATCollideShapePlane>();
+
+		float dist = (particle->m_CurrPos - plane->m_Origin).Dot(plane->m_Normal) - plane->m_Margin;
+		if (dist > 0)
+			return;
+		else
 		{
-			TATransform predictTr;
-			TATransformUtil::IntegrateTransform(rigid->GetWorldTransform(), rigid->GetLinearVelocity(), rigid->GetAngularVelocity(), data.m_HitFraction * dt, predictTr);
-			rigid->SetWorldTransform(predictTr);
-			rigid->UpdataInverseInertiaWorld();
+			particle->m_CurrPos += -plane->m_Normal * dist;
 		}
-
-		const TATMatrix3& iwi = rigid->m_InvInertiaWorld;
-		//TATVector3 r = data.m_RigidPt - rigid->GetMassCenter();
-		TATVector3 r = data.m_SoftPt - rigid->GetMassCenter();
-
-		TATMatrix3 impulseMatrix = TATCollisionUtil::ImpulseMatrix
-		(
-			dt,
-			data.m_Particle->m_InvMass,
-			rigid->m_InvMass,
-			iwi,
-			r
-			);
-
-		//TATVector3 va = rigid->GetVelocityAtWCS(data.m_RigidPt) * dt;
-		TATVector3 va = rigid->GetVelocityAtWCS(data.m_SoftPt) * dt;
-		TATVector3 vb = particle->m_PredictPos - particle->Position();
-		const TATVector3 rel_vel = vb - va;
-		const float rel_vel_normal = rel_vel.Dot(data.m_CollideNormal);
-		if (rel_vel_normal > 0)
-			return;
-
-		const TATVector3 rel_frict_vel = rel_vel - rel_vel_normal * data.m_CollideNormal;
-		float frict = particle->m_HostBody->m_FrictionCoeffcient * rigid->m_FrictionCoeff;
-		float fricCoeff = rel_frict_vel.Length() < rel_vel_normal * particle->m_HostBody->m_FrictionCoeffcient ? 0 : 1 - frict;
-
-		float kst = 1.0f;
-
-		if (data.m_Penetration > 0)
-			return;
-
-		const TATVector3 impulse = impulseMatrix *
-			(rel_vel - rel_frict_vel * fricCoeff - data.m_Penetration * rigid->m_ContactHardness * data.m_CollideNormal) * kst;
-
-		particle->m_PredictPos = data.m_SoftPt;
-		particle->m_PredictPos -= impulse * particle->m_InvMass * dt;
-		//particle->m_Velocity -= impulse * particle->m_InvMass;
-
-		rigid->ApplyImpulse(impulse, r);
 
 	}
 };

@@ -52,8 +52,10 @@ public:
 			algo = new TATSoftCollidePlaneAlgo();
 			break;
 		case CollideShapeType::CollideConvex:
-			algo = new TATSoftCollideConvexAlgo();
+			algo = new TATSoftCollideConvexAlgoV2();//TATSoftCollideConvexAlgo();
 			break;
 		}
+
+		return algo;
 	}
 };

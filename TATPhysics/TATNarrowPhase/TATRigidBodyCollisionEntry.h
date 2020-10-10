@@ -60,7 +60,8 @@ public:
 			if (algo->ComputeCollision(rb0, rb1))
 			{
 				data = algo->m_CollideData;
-
+				data.m_RigidA = rb0;
+				data.m_RigidB = rb1;
 				delete algo;
 				return true;
 			}

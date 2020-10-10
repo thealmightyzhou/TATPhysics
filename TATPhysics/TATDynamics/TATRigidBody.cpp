@@ -44,7 +44,7 @@ TATCollideShapeConvex::TATCollideShapeConvex(const TATPhyMeshData& meshData,floa
 
 //========================
 
-TATRigidBody::TATRigidBody() :TATickable("RigidBody" + TString::ConvertInt(GetObjectIndex()))
+TATRigidBody::TATRigidBody() :TATickable("RigidBody" + TString::ConvertInt(GetObjectIndex())), TATPhyBody(BodyType::RigidBody)
 {
 	m_CollideShape = 0;
 	Clear();
