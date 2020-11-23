@@ -1,6 +1,7 @@
 #include "CUDADemo.h"
 #include "../TATBasis/TATErrorReporter.h"
 #include "../TATCommon/TATVector3.h"
+#include "time.h"
 
 extern "C"
 cudaError_t addWithCuda(int* c, const int* a, const int* b, unsigned int size);
@@ -88,7 +89,7 @@ extern "C"
 void GetMinMax(TATVector3 * datas, int size, TATVector3 & min, TATVector3 & max);
 void CUDADemo::CUDAGetMinMax()
 {
-	int size = 100000;
+	int size = 1000000;
 	std::vector<TATVector3> datas;
 	datas.resize(size);
 	srand(0);
@@ -99,15 +100,43 @@ void CUDADemo::CUDAGetMinMax()
 		datas[i].Z = rand() * 41 % 10000;
 	}
 
-	datas[641].X = -2;
-	datas[456].Y = -3;
-	datas[5454].Z = -12213;
-	datas[78].X = 1000011;
-	datas[6546].Y = 123123;
-	datas[321].Z = 4545445;
+	datas[rand() % size].X = -2;
+	datas[rand() % size].Y = -3;
+	datas[rand() % size].Z = -12213;
+	datas[rand() % size].X = 1000011;
+	datas[rand() % size].Y = 123123;
+	datas[rand() % size].Z = 4545445;
 
 	TATVector3 min, max;
 	GetMinMax(&datas[0], size, min, max);
+
+	TATErrorReporter::Instance()->ReportErr(TString::ConvertInt(min.X) + " " + TString::ConvertInt(min.Y) + " " + TString::ConvertInt(min.Z));
+	TATErrorReporter::Instance()->ReportErr(TString::ConvertInt(max.X) + " " + TString::ConvertInt(max.Y) + " " + TString::ConvertInt(max.Z));
+
+	min = TAT_MAXVECTOR3;
+	max = -TAT_MAXVECTOR3;
+
+	float begin = clock();
+	for (int i = 0; i < size; ++i)
+	{
+		if (datas[i].X < min.X)
+			min.X = datas[i].X;
+		if (datas[i].Y < min.Y)
+			min.Y = datas[i].Y;
+		if (datas[i].Z < min.Z)
+			min.Z = datas[i].Z;
+		if (datas[i].X > max.X)
+			max.X = datas[i].X;
+		if (datas[i].Y > max.Y)
+			max.Y = datas[i].Y;
+		if (datas[i].Z > max.Z)
+			max.Z = datas[i].Z;
+	}
+	float end = clock();
+	float dt = end - begin;
+	TATErrorReporter::Instance()->ReportErr("cpu used time: " + TString::ConvertFloat(dt) + " ms");
+	TATErrorReporter::Instance()->ReportErr(TString::ConvertInt(min.X) + " " + TString::ConvertInt(min.Y) + " " + TString::ConvertInt(min.Z));
+	TATErrorReporter::Instance()->ReportErr(TString::ConvertInt(max.X) + " " + TString::ConvertInt(max.Y) + " " + TString::ConvertInt(max.Z));
 
 	int res = 1;
 }

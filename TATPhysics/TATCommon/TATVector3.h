@@ -76,6 +76,15 @@ public:
 		return (*this) * ((1.0f) / f);
 	}
 
+	inline TATVector3 operator/(const TATVector3& c) const
+	{
+		assert(c.X != 0);
+		assert(c.Y != 0);
+		assert(c.Z != 0);
+
+		return TATVector3(X / c.X, Y / c.Y, Z / c.Z);
+	}
+
 	inline TATVector3& operator=(const TATVector3& other)
 	{
 		SetValue(other.X, other.Y, other.Z);
