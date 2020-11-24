@@ -140,3 +140,17 @@ void CUDADemo::CUDAGetMinMax()
 
 	int res = 1;
 }
+
+void CUDADemo::LBVHTest()
+{
+	LBVH bvh;
+	srand(0);
+	for (int i = 0; i < 1000; ++i)
+	{
+		TATVector3 min, max;
+		min = TATVector3(rand() % 10000, rand() % 10000, rand() % 10000);
+		max = min + TATVector3(rand() % 10000, rand() % 10000, rand() % 10000);
+		bvh.InsertAABB(min, max);
+	}
+	bvh.Build();
+}

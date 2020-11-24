@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "cuda_runtime.h"  
 #include "device_launch_parameters.h"  
+#include "../TATBroadPhase/LBVH.h"
 
 class CUDADemo
 {
@@ -13,6 +14,7 @@ public:
 	void CUDAVectorDot();
 	void DimNum();
 
-	void BuildLBVH();
 	void CUDAGetMinMax();
+
+	void LBVHTest();
 };
