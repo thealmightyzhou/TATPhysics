@@ -94,12 +94,6 @@ __global__ void Assign(TATVector3* buffer, int size, float* datas)
 extern "C"
 void GetMinMax(TATVector3 * datas, int size, TATVector3 & min, TATVector3 & max)
 {
-	float time;
-	cudaEvent_t begin, end;
-	cudaEventCreate(&begin);
-	cudaEventCreate(&end);
-	cudaEventRecord(begin, 0);
-
 	//x0 x1 x2 y0 y1 y2 z0 z1 z2 (3 * size)
 	int block_num = (size + thread_per_block - 1) / thread_per_block;
 
@@ -152,25 +146,14 @@ void GetMinMax(TATVector3 * datas, int size, TATVector3 & min, TATVector3 & max)
 	free(res_buffer);
 	cudaFree(dev_buffer);
 	cudaFree(dev_res_buffer);
-
-	cudaEventRecord(end, 0);
-	cudaEventSynchronize(begin);
-	cudaEventSynchronize(end);
-	cudaEventElapsedTime(&time, begin, end);
-
-	TATErrorReporter::Instance()->ReportErr("gpu used time: " + TString::ConvertFloat(time) + " ms");
-
-	cudaEventDestroy(begin);
-	cudaEventDestroy(end);
 }
 
 __device__ int Sign(int i)
 {
-	if (i > 0)
+	if (i >= 0)
 		return 1;
 	if (i < 0)
 		return -1;
-	return 0;
 }
 
 int Host_Sign(int i)
@@ -241,7 +224,17 @@ __global__ void DevGenLBVH(UINT* buffer, bool* internal, int size)
 		int j = i + curr_offset * d;
 		int prefix_node = Prefix(i, j, buffer, size);
 
-		step = (curr_offset + 1) / 2;
+		//int npow = 0;
+		step = 1;
+		while (curr_offset > 0)
+		{
+			curr_offset = curr_offset >> 1;
+			//npow++;
+			step *= 2;
+		}
+
+		//step = (int)pow(2.0, (double)npow);
+
 		int split = 0;
 
 		while (step > 0)
@@ -255,10 +248,11 @@ __global__ void DevGenLBVH(UINT* buffer, bool* internal, int size)
 		}
 
 		int cut = (i + split * d + (d <= 0 ? d : 0));
+
 		if (cut == (i < j ? i : j))
 		{
 			internal[i] = false;
-			buffer[size + i] = buffer[cut];
+			buffer[size + i] = cut;
 		}
 		else
 		{
@@ -266,10 +260,10 @@ __global__ void DevGenLBVH(UINT* buffer, bool* internal, int size)
 			buffer[size + i] = cut;
 		}
 
-		if (cut + 1 == (i > j ? i : j))
+		if ((cut + 1) == (i > j ? i : j))
 		{
 			internal[size - 1 + i] = false;
-			buffer[2 * size - 1 + i] = buffer[cut + 1];
+			buffer[2 * size - 1 + i] = (cut + 1);
 		}
 		else
 		{
@@ -312,7 +306,15 @@ void HostGenLBVH(UINT* buffer, bool* internal, int size)
 		int j = i + curr_offset * d;
 		int prefix_node = Host_Prefix(i, j, buffer, size);
 
-		step = (curr_offset + 1) / 2;
+		int npow = 0;
+		while (curr_offset > 0)
+		{
+			curr_offset = curr_offset >> 1;
+			npow++;
+		}
+
+		step = pow(2, npow);
+
 		int split = 0;
 
 		while (step > 0)
@@ -326,10 +328,14 @@ void HostGenLBVH(UINT* buffer, bool* internal, int size)
 		} 
 
 		int cut = (i + split * d + (d <= 0 ? d : 0));
+
+		UINT pr = Host_Prefix(i, cut, buffer, size);
+		UINT aft = Host_Prefix(i, cut + 1, buffer, size);
+
 		if (cut == (i < j ? i : j))
 		{
 			internal[i] = false;
-			buffer[size + i] = buffer[cut];
+			buffer[size + i] = cut;
 		}
 		else
 		{
@@ -337,10 +343,10 @@ void HostGenLBVH(UINT* buffer, bool* internal, int size)
 			buffer[size + i] = cut;
 		}
 
-		if (cut + 1 == (i > j ? i : j))
+		if ((cut + 1) == (i > j ? i : j))
 		{
 			internal[size - 1 + i] = false;
-			buffer[2 * size - 1 + i] = buffer[cut + 1];
+			buffer[2 * size - 1 + i] = (cut + 1);
 		}
 		else
 		{
@@ -353,7 +359,6 @@ void HostGenLBVH(UINT* buffer, bool* internal, int size)
 extern "C"
 void BuildLBVH(std::vector<LBVNode>& nodes, TATVector3* pos, std::vector<LBVNode>& internal_nodes, int num)
 {
-	std::map<UINT, LBVNode*> map_nodes;
 	int block_num = (num + thread_per_block - 1) / thread_per_block;
 
 	TATVector3 min, max;
@@ -367,11 +372,11 @@ void BuildLBVH(std::vector<LBVNode>& nodes, TATVector3* pos, std::vector<LBVNode
 	}
 
 	sort(nodes.begin(), nodes.end());
+
 	UINT* host_buffer = (UINT*)malloc((3 * num - 2) * sizeof(UINT));
 
 	for (int i = 0; i < num; ++i)
 	{
-		map_nodes[nodes[i].m_MortonCode] = &nodes[i];
 		host_buffer[i] = nodes[i].m_MortonCode;
 	}
 
@@ -383,11 +388,32 @@ void BuildLBVH(std::vector<LBVNode>& nodes, TATVector3* pos, std::vector<LBVNode
 	cudaMalloc((void**)&dev_internalbuffer, sizeof(bool) * (2 * num - 2));
 	bool* host_internalbuffer = (bool*)malloc(sizeof(bool) * (2 * num - 2));
 
-	DevGenLBVH << <block_num, thread_per_block >> > (dev_buffer, dev_internalbuffer, num);
 	//HostGenLBVH(host_buffer, host_internalbuffer, num);
+	//UINT* host_bufferTemp = (UINT*)malloc((3 * num - 2) * sizeof(UINT));
+	//bool* host_internalbufferTemp = (bool*)malloc(sizeof(bool) * (2 * num - 2));
 
+	DevGenLBVH << <block_num, thread_per_block >> > (dev_buffer, dev_internalbuffer, num);
+	cudaDeviceSynchronize();
 	cudaMemcpy(host_internalbuffer, dev_internalbuffer, (2 * num - 2) * sizeof(bool), cudaMemcpyDeviceToHost);
 	cudaMemcpy(host_buffer, dev_buffer, (3 * num - 2) * sizeof(UINT), cudaMemcpyDeviceToHost);
+	//cudaMemcpy(host_internalbufferTemp, dev_internalbuffer, (2 * num - 2) * sizeof(bool), cudaMemcpyDeviceToHost);
+	//cudaMemcpy(host_bufferTemp, dev_buffer, (3 * num - 2) * sizeof(UINT), cudaMemcpyDeviceToHost);
+
+	/*for (int i = 0; i < (2 * num - 2); ++i)
+	{
+		if (host_internalbufferTemp[i] != host_internalbuffer[i])
+		{
+			int stop = 1;
+		}
+	}
+	for (int i = 0; i < (3 * num - 2); ++i)
+	{
+		if (host_bufferTemp[i] != host_buffer[i])
+		{
+			int stop = 1;
+		}
+	}*/
+
 	internal_nodes.resize(num - 1);
 
 	LBVNode* lchild, * rchild;
@@ -399,14 +425,13 @@ void BuildLBVH(std::vector<LBVNode>& nodes, TATVector3* pos, std::vector<LBVNode
 		bool rinternal = host_internalbuffer[num - 1 + i];
 
 		if (!linternal)
-			internal_nodes[i].m_Children[0] = map_nodes[host_buffer[num + i]];
+			internal_nodes[i].m_Children[0] = &nodes[host_buffer[num + i]];
 		else
 			internal_nodes[i].m_Children[0] = &internal_nodes[host_buffer[num + i]];
 		if (!rinternal)
-			internal_nodes[i].m_Children[1] = map_nodes[host_buffer[2 * num - 1 + i]];
+			internal_nodes[i].m_Children[1] = &nodes[host_buffer[2 * num - 1 + i]];
 		else
 			internal_nodes[i].m_Children[1] = &internal_nodes[host_buffer[2 * num - 1 + i]];
-
 
 		lchild = internal_nodes[i].m_Children[0];
 		rchild = internal_nodes[i].m_Children[1];
@@ -415,5 +440,7 @@ void BuildLBVH(std::vector<LBVNode>& nodes, TATVector3* pos, std::vector<LBVNode
 	}
 
 	free(host_buffer);
+	free(host_internalbuffer);
 	cudaFree(dev_buffer);
+	cudaFree(dev_internalbuffer);
 }

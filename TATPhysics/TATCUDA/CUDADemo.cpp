@@ -143,14 +143,66 @@ void CUDADemo::CUDAGetMinMax()
 
 void CUDADemo::LBVHTest()
 {
+	clock_t begin, end;
+	float time;
+
 	LBVH bvh;
 	srand(0);
-	for (int i = 0; i < 1000; ++i)
+
+	begin = clock();
+	for (int i = 0; i < 10000; ++i)
 	{
 		TATVector3 min, max;
 		min = TATVector3(rand() % 10000, rand() % 10000, rand() % 10000);
 		max = min + TATVector3(rand() % 10000, rand() % 10000, rand() % 10000);
 		bvh.InsertAABB(min, max);
 	}
+	end = clock();
+	time = end - begin;
+	TATErrorReporter::Instance()->ReportErr("time1 " + TString::ConvertFloat(time));
+
+	begin = clock();
 	bvh.Build();
+	end = clock();
+	time = end - begin;
+	TATErrorReporter::Instance()->ReportErr("time2 " + TString::ConvertFloat(time));
+
+	LBVH bvh1;
+
+	begin = clock();
+	for (int i = 0; i < 1000; ++i)
+	{
+		TATVector3 min, max;
+		min = TATVector3(rand() % 5000, rand() % 15000, rand() % 3000);
+		max = min + TATVector3(rand() % 8000, rand() % 4000, rand() % 10000);
+		bvh1.InsertAABB(min, max);
+	}
+	end = clock();
+	time = end - begin;
+	TATErrorReporter::Instance()->ReportErr("time3 " + TString::ConvertFloat(time));
+
+	begin = clock();
+	bvh1.Build();
+	end = clock();
+	time = end - begin;
+	TATErrorReporter::Instance()->ReportErr("time4 " + TString::ConvertFloat(time));
+
+	class TestCallBack :public LBVHCollideCallBack
+	{
+	public:
+		virtual void HandleNodeOverlap(LBVNode* node1, LBVNode* node2)
+		{
+			//TATErrorReporter::Instance()->ReportErr(node1->m_Min.ToString() + "  " + node1->m_Max.ToString() + "  " + node2->m_Min.ToString() + "  " + node2->m_Max.ToString());
+		}
+	};
+
+	TestCallBack cb;
+
+	begin = clock();
+
+	bvh.CollideWithBVH(bvh1, &cb);
+
+	end = clock();
+	time = end - begin;
+	TATErrorReporter::Instance()->ReportErr("collide used time:" + TString::ConvertFloat(time));
 }

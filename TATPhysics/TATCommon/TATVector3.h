@@ -2,6 +2,7 @@
 
 #include "TATCore.h"
 #include "../TATGLRender/TATGLHeader.h"
+#include "../TATBasis/TString.h"
 
 #define TAT_MAXVECTOR3 TATVector3(TAT_MAX,TAT_MAX,TAT_MAX)
 #define TAT_MINVECTOR3 TATVector3(TAT_EPSILON,TAT_EPSILON,TAT_EPSILON)
@@ -316,6 +317,11 @@ public:
 			l2.Y = m_Datas[2] * l1[0];
 			l2.Z = a * k;
 		}
+	}
+
+	TString ToString()
+	{
+		return ("<" + TString::ConvertFloat(X) + "," + TString::ConvertFloat(Y) + "," + TString::ConvertFloat(Z) + ">");
 	}
 };
 
