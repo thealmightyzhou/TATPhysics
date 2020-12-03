@@ -6,27 +6,12 @@
 #include <stack>
 #include <queue>
 
-struct LBVNode
+struct LBVPrim
 {
 public:
-	LBVNode(const TATVector3& min, const TATVector3& max) :m_Min(min), m_Max(max)
+	LBVPrim(const TATVector3& min, const TATVector3& max) :m_Min(min), m_Max(max)
 	{
 		m_Center = (min + max) / 2;
-		m_IsInternal = false;
-		m_Children[0] = m_Children[1] = m_Parent = 0;
-		m_UserData = 0;
-	}
-
-	LBVNode()
-	{
-		m_IsInternal = false;
-		m_Children[0] = m_Children[1] = m_Parent = 0;
-		m_UserData = 0;
-	}
-
-	bool operator<(const LBVNode& c)
-	{
-		return m_MortonCode < c.m_MortonCode;
 	}
 
 	unsigned int ExpandBits(unsigned int v)
@@ -55,6 +40,67 @@ public:
 		m_MortonCode = xx * 4 + yy * 2 + zz;
 	}
 
+	bool IsOverlapped(LBVPrim* other)
+	{
+		if (!other)
+			return false;
+		bool overlapped = true;
+
+		if (other->m_Max.X < this->m_Min.X || other->m_Min.X > this->m_Max.X)
+			overlapped = false;
+		if (other->m_Max.Y < this->m_Min.Y || other->m_Min.Y > this->m_Max.Y)
+			overlapped = false;
+		if (other->m_Max.Z < this->m_Min.Z || other->m_Min.Z > this->m_Max.Z)
+			overlapped = false;
+
+		return overlapped;
+	}
+
+	bool operator<(const LBVPrim& c)
+	{
+		return m_MortonCode < c.m_MortonCode;
+	}
+
+	TATVector3 m_Min, m_Max;
+	TATVector3 m_Center;
+	TATVector3 m_UnitCenter;
+	UINT m_MortonCode;
+	void* m_UserData;
+
+};
+
+struct LBVNode
+{
+public:
+	LBVNode(const TATVector3& min, const TATVector3& max) :m_Min(min), m_Max(max)
+	{
+		m_IsInternal = false;
+		m_Children[0] = m_Children[1] = m_Parent = 0;
+		m_Ptr = this;
+	}
+
+	LBVNode()
+	{
+		m_IsInternal = true;
+		m_Children[0] = m_Children[1] = m_Parent = 0;
+		m_Ptr = this;
+	}
+
+	LBVNode(const LBVNode& c)
+	{
+		m_IsInternal = c.m_IsInternal;
+		m_Min = c.m_Min;
+		m_Max = c.m_Max;
+
+		m_Children[0] = c.m_Children[0];
+		m_Children[1] = c.m_Children[1];
+		m_Parent = c.m_Parent;
+		m_MortonCode = c.m_MortonCode;
+
+		m_Ptr = this;
+		m_Prims = c.m_Prims;
+	}
+
 	bool IsOverlapped(LBVNode* other)
 	{
 		if (!other)
@@ -71,14 +117,29 @@ public:
 		return overlapped;
 	}
 
+	void Update()
+	{
+		m_Min = TAT_MAXVECTOR3;
+		m_Max = -TAT_MAXVECTOR3;
+
+		for (int i = 0; i < m_Prims.size(); ++i) 
+		{
+			m_Min.SetMin(m_Prims[i].m_Min);
+			m_Max.SetMax(m_Prims[i].m_Max);
+		}
+
+		m_MortonCode = m_Prims[0].m_MortonCode;
+	}
+
 	bool m_IsInternal;
 	TATVector3 m_Min, m_Max;
-	TATVector3 m_Center;
-	TATVector3 m_UnitCenter;
+
 	LBVNode* m_Children[2];
 	LBVNode* m_Parent;
-	void* m_UserData;
 	UINT m_MortonCode;
+
+	LBVNode * m_Ptr;
+	std::vector<LBVPrim> m_Prims;
 };
 
 class LBVHCollideCallBack
@@ -86,7 +147,7 @@ class LBVHCollideCallBack
 public:
 
 	virtual ~LBVHCollideCallBack() {}
-	virtual void HandleNodeOverlap(LBVNode* node1, LBVNode* node2) {}
+	virtual void HandleNodeOverlap(LBVPrim* node1, LBVPrim* node2) {}
 };
 
 class LBVH
@@ -98,6 +159,8 @@ public:
 		OverlapPair(LBVNode* n1, LBVNode* n2) :m_Node1(n1), m_Node2(n2)
 		{}
 
+		OverlapPair() {}
+
 		LBVNode* m_Node1;
 		LBVNode* m_Node2;
 	};
@@ -107,11 +170,11 @@ public:
 		m_Root = 0;
 	}
 
-	LBVNode* InsertAABB(const TATVector3& min, const TATVector3& max)
+	LBVPrim* InsertAABB(const TATVector3& min, const TATVector3& max)
 	{
-		m_StoreNodes.push_back(LBVNode(min, max));
+		m_StorePrims.push_back(LBVPrim(min, max));
 		m_Positions.push_back((min + max) / 2);
-		return &m_StoreNodes[m_StoreNodes.size() - 1];
+		return &m_StorePrims[m_StorePrims.size() - 1];
 	}
 
 	void Build();
@@ -127,9 +190,6 @@ public:
 
 		LBVNode* node;
 
-		int internum = 0;
-		int leafnum = 0;
-
 		while (que.size() > 0)
 		{
 			node = que.front();
@@ -139,52 +199,14 @@ public:
 			if (node->m_Children[0] && node->m_Children[0]->m_IsInternal)
 			{
 				que.push(node->m_Children[0]);
-				internum++;
-			}
-
-			if (node->m_Children[0] && !node->m_Children[0]->m_IsInternal)
-			{
-				leafnum++;
 			}
 
 			if (node->m_Children[1] && node->m_Children[1]->m_IsInternal)
 			{
 				que.push(node->m_Children[1]);
-				internum++;
-			}
-
-			if (node->m_Children[1] && !node->m_Children[1]->m_IsInternal)
-			{
-				leafnum++;
-			}
-
-		}
-#if(0)
-		int single = 0;
-		int doubleinter = 0;
-		int doubleleaf = 0;
-
-		for (int i = 0; i < m_InternalNodes.size(); ++i)
-		{
-			LBVNode& c = m_InternalNodes[i];
-			if (c.m_Children[0] && c.m_Children[0]->m_IsInternal && c.m_Children[1] && c.m_Children[1]->m_IsInternal)
-			{
-				doubleinter++;
-			}
-			else if(c.m_Children[0] && !c.m_Children[0]->m_IsInternal && c.m_Children[1] && !c.m_Children[1]->m_IsInternal)
-			{
-				doubleleaf++;
-			}
-			else if (c.m_Children[0] && c.m_Children[0]->m_IsInternal && c.m_Children[1] && !c.m_Children[1]->m_IsInternal)
-			{
-				single++;
-			}
-			else if (c.m_Children[0] && !c.m_Children[0]->m_IsInternal && c.m_Children[1] && c.m_Children[1]->m_IsInternal)
-			{
-				single++;
 			}
 		}
-#endif
+
 		while (stk.size() > 0)
 		{
 			node = stk.top();
@@ -205,10 +227,11 @@ public:
 		std::stack<OverlapPair> stk;
 
 		stk.push(OverlapPair(m_Root, node));
-
+		LBVPrim* p1, * p2;
+		OverlapPair pair;
 		while (stk.size() > 0)
 		{
-			OverlapPair pair = stk.top();
+			pair = stk.top();
 			stk.pop();
 
 			if (pair.m_Node1 == pair.m_Node2)
@@ -235,16 +258,28 @@ public:
 				}
 				else if (!pair.m_Node1->m_IsInternal && !pair.m_Node2->m_IsInternal)
 				{
-					cb->HandleNodeOverlap(pair.m_Node1, pair.m_Node2);
+					for (int i = 0; i < pair.m_Node1->m_Prims.size(); ++i)
+					{
+						p1 = &pair.m_Node1->m_Prims[i];
+						for (int j = 0; j < pair.m_Node2->m_Prims.size(); ++j)
+						{
+							p2 = &pair.m_Node2->m_Prims[j];
+							if (p1->IsOverlapped(p2))
+							{
+								cb->HandleNodeOverlap(p1, p2);
+							}
+						}
+					}
+
 				}
 			}
 		}
 	}
 
 	std::vector<LBVNode> m_InternalNodes;
-	std::vector<LBVNode> m_StoreNodes;
+	std::vector<LBVNode> m_LeafNodes;
+	std::vector<LBVPrim> m_StorePrims;
 	std::vector<TATVector3> m_Positions;
-	std::map<UINT, LBVNode*> m_MapNodes;
 
 	LBVNode* m_Root;
 };

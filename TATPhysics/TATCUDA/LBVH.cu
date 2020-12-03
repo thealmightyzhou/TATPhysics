@@ -189,6 +189,22 @@ int Host_Prefix(UINT i, UINT j, UINT* buffer, int max)
 	return 32 - count;
 }
 
+int Host_PrefixV2(UINT i, UINT j, LBVNode* nodes, int max)
+{
+	if (j >= max || j < 0)
+		return -1;
+
+	UINT same = nodes[i + max - 1].m_MortonCode ^ nodes[j + max - 1].m_MortonCode;
+
+	int count = 0;
+	while (same > 0)
+	{
+		same = same >> 1;
+		count++;
+	}
+	return 32 - count;
+}
+
 //									 leaf      internal left    internal right
 //total size 3*size-2 [0,3*size-3] [0,size-1] [size,2*size-2] [2*size-1,3*size-3]
 __global__ void DevGenLBVH(UINT* buffer, bool* internal, int size)
@@ -274,18 +290,28 @@ __global__ void DevGenLBVH(UINT* buffer, bool* internal, int size)
 	}
 }
 
-void HostGenLBVH(UINT* buffer, bool* internal, int size)
+__device__ int PrefixV2(UINT i, UINT j, LBVNode* nodes, int max)
 {
-	for (int i = 0; i < size - 1; ++i)
+	if (j >= max || j < 0)
+		return -1;
+
+	return __clz(nodes[i + max - 1].m_MortonCode ^ nodes[j + max - 1].m_MortonCode);
+}
+
+//size-1 * internal; size * leaf
+__global__ void DevGenLBVHV2(LBVNode * nodes, int size)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	if (i < size - 1)
 	{
-		int d = Host_Sign(Host_Prefix(i, i + 1, buffer, size) - Host_Prefix(i, i - 1, buffer, size));
-		int min_pre = Host_Prefix(i, i - d, buffer, size);
+		int d = Sign(PrefixV2(i, i + 1, nodes, size) - PrefixV2(i, i - 1, nodes, size));
+		int min_pre = PrefixV2(i, i - d, nodes, size);
 		int max_step = 1;
 		int pre;
 		do
 		{
 			max_step *= 2;
-			pre = Host_Prefix(i, i + d * max_step, buffer, size);
+			pre = PrefixV2(i, i + d * max_step, nodes, size);
 
 		} while (pre > min_pre);
 
@@ -294,7 +320,7 @@ void HostGenLBVH(UINT* buffer, bool* internal, int size)
 
 		while (step > 0)
 		{
-			pre = Host_Prefix(i, i + (curr_offset + step) * d, buffer, size);
+			pre = PrefixV2(i, i + (curr_offset + step) * d, nodes, size);
 			if (pre > min_pre)
 			{
 				curr_offset += step;
@@ -304,80 +330,200 @@ void HostGenLBVH(UINT* buffer, bool* internal, int size)
 		}
 
 		int j = i + curr_offset * d;
-		int prefix_node = Host_Prefix(i, j, buffer, size);
+		int prefix_node = PrefixV2(i, j, nodes, size);
 
-		int npow = 0;
+		//int npow = 0;
+		step = 1;
 		while (curr_offset > 0)
 		{
 			curr_offset = curr_offset >> 1;
-			npow++;
+			//npow++;
+			step *= 2;
 		}
 
-		step = pow(2, npow);
+		//step = (int)pow(2.0, (double)npow);
 
 		int split = 0;
 
 		while (step > 0)
 		{
-			pre = Host_Prefix(i, i + (split + step) * d, buffer, size);
+			pre = PrefixV2(i, i + (split + step) * d, nodes, size);
 			if (pre > prefix_node)
 			{
 				split += step;
 			}
 			step /= 2;
-		} 
+		}
 
 		int cut = (i + split * d + (d <= 0 ? d : 0));
 
-		UINT pr = Host_Prefix(i, cut, buffer, size);
-		UINT aft = Host_Prefix(i, cut + 1, buffer, size);
-
+		nodes[i].m_IsInternal = true;
 		if (cut == (i < j ? i : j))
 		{
-			internal[i] = false;
-			buffer[size + i] = cut;
+			//internal[i] = false;
+			//buffer[size + i] = cut;
+
+			nodes[i].m_Children[0] = nodes[size - 1 + cut].m_Ptr;
+			nodes[size - 1 + cut].m_Parent = nodes[i].m_Ptr;
 		}
 		else
 		{
-			internal[i] = true;
-			buffer[size + i] = cut;
+			/*internal[i] = true;
+			buffer[size + i] = cut;*/
+
+			nodes[i].m_Children[0] = nodes[cut].m_Ptr;
+			nodes[cut].m_Parent = nodes[i].m_Ptr;
 		}
 
 		if ((cut + 1) == (i > j ? i : j))
 		{
-			internal[size - 1 + i] = false;
-			buffer[2 * size - 1 + i] = (cut + 1);
+			//internal[size - 1 + i] = false;
+			//buffer[2 * size - 1 + i] = (cut + 1);
+
+			nodes[i].m_Children[1] = nodes[size - 1 + cut + 1].m_Ptr;
+			nodes[size - 1 + cut + 1].m_Parent = nodes[i].m_Ptr;
 		}
 		else
 		{
-			internal[size - 1 + i] = true;
-			buffer[2 * size - 1 + i] = (cut + 1);
+			//internal[size - 1 + i] = true;
+			//buffer[2 * size - 1 + i] = (cut + 1);
+
+			nodes[i].m_Children[1] = nodes[cut + 1].m_Ptr;
+			nodes[cut + 1].m_Parent = nodes[i].m_Ptr;
+		}
+	}
+}
+
+void HostGenLBVHV2(LBVNode* nodes, int size)
+{
+	for (int i = 0; i < size - 1; ++i)
+	{
+		int d = Host_Sign(Host_PrefixV2(i, i + 1, nodes, size) - Host_PrefixV2(i, i - 1, nodes, size));
+		int min_pre = Host_PrefixV2(i, i - d, nodes, size);
+		int max_step = 1;
+		int pre;
+		do
+		{
+			max_step *= 2;
+			pre = Host_PrefixV2(i, i + d * max_step, nodes, size);
+
+		} while (pre > min_pre);
+
+		int step = max_step / 2;
+		int curr_offset = 0;
+
+		while (step > 0)
+		{
+			pre = Host_PrefixV2(i, i + (curr_offset + step) * d, nodes, size);
+			if (pre > min_pre)
+			{
+				curr_offset += step;
+			}
+
+			step /= 2;
+		}
+
+		int j = i + curr_offset * d;
+		int prefix_node = Host_PrefixV2(i, j, nodes, size);
+
+		//int npow = 0;
+		step = 1;
+		while (curr_offset > 0)
+		{
+			curr_offset = curr_offset >> 1;
+			//npow++;
+			step *= 2;
+		}
+
+		//step = (int)pow(2.0, (double)npow);
+
+		int split = 0;
+
+		while (step > 0)
+		{
+			pre = Host_PrefixV2(i, i + (split + step) * d, nodes, size);
+			if (pre > prefix_node)
+			{
+				split += step;
+			}
+			step /= 2;
+		}
+
+		int cut = (i + split * d + (d <= 0 ? d : 0));
+
+		nodes[i].m_IsInternal = true;
+		if (cut == (i < j ? i : j))
+		{
+			nodes[i].m_Children[0] = nodes[size - 1 + cut].m_Ptr;
+			nodes[size - 1 + cut].m_Parent = nodes[i].m_Ptr;
+		}
+		else
+		{
+			nodes[i].m_Children[0] = nodes[cut].m_Ptr;
+			nodes[cut].m_Parent = nodes[i].m_Ptr;
+		}
+
+		if ((cut + 1) == (i > j ? i : j))
+		{
+			nodes[i].m_Children[1] = nodes[size - 1 + cut + 1].m_Ptr;
+			nodes[size - 1 + cut + 1].m_Parent = nodes[i].m_Ptr;
+		}
+		else
+		{
+			nodes[i].m_Children[1] = nodes[cut + 1].m_Ptr;
+			nodes[cut + 1].m_Parent = nodes[i].m_Ptr;
 		}
 	}
 }
 
 extern "C"
-void BuildLBVH(std::vector<LBVNode>& nodes, TATVector3* pos, std::vector<LBVNode>& internal_nodes, int num)
+void BuildLBVH(std::vector<LBVPrim> & prims, TATVector3 * pos, std::vector<LBVNode> & leaf_nodes, std::vector<LBVNode> & internal_nodes, int n)
 {
-	int block_num = (num + thread_per_block - 1) / thread_per_block;
+	int block_num = (n + thread_per_block - 1) / thread_per_block;
 
 	TATVector3 min, max;
-	GetMinMax(pos, num, min, max);
+	GetMinMax(pos, n, min, max);
 	TATVector3 unit = max - min;
 
-	for (int i = 0; i < num; ++i)//parallel
+	for (int i = 0; i < n; ++i)//parallel
 	{
-		nodes[i].m_UnitCenter = (nodes[i].m_Center - min) / unit;
-		nodes[i].GenMorton();
+		prims[i].m_UnitCenter = (prims[i].m_Center - min) / unit;
+		prims[i].GenMorton();
 	}
 
-	sort(nodes.begin(), nodes.end());
+	sort(prims.begin(), prims.end());
+	leaf_nodes.reserve(prims.size());
+	int index = 0;
+	int offset = 0;
+	LBVNode node;
+	node.m_IsInternal = false;
+	while ((index + offset) < prims.size())
+	{
+		if (prims[index + offset].m_MortonCode != prims[index].m_MortonCode)
+		{
+			if (node.m_Prims.size() > 1)
+				int stop = 1;
+			node.Update();
+			leaf_nodes.push_back(node);
+			node.m_Prims.clear();
+			index += offset;
+			offset = 0;
+		}
+		else
+		{
+			node.m_Prims.push_back(prims[index + offset]);
+			offset++;
+		}
+	}
 
-	UINT* host_buffer = (UINT*)malloc((3 * num - 2) * sizeof(UINT));
+	leaf_nodes.push_back(node);
+	int num = leaf_nodes.size();
+
+	/*UINT* host_buffer = (UINT*)malloc((3 * num - 2) * sizeof(UINT));
 
 	for (int i = 0; i < num; ++i)
 	{
-		host_buffer[i] = nodes[i].m_MortonCode;
+		host_buffer[i] = leaf_nodes[i].m_MortonCode;
 	}
 
 	UINT* dev_buffer;
@@ -386,61 +532,84 @@ void BuildLBVH(std::vector<LBVNode>& nodes, TATVector3* pos, std::vector<LBVNode
 
 	bool* dev_internalbuffer;
 	cudaMalloc((void**)&dev_internalbuffer, sizeof(bool) * (2 * num - 2));
-	bool* host_internalbuffer = (bool*)malloc(sizeof(bool) * (2 * num - 2));
+	bool* host_internalbuffer = (bool*)malloc(sizeof(bool) * (2 * num - 2));*/
 
 	//HostGenLBVH(host_buffer, host_internalbuffer, num);
 	//UINT* host_bufferTemp = (UINT*)malloc((3 * num - 2) * sizeof(UINT));
 	//bool* host_internalbufferTemp = (bool*)malloc(sizeof(bool) * (2 * num - 2));
 
-	DevGenLBVH << <block_num, thread_per_block >> > (dev_buffer, dev_internalbuffer, num);
-	cudaDeviceSynchronize();
-	cudaMemcpy(host_internalbuffer, dev_internalbuffer, (2 * num - 2) * sizeof(bool), cudaMemcpyDeviceToHost);
-	cudaMemcpy(host_buffer, dev_buffer, (3 * num - 2) * sizeof(UINT), cudaMemcpyDeviceToHost);
+	//DevGenLBVH << <block_num, thread_per_block >> > (dev_buffer, dev_internalbuffer, num);
+
+	//cudaMemcpy(host_internalbuffer, dev_internalbuffer, (2 * num - 2) * sizeof(bool), cudaMemcpyDeviceToHost);
+	//cudaMemcpy(host_buffer, dev_buffer, (3 * num - 2) * sizeof(UINT), cudaMemcpyDeviceToHost);
 	//cudaMemcpy(host_internalbufferTemp, dev_internalbuffer, (2 * num - 2) * sizeof(bool), cudaMemcpyDeviceToHost);
 	//cudaMemcpy(host_bufferTemp, dev_buffer, (3 * num - 2) * sizeof(UINT), cudaMemcpyDeviceToHost);
 
-	/*for (int i = 0; i < (2 * num - 2); ++i)
-	{
-		if (host_internalbufferTemp[i] != host_internalbuffer[i])
-		{
-			int stop = 1;
-		}
-	}
-	for (int i = 0; i < (3 * num - 2); ++i)
-	{
-		if (host_bufferTemp[i] != host_buffer[i])
-		{
-			int stop = 1;
-		}
-	}*/
+	//internal_nodes.resize(num - 1);
 
+	//LBVNode* lchild, * rchild;
+	//for (int i = 0; i < num - 1; ++i) //parallel
+	//{
+	//	internal_nodes[i].m_IsInternal = true;
+
+	//	bool linternal = host_internalbuffer[i];
+	//	bool rinternal = host_internalbuffer[num - 1 + i];
+
+	//	if (!linternal)
+	//		internal_nodes[i].m_Children[0] = &leaf_nodes[host_buffer[num + i]];
+	//	else
+	//		internal_nodes[i].m_Children[0] = &internal_nodes[host_buffer[num + i]];
+	//	if (!rinternal)
+	//		internal_nodes[i].m_Children[1] = &leaf_nodes[host_buffer[2 * num - 1 + i]];
+	//	else
+	//		internal_nodes[i].m_Children[1] = &internal_nodes[host_buffer[2 * num - 1 + i]];
+
+	//	lchild = internal_nodes[i].m_Children[0];
+	//	rchild = internal_nodes[i].m_Children[1];
+	//	lchild->m_Parent = &internal_nodes[i];
+	//	rchild->m_Parent = &internal_nodes[i];
+	//}
+
+	//free(host_buffer);
+	//free(host_internalbuffer);
+	//cudaFree(dev_buffer);
+	//cudaFree(dev_internalbuffer);
+
+	//==============
 	internal_nodes.resize(num - 1);
+	LBVNode* dev_nodes;
+	
 
-	LBVNode* lchild, * rchild;
-	for (int i = 0; i < num - 1; ++i) //parallel
-	{
-		internal_nodes[i].m_IsInternal = true;
+	cudaEvent_t begin, end;
+	cudaEventCreate(&begin);
+	cudaEventCreate(&end);
+	cudaEventRecord(begin, 0);
 
-		bool linternal = host_internalbuffer[i];
-		bool rinternal = host_internalbuffer[num - 1 + i];
 
-		if (!linternal)
-			internal_nodes[i].m_Children[0] = &nodes[host_buffer[num + i]];
-		else
-			internal_nodes[i].m_Children[0] = &internal_nodes[host_buffer[num + i]];
-		if (!rinternal)
-			internal_nodes[i].m_Children[1] = &nodes[host_buffer[2 * num - 1 + i]];
-		else
-			internal_nodes[i].m_Children[1] = &internal_nodes[host_buffer[2 * num - 1 + i]];
+	cudaMalloc((void**)&dev_nodes, sizeof(LBVNode) * (2 * num - 1));
+	cudaMemcpy(dev_nodes, &internal_nodes[0], (num - 1) * sizeof(LBVNode), cudaMemcpyHostToDevice);
+	cudaMemcpy((dev_nodes + num - 1), &leaf_nodes[0], num * sizeof(LBVNode), cudaMemcpyHostToDevice);
 
-		lchild = internal_nodes[i].m_Children[0];
-		rchild = internal_nodes[i].m_Children[1];
-		lchild->m_Parent = &internal_nodes[i];
-		rchild->m_Parent = &internal_nodes[i];
-	}
 
-	free(host_buffer);
-	free(host_internalbuffer);
-	cudaFree(dev_buffer);
-	cudaFree(dev_internalbuffer);
+	DevGenLBVHV2 << <block_num, thread_per_block >> > (dev_nodes, num);
+
+	cudaMemcpy(&internal_nodes[0], dev_nodes, (num - 1) * sizeof(LBVNode), cudaMemcpyDeviceToHost);
+
+	cudaFree(dev_nodes);
+	
+
+	cudaEventRecord(end, 0);
+	cudaEventSynchronize(begin);
+	cudaEventSynchronize(end);
+	float time;
+	cudaEventElapsedTime(&time, begin, end);
+	TATErrorReporter::Instance()->ReportErr("gpu used time: " + TString::ConvertFloat(time));
+	//LBVNode* host_nodes;
+	//host_nodes = (LBVNode*)malloc(sizeof(LBVNode) * (2 * num - 1));
+	//memcpy(host_nodes, &internal_nodes[0], (num - 1) * sizeof(LBVNode));
+	//memcpy((host_nodes + num - 1), &leaf_nodes[0], num * sizeof(LBVNode));
+	//HostGenLBVHV2(host_nodes, num);
+	//memcpy(&internal_nodes[0], host_nodes, (num - 1) * sizeof(LBVNode));
+	//free(host_nodes);
+
 }

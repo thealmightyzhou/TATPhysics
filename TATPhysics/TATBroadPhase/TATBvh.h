@@ -132,7 +132,7 @@ public:
 	void GetBound(TATVector3& min, TATVector3& max)
 	{
 		min = m_BVTree[0]->m_AabbMin;
-		max = m_BVTree[1]->m_AabbMax;
+		max = m_BVTree[0]->m_AabbMax;
 	}
 
 protected:

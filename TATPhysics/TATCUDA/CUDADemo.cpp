@@ -155,7 +155,7 @@ void CUDADemo::LBVHTest()
 		TATVector3 min, max;
 		min = TATVector3(rand() % 10000, rand() % 10000, rand() % 10000);
 		max = min + TATVector3(rand() % 10000, rand() % 10000, rand() % 10000);
-		bvh.InsertAABB(min, max);
+		bvh.InsertAABB(min, max)->m_UserData = (void*)i;
 	}
 	end = clock();
 	time = end - begin;
@@ -190,7 +190,7 @@ void CUDADemo::LBVHTest()
 	class TestCallBack :public LBVHCollideCallBack
 	{
 	public:
-		virtual void HandleNodeOverlap(LBVNode* node1, LBVNode* node2)
+		virtual void HandleNodeOverlap(LBVPrim* node1, LBVPrim* node2)
 		{
 			//TATErrorReporter::Instance()->ReportErr(node1->m_Min.ToString() + "  " + node1->m_Max.ToString() + "  " + node2->m_Min.ToString() + "  " + node2->m_Max.ToString());
 		}

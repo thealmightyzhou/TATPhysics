@@ -3,12 +3,12 @@
 #include "time.h"
 
 extern "C"
-void BuildLBVH(std::vector<LBVNode> & nodes, TATVector3 * pos, std::vector<LBVNode> & internal_nodes, int num);
+void BuildLBVH(std::vector<LBVPrim> & prims, TATVector3 * pos, std::vector<LBVNode> & leaf_nodes, std::vector<LBVNode> & internal_nodes, int num);
 void LBVH::Build()
 {
 	clock_t begin = clock();
 
-	BuildLBVH(m_StoreNodes, &m_Positions[0], m_InternalNodes, m_StoreNodes.size());
+	BuildLBVH(m_StorePrims, &m_Positions[0], m_LeafNodes, m_InternalNodes, m_StorePrims.size());
 
 	clock_t end = clock();
 	float time = end - begin;
